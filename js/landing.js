@@ -32,86 +32,22 @@
     setupCTAGrid();
   }
 
-  /* ==========================================================================
-     LOADER
-     Keeps the SEATWISE opening screen visible for approximately 5 seconds.
-     Everything else in the landing page remains unchanged.
-     ========================================================================== */
-
-  // function setupLoader() {
-  //   const loader = $("#site-loader");
-  //   if (!loader) return;
-
-  //   let pageLoaded = document.readyState === "complete";
-
-  //   const hide = () => {
-  //     /*
-  //      * Keep the loader visible for 5 seconds before starting
-  //      * the exit animation.
-  //      */
-  //     window.setTimeout(() => {
-  //       loader.classList.add("hidden");
-  //     }, state.reduceMotion ? 5000 : 5000);
-  //   };
-
-  //   /*
-  //    * If the page is already completely loaded, start the
-  //    * 5-second loader immediately.
-  //    */
-  //   if (pageLoaded) {
-  //     hide();
-  //   } else {
-  //     /*
-  //      * Wait for the complete page to load first.
-  //      * Then keep the loader visible for 5 seconds.
-  //      */
-  //     window.addEventListener("load", hide, { once: true });
-  //   }
-
-  //   /*
-  //    * Safety fallback:
-  //    * Even if something prevents the load event from firing,
-  //    * the loader will still disappear after 5 seconds.
-  //    */
-  //   window.setTimeout(() => {
-  //     loader.classList.add("hidden");
-  //   }, 5000);
-  // }
-
-// function setupLoader() {
-//   const loader = $("#site-loader");
-//   if (!loader) return;
-
-//   // Keep the opening SEATWISE screen visible for 5 seconds.
-//   // Start the timer immediately after the DOM is ready.
-//   window.setTimeout(() => {
-//     loader.classList.add("hidden");
-//   }, state.reduceMotion ? 2000 : 2000);
-// }
 
 function setupLoader() {
   const intro = $("#seatwise-intro");
   if (!intro) return;
 
-  // Do NOT change or interrupt the existing intro animation.
-  // Wait until the animation has completely finished.
   const finishIntro = () => {
-    // Start the existing CSS exit transition.
     intro.classList.add("intro-hidden");
 
-    // Completely remove the intro from interaction/layout
-    // after the fade-out has finished.
     window.setTimeout(() => {
       intro.style.display = "none";
       intro.setAttribute("aria-hidden", "true");
     }, 800);
   };
 
-  // Give the existing intro animation time to finish.
   window.setTimeout(finishIntro, 5000);
 }
-
-
 
 
   function setupHeader() {
@@ -649,20 +585,8 @@ function setupLoader() {
 })();
 
 
-
-
-
-
 /* =========================================================
    SEATWISE — INTERACTIVE CONFLICT-RESOLUTION DEMO
-   ---------------------------------------------------------
-   Deterministic simulation that demonstrates the SEATWISE
-   conflict-detection-and-swap concept using a fixed 24-seat
-   grid with real student roll numbers and course codes.
-
-   STATE MACHINE:
-     READY → ANALYZING → CONFLICT_DETECTED → SEARCHING →
-     OPTIMIZING → SWITCHING → RESOLVED → READY
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -679,19 +603,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!grid || !generateBtn) return;
 
 
-    /* ==========================================================
-       DETERMINISTIC STUDENT DATA  (4 rows × 6 columns = 24)
-       ----------------------------------------------------------
-       Row labels: A B C D     Column labels: 1–6
-       Each entry: { roll, course }
-
-       Intentional conflict:
-         Index 0 (A1) → CSE-07 / CS301
-         Index 1 (A2) → CSE-08 / CS301    ← same course, adjacent!
-
-       Swap target:
-         Index 17 (C6) → ECE-18 / EC201   ← different course, safe
-       ========================================================== */
+  /* ==========================================================
+    DETERMINISTIC STUDENT DATA  (4 rows × 6 columns = 24)
+    ========================================================== */
 
     const ROWS = 4;
     const COLS = 6;
@@ -699,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const SEAT_DATA = [
         /* Row A */
         { roll: "CSE-07", course: "CS301" },
-        { roll: "CSE-08", course: "CS301" },   // ← conflict with A1
+        { roll: "CSE-08", course: "CS301" },   
         { roll: "ECE-02", course: "EC201" },
         { roll: "ME-03",  course: "MA201" },
         { roll: "PHY-04", course: "PH201" },
@@ -717,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { roll: "ME-16",  course: "MA201" },
         { roll: "ECE-17", course: "EC201" },
         { roll: "PHY-19", course: "PH201" },
-        { roll: "ECE-18", course: "EC201" },   // ← swap target (C6)
+        { roll: "ECE-18", course: "EC201" },  
         /* Row D */
         { roll: "CSE-20", course: "CS301" },
         { roll: "ME-21",  course: "MA201" },
@@ -727,12 +641,10 @@ document.addEventListener("DOMContentLoaded", () => {
         { roll: "PHY-25", course: "PH201" }
     ];
 
-    /* Fixed conflict and swap indices (deterministic) */
-    const CONFLICT_A = 0;   // A1 — CSE-07 / CS301
-    const CONFLICT_B = 1;   // A2 — CSE-08 / CS301
-    const SWAP_TARGET = 17; // C6 — ECE-18 / EC201
+    const CONFLICT_B = 1;   
+    const CONFLICT_A = 0;   
+    const SWAP_TARGET = 17; 
 
-    /* Working copy that gets mutated during the simulation */
     let liveData = [];
 
 
@@ -767,7 +679,6 @@ document.addEventListener("DOMContentLoaded", () => {
        ========================================================== */
 
     function createGrid() {
-        /* Reset working data to the original deterministic layout */
         liveData = SEAT_DATA.map(s => ({ ...s }));
 
         grid.innerHTML = "";
@@ -799,7 +710,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = liveData[index];
         if (!el || !data) return;
 
-        /* Remove old course class, add new */
         el.classList.remove("sw-course-cs", "sw-course-ma", "sw-course-ph", "sw-course-ec");
         el.classList.add(courseClass(data.course));
 
@@ -853,7 +763,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* -------------------------------------------------------
            STAGE 1 — CONFLICT DETECTED
-           Highlight BOTH conflicting seats A1 and A2.
            ------------------------------------------------------- */
         const seatA = grid.children[CONFLICT_A];
         const seatB = grid.children[CONFLICT_B];
@@ -874,7 +783,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* -------------------------------------------------------
            STAGE 2 — SEARCHING
-           Show intermediate optimization state.
            ------------------------------------------------------- */
         systemStatus.textContent = "SEARCHING";
         gridStatus.textContent   = "SEARCHING";
@@ -886,7 +794,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* -------------------------------------------------------
            STAGE 3 — OPTIMIZING
-           Highlight the candidate destination seat (C6).
            ------------------------------------------------------- */
         const seatC = grid.children[SWAP_TARGET];
         seatC.classList.add("sw-candidate");
@@ -903,8 +810,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* -------------------------------------------------------
            STAGE 4 — SWITCHING
-           Actually swap the student data between A2 and C6,
-           then animate the visual change.
            ------------------------------------------------------- */
         systemStatus.textContent = "SWITCHING STUDENT ASSIGNMENT";
         gridStatus.textContent   = "SWITCHING";
@@ -913,27 +818,22 @@ document.addEventListener("DOMContentLoaded", () => {
             `Swapping ${liveData[CONFLICT_B].roll} (${liveData[CONFLICT_B].course}) ↔ ` +
             `${liveData[SWAP_TARGET].roll} (${liveData[SWAP_TARGET].course}).`;
 
-        /* Remove conflict / candidate highlighting */
         seatA.classList.remove("conflict");
         seatB.classList.remove("conflict");
         seatC.classList.remove("sw-candidate");
 
-        /* Add switching animation class to both affected seats */
         seatB.classList.add("sw-switching");
         seatC.classList.add("sw-switching");
 
         await wait(500);
 
-        /* Perform the actual data swap */
         const temp = { ...liveData[CONFLICT_B] };
         liveData[CONFLICT_B] = { ...liveData[SWAP_TARGET] };
         liveData[SWAP_TARGET] = { ...temp };
 
-        /* Update the DOM to reflect the new assignments */
         updateSeatContent(CONFLICT_B);
         updateSeatContent(SWAP_TARGET);
 
-        /* Remove switching, add resolved */
         seatB.classList.remove("sw-switching");
         seatC.classList.remove("sw-switching");
         seatB.classList.add("resolved");
@@ -944,7 +844,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* -------------------------------------------------------
            STAGE 5 — RESOLVED / SYSTEM OPTIMAL
-           Final validation: zero conflicts.
            ------------------------------------------------------- */
         conflictsEl.textContent  = "00";
         systemStatus.textContent = "SYSTEM OPTIMAL";
@@ -965,7 +864,6 @@ document.addEventListener("DOMContentLoaded", () => {
         demoTitle.textContent    = "Intelligent Conflict Resolution";
         demoMessage.textContent  = "SEATWISE continuously checks seating constraints and resolves conflicts automatically.";
 
-        /* Rebuild the grid to its original deterministic state */
         createGrid();
     }
 
