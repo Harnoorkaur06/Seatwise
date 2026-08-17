@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Login — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-visual">
+    <div class="auth-visual-orb"></div>
+    <div class="brand-wrap">
+      <div class="brand-mark">S</div>
+      <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+    </div>
+    <div class="brand-tagline">University Seating Management & Administration Console</div>
+    
+    <div class="auth-feature-list">
+      <div class="auth-feature">
+        <div class="feature-icon">🛠</div>
+        <div class="feature-text">
+          <strong>Full Examination Control</strong>
+          Manage student rosters, lecture halls, time slots and execute automated seating generation.
+        </div>
+      </div>
+      <div class="auth-feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-text">
+          <strong>Real-Time Conflict Monitoring</strong>
+          Instantly detect adjacent same-subject violations with smart resolution suggestions.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-panel-inner">
+      <div class="auth-brand-name">
+        <div class="brand-mark" style="width:26px; height:26px; font-size:12px; border-radius:6px;">S</div>
+        ADMIN CONSOLE
+      </div>
+      <div class="auth-title">Administrator Login</div>
+      <div class="auth-subtitle">Restricted access — university administration only.</div>
+
+      <div class="admin-note">
+        🔑 <strong>Evaluation Demo Credentials:</strong><br/>
+        Username: <strong>admin</strong> &nbsp;·&nbsp; Password: <strong>seatwise@admin123</strong>
+      </div>
+
+      <div id="alert-box" class="auth-alert error"></div>
+
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label class="form-label" for="username">Admin Username</label>
+          <input class="form-input" type="text" id="username" placeholder="admin" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Admin Password</label>
+          <input class="form-input" type="password" id="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:10px;">Login as Administrator</button>
+      </form>
+
+      <div class="auth-footer-link">Not an admin? <a href="login.html">Student login portal</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // Clean form on open
+  document.getElementById("admin-login-form").reset();
+
+  document.getElementById("admin-login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const result = Auth.adminLogin({ username, password });
+    const alertBox = document.getElementById("alert-box");
+    if (!result.ok) {
+      alertBox.textContent = result.message;
+      alertBox.className = "auth-alert error show";
+      return;
+    }
+    alertBox.textContent = result.message;
+    alertBox.className = "auth-alert success show";
+    setTimeout(() => { window.location.href = "admin-dashboard.html"; }, 350);
+  });
+</script>
+</body>
+</html>
