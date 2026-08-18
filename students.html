@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Students — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Student Directory</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="stat-grid" style="grid-template-columns:repeat(5, 1fr); margin-bottom:20px;" id="subject-stats"></div>
+
+      <div class="table-container" style="min-height:calc(100vh - 240px);">
+        <div class="table-toolbar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔎</span>
+            <input class="form-input" id="search-input" placeholder="Search by roll number, student name or subject..." />
+          </div>
+          <div class="flex-gap">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('upload-modal')">⬆ Upload JSON Roster</button>
+            <button class="btn btn-primary btn-sm" onclick="resetForm(); openModal('student-modal')">+ Add Student</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Roll Number</th>
+                <th>Full Name</th>
+                <th>Subject Code</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="student-rows"></tbody>
+          </table>
+          <div id="empty-state" class="table-empty" style="display:none;">
+            <div class="empty-icon">🎓</div>
+            <div class="empty-title">No students found</div>
+            <div class="empty-desc">Add a student or upload a JSON roster to populate the list.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add/Edit Student Modal -->
+<div class="modal-overlay" id="student-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="student-modal-title">Add Student</h3>
+      <button class="modal-close" onclick="closeModal('student-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="student-form">
+        <input type="hidden" id="original-rollno" />
+        <div class="form-group">
+          <label class="form-label" for="student-rollno">Roll Number</label>
+          <input class="form-input" id="student-rollno" placeholder="e.g. 23CSE101" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="student-name">Full Name</label>
+          <input class="form-input" id="student-name" placeholder="e.g. Rahul Sharma" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="student-subject">Subject Code</label>
+          <input class="form-input" id="student-subject" placeholder="e.g. CS301" required />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('student-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-student-btn">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload JSON Modal -->
+<div class="modal-overlay" id="upload-modal">
+  <div class="modal-box modal-wide">
+    <div class="modal-header">
+      <h3>Upload Students (JSON)</h3>
+      <button class="modal-close" onclick="closeModal('upload-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-dim mb-14">Upload a JSON file or paste a JSON array of students. Expected format:</p>
+      <pre style="background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.14); padding:12px 14px; border-radius:8px; font-size:12px; overflow-x:auto; margin-bottom:14px; color:var(--ink);">[
+  { "rollNo": "23CSE101", "name": "Rahul", "subject": "CS301" },
+  { "rollNo": "23CSE102", "name": "Aman", "subject": "MA201" }
+]</pre>
+      <input type="file" id="json-file-input" accept=".json" class="form-input mb-14" />
+      <textarea id="json-text-input" class="form-textarea" rows="7" placeholder="Or paste JSON array content here..."></textarea>
+      <div id="upload-errors" class="mt-14" style="display:none;">
+        <div class="form-error-text" style="font-weight:700; margin-bottom:6px;">Validation issues:</div>
+        <ul id="upload-error-list" style="font-size:12px; color:var(--color-error); padding-left:18px; max-height:120px; overflow-y:auto;"></ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('upload-modal')">Cancel</button>
+      <button class="btn btn-primary" id="upload-confirm-btn">Import Students</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-message" class="text-dim text-sm"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+  let currentFilter = "";
+
+  function render() {
+    const students = Students.all();
+    const filtered = currentFilter ? Students.search(currentFilter) : students;
+
+    // Subject breakdown stat cards
+    const subjects = [...new Set(students.map((s) => s.subject))];
+    document.getElementById("subject-stats").innerHTML = `
+      <div class="stat-card tint-1">
+        <div class="stat-card-header"><span class="stat-label">Total Roster</span><div class="stat-icon-wrap">🎓</div></div>
+        <div class="stat-value">${students.length}</div>
+      </div>
+      ${subjects.slice(0, 4).map((sub, i) => `
+        <div class="stat-card tint-${i + 2}">
+          <div class="stat-card-header"><span class="stat-label">${escapeHTML(sub)}</span><div class="stat-icon-wrap" style="background:${subjectColor(sub)}22; color:${subjectColor(sub)};">📘</div></div>
+          <div class="stat-value">${students.filter((s) => s.subject === sub).length}</div>
+        </div>
+      `).join("")}
+    `;
+
+    document.getElementById("empty-state").style.display = filtered.length ? "none" : "block";
+    document.getElementById("student-rows").innerHTML = filtered.map((s) => `
+      <tr>
+        <td style="font-weight:700; color:var(--ink);">${escapeHTML(s.rollNo)}</td>
+        <td>${escapeHTML(s.name)}</td>
+        <td><span class="badge badge-primary" style="border-left: 4px solid ${subjectColor(s.subject)};">${escapeHTML(s.subject)}</span></td>
+        <td style="text-align:right;">
+          <div class="flex-gap" style="justify-content:flex-end;">
+            <button class="btn btn-outline btn-sm" onclick="editStudent('${escapeHTML(s.rollNo)}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteStudent('${escapeHTML(s.rollNo)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  function resetForm() {
+    document.getElementById("student-modal-title").textContent = "Add Student";
+    document.getElementById("student-form").reset();
+    document.getElementById("original-rollno").value = "";
+  }
+
+  function editStudent(rollNo) {
+    const student = Students.all().find((s) => s.rollNo === rollNo);
+    if (!student) return;
+    document.getElementById("student-modal-title").textContent = "Edit Student";
+    document.getElementById("original-rollno").value = rollNo;
+    document.getElementById("student-rollno").value = student.rollNo;
+    document.getElementById("student-name").value = student.name;
+    document.getElementById("student-subject").value = student.subject;
+    openModal("student-modal");
+  }
+
+  function deleteStudent(rollNo) {
+    confirmAction(`Delete student with roll number ${rollNo}?`, () => {
+      Students.remove(rollNo);
+      render();
+      showToast("Student deleted successfully.", "success");
+    });
+  }
+
+  document.getElementById("save-student-btn").addEventListener("click", () => {
+    const rollNo = document.getElementById("student-rollno").value.trim();
+    const name = document.getElementById("student-name").value.trim();
+    const subject = document.getElementById("student-subject").value.trim();
+    const original = document.getElementById("original-rollno").value;
+
+    if (!rollNo || !name || !subject) {
+      showToast("Please fill all required fields.", "error");
+      return;
+    }
+
+    if (original) {
+      Students.update(original, { rollNo, name, subject });
+      showToast("Student updated successfully.", "success");
+    } else {
+      const result = Students.add({ rollNo, name, subject });
+      if (!result.ok) {
+        showToast(result.message, "error");
+        return;
+      }
+      showToast("Student added successfully.", "success");
+    }
+    closeModal("student-modal");
+    render();
+  });
+
+  // Search Filter
+  document.getElementById("search-input").addEventListener("input", debounce((e) => {
+    currentFilter = e.target.value.trim();
+    render();
+  }, 250));
+
+  // JSON File upload handling
+  document.getElementById("json-file-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      document.getElementById("json-text-input").value = evt.target.result;
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("upload-confirm-btn").addEventListener("click", () => {
+    const raw = document.getElementById("json-text-input").value.trim();
+    const errBox = document.getElementById("upload-errors");
+    const errList = document.getElementById("upload-error-list");
+    errBox.style.display = "none";
+    errList.innerHTML = "";
+
+    const result = Students.importJSON(raw);
+    if (!result.ok) {
+      errBox.style.display = "block";
+      errList.innerHTML = result.errors ? result.errors.map((e) => `<li>${escapeHTML(e)}</li>`).join("") : `<li>${escapeHTML(result.message)}</li>`;
+      return;
+    }
+
+    showToast(`Successfully imported ${result.count} students.`, "success");
+    closeModal("upload-modal");
+    document.getElementById("json-text-input").value = "";
+    document.getElementById("json-file-input").value = "";
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
