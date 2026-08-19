@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Exams — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Student Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="user-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="my-exams.html"><span class="nav-icon">📘</span><span class="nav-label">My Exams</span></a>
+      <a href="my-seat.html"><span class="nav-icon">🎫</span><span class="nav-label">My Seat</span></a>
+      <a href="profile.html"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>My Scheduled Examinations</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Student</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="table-container" style="min-height:calc(100vh - 130px);">
+        <div class="table-toolbar">
+          <div style="font-weight:800; font-size:15px; color:var(--ink);">All Scheduled Examination Sessions</div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Exam Name</th>
+                <th>Semester</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="exam-rows"></tbody>
+          </table>
+          <div id="empty-state" class="table-empty" style="display:none;">
+            <div class="empty-icon">📘</div>
+            <div class="empty-title">No exams scheduled yet</div>
+            <div class="empty-desc">Check back later for university exam timetable updates.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireUser();
+
+  function render() {
+    const exams = Exams.all();
+    const tbody = document.getElementById("exam-rows");
+    if (exams.length === 0) {
+      document.getElementById("empty-state").style.display = "block";
+      tbody.innerHTML = "";
+      return;
+    }
+    document.getElementById("empty-state").style.display = "none";
+    tbody.innerHTML = exams.map((e) => `
+      <tr>
+        <td style="font-weight:700; color:var(--ink);">${escapeHTML(e.name)}</td>
+        <td>${escapeHTML(e.semester || "-")}</td>
+        <td>${formatDate(e.date)}</td>
+        <td>${formatTime(e.time)}</td>
+        <td>${escapeHTML(e.duration || "-")}</td>
+        <td><span class="badge badge-success">✓ Scheduled</span></td>
+      </tr>
+    `).join("");
+  }
+
+  render();
+</script>
+</body>
+</html>

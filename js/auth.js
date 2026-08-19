@@ -1,0 +1,108 @@
+/* ==========================================================================
+   auth.js — SEATWISE Authentication
+   ========================================================================== */
+
+const Auth = {
+  /** Sign up a new normal user. Returns {ok, message} */
+  signup({ name, email, password, confirmPassword }) {
+    if (!name || !email || !password || !confirmPassword) {
+      return { ok: false, message: "All fields are required." };
+    }
+    if (!isValidEmail(email)) {
+      return { ok: false, message: "Please enter a valid email address." };
+    }
+    if (password.length < 6) {
+      return { ok: false, message: "Password must be at least 6 characters." };
+    }
+    if (password !== confirmPassword) {
+      return { ok: false, message: "Passwords do not match." };
+    }
+
+    const users = STORAGE.getUsers();
+    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      return { ok: false, message: "An account with this email already exists." };
+    }
+
+    const newUser = {
+      id: generateId("user"),
+      name,
+      email,
+      password,
+      role: "user",
+      disabled: false,
+      rollNo: "",
+      createdAt: new Date().toISOString()
+    };
+    users.push(newUser);
+    STORAGE.setUsers(users);
+    STORAGE.logActivity(`New user registered: ${name}`);
+    return { ok: true, message: "Account created successfully." };
+  },
+
+  /** Log in a normal user. Returns {ok, message} */
+  login({ email, password }) {
+    const users = STORAGE.getUsers();
+    const user = users.find((u) => u.email.toLowerCase() === (email || "").toLowerCase());
+    if (!user) return { ok: false, message: "No account found with this email." };
+    if (user.disabled) return { ok: false, message: "This account has been disabled. Contact admin." };
+    if (user.password !== password) return { ok: false, message: "Incorrect password." };
+
+    STORAGE.setCurrentUser({ id: user.id, name: user.name, email: user.email, role: "user" });
+    STORAGE.logActivity(`${user.name} logged in`);
+    return { ok: true, message: "Login successful." };
+  },
+
+  /** Log in as admin using the centralized demo credential */
+  adminLogin({ username, password }) {
+    const validPassword = password === CONFIG.ADMIN_PASSWORD || password === CONFIG.ADMIN_ALT_PASSWORD || password === "admin123";
+    if (username === CONFIG.ADMIN_USERNAME && validPassword) {
+      STORAGE.setAdminSession(true);
+      STORAGE.setCurrentUser({ id: "admin", name: "Administrator", email: "admin@seatwise.local", role: "admin" });
+      STORAGE.logActivity("Administrator logged in");
+      return { ok: true, message: "Welcome back, Administrator." };
+    }
+    return { ok: false, message: "Invalid admin credentials." };
+  },
+
+  logout() {
+    const current = STORAGE.getCurrentUser();
+    if (current) STORAGE.logActivity(`${current.name} logged out`);
+    STORAGE.clearCurrentUser();
+    STORAGE.clearAdminSession();
+  },
+
+  currentUser() {
+    return STORAGE.getCurrentUser();
+  },
+
+  isLoggedIn() {
+    return !!STORAGE.getCurrentUser();
+  },
+
+  isAdmin() {
+    const user = STORAGE.getCurrentUser();
+    return !!user && user.role === "admin" && STORAGE.isAdminSession();
+  },
+
+  /** Call at the top of every user-only page */
+  requireUser() {
+    const user = STORAGE.getCurrentUser();
+    if (!user || user.role !== "user") {
+      window.location.href = "login.html";
+    }
+  },
+
+  /** Call at the top of every admin-only page */
+  requireAdmin() {
+    if (!Auth.isAdmin()) {
+      window.location.href = "admin-login.html";
+    }
+  },
+
+  /** Call on login/signup pages so already-logged-in visitors skip ahead */
+  redirectIfLoggedIn() {
+    const user = STORAGE.getCurrentUser();
+    if (user && user.role === "user") window.location.href = "user-dashboard.html";
+    if (user && user.role === "admin" && STORAGE.isAdminSession()) window.location.href = "admin-dashboard.html";
+  }
+};

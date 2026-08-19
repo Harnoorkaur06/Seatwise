@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <!-- Topbar -->
+    <header class="topbar">
+      <h1>Platform Command Center</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Administrator</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <!-- 1. Hero Greeting Banner -->
+      <section class="dashboard-hero">
+        <div>
+          <div class="hero-eyebrow"><span class="pulse-dot"></span> University Seating Management</div>
+          <h2 class="hero-title" id="admin-hero-title">Good Morning, <span>Administrator</span> 👋</h2>
+          <p class="hero-subtitle">Centralized console for student distribution, multi-room capacity scheduling, and automatic constraint satisfaction.</p>
+        </div>
+        <div class="hero-actions">
+          <a href="manage-exams.html" class="btn btn-secondary">+ Create Exam</a>
+          <a href="generate-seating.html" class="btn btn-primary">⚡ Generate Seating</a>
+        </div>
+      </section>
+
+      <!-- 2. Interactive 3D Tilt Statistics Cards -->
+      <section class="stat-grid">
+        <div class="stat-card tint-1 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">🎓</div>
+            <span class="stat-chip">Roster</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-students">0</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+        </div>
+
+        <div class="stat-card tint-2 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">🏫</div>
+            <span class="stat-chip">Halls</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-rooms">0</div>
+            <div class="stat-label">Configured Rooms</div>
+          </div>
+        </div>
+
+        <div class="stat-card tint-3 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">🪑</div>
+            <span class="stat-chip">Capacity</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-seats">0</div>
+            <div class="stat-label">Total Available Desks</div>
+          </div>
+        </div>
+
+        <div class="stat-card tint-4 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">📘</div>
+            <span class="stat-chip">Timetable</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-exams">0</div>
+            <div class="stat-label">Examinations</div>
+          </div>
+        </div>
+
+        <div class="stat-card tint-5 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">⚠</div>
+            <span class="stat-chip" id="chip-conflicts">Radar</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-conflicts">0</div>
+            <div class="stat-label">Detected Conflicts</div>
+          </div>
+        </div>
+
+        <div class="stat-card tint-6 tilt-card" data-tilt>
+          <div class="stat-top">
+            <div class="stat-icon-badge">📊</div>
+            <span class="stat-chip">Efficiency</span>
+          </div>
+          <div>
+            <div class="stat-value" id="stat-utilization">0%</div>
+            <div class="stat-label">Seat Utilization</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Live Seating Simulation Canvas Widget -->
+      <section class="admin-sim-card tilt-card" data-tilt>
+        <div class="sim-header-row">
+          <div>
+            <span class="hero-eyebrow" style="margin-bottom:2px;"><span class="pulse-dot"></span> Live Engine Visualizer</span>
+            <h3 style="font-size:16px; font-weight:800; margin:0; color:var(--ink);">Real-Time Seating Distribution Canvas</h3>
+          </div>
+          <div class="sim-room-tabs" id="sim-tabs">
+            <button class="sim-tab-btn active" onclick="switchSimRoom('LH-101')">LH-101 (50)</button>
+            <button class="sim-tab-btn" onclick="switchSimRoom('LH-102')">LH-102 (50)</button>
+            <button class="sim-tab-btn" onclick="switchSimRoom('LH-103')">LH-103 (50)</button>
+            <button class="sim-tab-btn" onclick="switchSimRoom('LH-104')">LH-104 (50)</button>
+            <button class="sim-tab-btn" onclick="switchSimRoom('LH-105')">LH-105 (50)</button>
+          </div>
+        </div>
+
+        <div class="sim-grid-canvas" id="sim-canvas">
+          <!-- 50 seat nodes rendered by JS -->
+        </div>
+
+        <div class="flex-between">
+          <div class="seat-legend" style="margin:0;">
+            <span><i class="legend-dot subject-one"></i> CS301</span>
+            <span><i class="legend-dot subject-two"></i> MA201</span>
+            <span><i class="legend-dot subject-three"></i> PH201</span>
+            <span><i class="legend-dot subject-four"></i> EC201</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="runSimWaveAnimation()">⚡ Replay Seating Cascade</button>
+        </div>
+
+        <div class="subject-distribution-bar">
+          <div class="sub-seg-cs" title="CS301: 25%"></div>
+          <div class="sub-seg-ma" title="MA201: 25%"></div>
+          <div class="sub-seg-ph" title="PH201: 25%"></div>
+          <div class="sub-seg-ec" title="EC201: 25%"></div>
+        </div>
+      </section>
+
+      <!-- 4. Quick Actions Hub (6 Cards with 3D Tilt) -->
+      <section class="quick-actions-section">
+        <div class="section-header-compact">
+          <h2>Quick Actions Hub</h2>
+          <a href="settings.html" class="text-sm text-dim" style="font-weight:700;">System Settings →</a>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a class="quick-action-card tilt-card" data-tilt href="manage-exams.html">
+            <div class="quick-action-icon">📘</div>
+            <div class="quick-action-title">Create Exam</div>
+            <div class="quick-action-desc">Add new examination timetables and slots.</div>
+          </a>
+
+          <a class="quick-action-card tilt-card" data-tilt href="generate-seating.html">
+            <div class="quick-action-icon">⚙</div>
+            <div class="quick-action-title">Generate Plan</div>
+            <div class="quick-action-desc">Run constraint-based automatic allocation.</div>
+          </a>
+
+          <a class="quick-action-card tilt-card" data-tilt href="students.html">
+            <div class="quick-action-icon">🎓</div>
+            <div class="quick-action-title">Manage Students</div>
+            <div class="quick-action-desc">Upload roster JSON & manage student database.</div>
+          </a>
+
+          <a class="quick-action-card tilt-card" data-tilt href="rooms.html">
+            <div class="quick-action-icon">🏫</div>
+            <div class="quick-action-title">Manage Rooms</div>
+            <div class="quick-action-desc">Configure rows, columns and capacities.</div>
+          </a>
+
+          <a class="quick-action-card tilt-card" data-tilt href="conflicts.html">
+            <div class="quick-action-icon">⚠</div>
+            <div class="quick-action-title">View Conflicts</div>
+            <div class="quick-action-desc">Inspect collisions & smart alternative seats.</div>
+          </a>
+
+          <a class="quick-action-card tilt-card" data-tilt href="seating-plan.html">
+            <div class="quick-action-icon">🗺</div>
+            <div class="quick-action-title">Seating Plans</div>
+            <div class="quick-action-desc">Interactive room grid & printable reports.</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- 5. Seating Status & Conflict Component -->
+      <div class="two-col mb-24">
+        <!-- Seating Status Card -->
+        <div class="seating-status-card tilt-card" data-tilt>
+          <div class="flex-between">
+            <div>
+              <div class="card-title" style="margin-bottom:2px;">Overall Seating Allocation</div>
+              <div class="text-sm text-dim" id="seating-status-subtitle">500 of 500 students assigned across 10 lecture halls</div>
+            </div>
+            <span class="badge badge-primary" id="seating-status-badge">100% Filled</span>
+          </div>
+
+          <div class="seating-progress-track">
+            <div class="seating-progress-bar" id="seating-progress-fill" style="width: 0%;"></div>
+          </div>
+
+          <div class="seat-hero-grid" style="margin-top:14px; grid-template-columns:repeat(3, 1fr);">
+            <div class="seat-hero-field">
+              <div class="field-label">Assigned</div>
+              <div class="field-value" id="status-assigned">500</div>
+            </div>
+            <div class="seat-hero-field">
+              <div class="field-label">Unassigned</div>
+              <div class="field-value" id="status-unassigned">0</div>
+            </div>
+            <div class="seat-hero-field">
+              <div class="field-label">Halls Used</div>
+              <div class="field-value" id="status-rooms-used">10 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conflict Status Banner -->
+        <div class="card tilt-card" data-tilt style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Adjacency & Conflict Radar</div>
+            <div id="conflict-status-container"></div>
+          </div>
+          <div class="flex-gap" style="justify-content:flex-end;">
+            <a href="conflicts.html" class="btn btn-outline btn-sm">Inspect Conflict Matrix →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Bottom Grid: Recent Exams & Live Activity Feed -->
+      <div class="content-grid">
+        <!-- Recent Examinations -->
+        <div class="card tilt-card" data-tilt>
+          <div class="flex-between mb-14">
+            <div class="card-title" style="margin:0;">Upcoming Examinations</div>
+            <a href="manage-exams.html" class="btn btn-outline btn-sm">View All Timetables</a>
+          </div>
+          <div id="recent-exams-box"></div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="card tilt-card" data-tilt>
+          <div class="card-title mb-14">Live Activity Stream</div>
+          <div class="activity-list" id="activity-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+
+  let activeSimRoom = "LH-101";
+
+  function renderAdminDashboard() {
+    const stats = Dashboard.adminStats();
+
+    // Dynamic greeting
+    const greeting = Dashboard.getGreeting();
+    document.getElementById("admin-hero-title").innerHTML = `${greeting}, <span>Administrator</span> 👋`;
+
+    // Animated counts
+    Dashboard.animateCount(document.getElementById("stat-students"), stats.totalStudents);
+    Dashboard.animateCount(document.getElementById("stat-rooms"), stats.totalRooms);
+    Dashboard.animateCount(document.getElementById("stat-seats"), stats.totalSeats);
+    Dashboard.animateCount(document.getElementById("stat-exams"), stats.totalExams);
+    Dashboard.animateCount(document.getElementById("stat-conflicts"), stats.conflicts);
+    Dashboard.animateCount(document.getElementById("stat-utilization"), stats.utilization, 1100, true, "%");
+
+    // Progress Bar
+    const progressFill = document.getElementById("seating-progress-fill");
+    setTimeout(() => {
+      progressFill.style.width = `${Math.min(stats.utilization, 100)}%`;
+    }, 150);
+
+    document.getElementById("status-assigned").textContent = stats.assignedStudents;
+    document.getElementById("status-unassigned").textContent = stats.unassigned;
+    document.getElementById("status-rooms-used").textContent = `${stats.roomsUsed} / ${stats.totalRooms}`;
+    document.getElementById("seating-status-badge").textContent = `${stats.utilization}% Filled`;
+    document.getElementById("seating-status-subtitle").textContent = `${stats.assignedStudents} of ${stats.totalStudents} students placed across ${stats.roomsUsed} halls`;
+
+    // Conflict Status Banner
+    const conflictBox = document.getElementById("conflict-status-container");
+    if (stats.conflicts === 0) {
+      conflictBox.innerHTML = `
+        <div class="conflict-status-banner success">
+          <div class="conflict-status-left">
+            <div class="conflict-status-icon">✓</div>
+            <div>
+              <strong style="font-size:14px; display:block;">100% Conflict-Free Seating</strong>
+              <span style="font-size:12px; opacity:0.9;">All adjacent seating constraints across left, right, front, and back are satisfied.</span>
+            </div>
+          </div>
+          <span class="badge badge-success">Optimal</span>
+        </div>
+      `;
+    } else {
+      conflictBox.innerHTML = `
+        <div class="conflict-status-banner warning">
+          <div class="conflict-status-left">
+            <div class="conflict-status-icon">!</div>
+            <div>
+              <strong style="font-size:14px; display:block;">${stats.conflicts} Adjacency Conflict(s) Detected</strong>
+              <span style="font-size:12px; opacity:0.9;">Same-subject candidates are seated beside each other. Auto-resolve recommended.</span>
+            </div>
+          </div>
+          <a href="conflicts.html" class="btn btn-danger btn-sm">Resolve Now</a>
+        </div>
+      `;
+    }
+
+    // Recent Exams Table
+    const exams = Exams.all().slice(0, 4);
+    const examsBox = document.getElementById("recent-exams-box");
+    if (exams.length === 0) {
+      examsBox.innerHTML = `<p class="text-dim text-sm">No scheduled examinations found.</p>`;
+    } else {
+      examsBox.innerHTML = `
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Exam Name</th>
+                <th>Semester</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${exams.map((e) => `
+                <tr>
+                  <td style="font-weight:700; color:var(--ink);">${escapeHTML(e.name)}</td>
+                  <td>${escapeHTML(e.semester || "-")}</td>
+                  <td>${formatDate(e.date)} · ${formatTime(e.time)}</td>
+                  <td><span class="badge badge-success">✓ Scheduled</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // Activity stream
+    const activities = Dashboard.recentActivity(6);
+    const activityList = document.getElementById("activity-list");
+    if (activities.length === 0) {
+      activityList.innerHTML = `<p class="text-dim text-sm">No recent activity logged.</p>`;
+    } else {
+      activityList.innerHTML = activities.map((a) => `
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-text">${escapeHTML(a.text)}</div>
+          <div class="activity-time">${new Date(a.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      `).join("");
+    }
+
+    // Render Mini Simulation Canvas
+    renderSimCanvas();
+
+    // Init 3D Tilt Physics
+    Dashboard.init3DTilt();
+  }
+
+  function renderSimCanvas() {
+    const canvas = document.getElementById("sim-canvas");
+    const subjects = ["CS301", "MA201", "PH201", "EC201"];
+    const colors = ["#c99ad8", "#b76dcd", "#9436b3", "#6f2c7d"];
+
+    let html = "";
+    for (let i = 1; i <= 50; i++) {
+      const subjIndex = (i + activeSimRoom.charCodeAt(activeSimRoom.length - 1)) % subjects.length;
+      const subj = subjects[subjIndex];
+      const color = colors[subjIndex];
+      const row = String.fromCharCode(65 + Math.floor((i - 1) / 10));
+      const col = ((i - 1) % 10) + 1;
+
+      html += `
+        <div class="sim-seat-node" id="sim-node-${i}" style="background:${color};" title="Desk ${row}${col} (${subj})">
+          ${row}${col}
+        </div>
+      `;
+    }
+    canvas.innerHTML = html;
+  }
+
+  function switchSimRoom(roomName) {
+    activeSimRoom = roomName;
+    document.querySelectorAll(".sim-tab-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.textContent.includes(roomName));
+    });
+    runSimWaveAnimation();
+  }
+
+  function runSimWaveAnimation() {
+    renderSimCanvas();
+    const nodes = document.querySelectorAll(".sim-seat-node");
+    nodes.forEach((node, idx) => {
+      node.style.transform = "scale(0.3)";
+      node.style.opacity = "0";
+      setTimeout(() => {
+        node.style.transition = "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s";
+        node.style.transform = "scale(1)";
+        node.style.opacity = "1";
+      }, idx * 14);
+    });
+  }
+
+  renderAdminDashboard();
+</script>
+</body>
+</html>

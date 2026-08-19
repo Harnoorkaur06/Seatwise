@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Student Login — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-visual">
+    <div class="auth-visual-orb"></div>
+    <div class="brand-wrap">
+      <div class="brand-mark">S</div>
+      <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+    </div>
+    <div class="brand-tagline">Smart Examination Seating & Conflict Resolution Platform</div>
+    
+    <div class="auth-feature-list">
+      <div class="auth-feature">
+        <div class="feature-icon">🎫</div>
+        <div class="feature-text">
+          <strong>Instant Seat Identification</strong>
+          View your assigned examination room, row, seat number, subject, and session timings.
+        </div>
+      </div>
+      <div class="auth-feature">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-text">
+          <strong>Secure Role-Based Access</strong>
+          Students securely inspect their own exam schedule and print their seat passes.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-panel-inner">
+      <div class="auth-brand-name">
+        <div class="brand-mark" style="width:26px; height:26px; font-size:12px; border-radius:6px;">S</div>
+        STUDENT PORTAL
+      </div>
+      <div class="auth-title">Student Sign In</div>
+      <div class="auth-subtitle">Sign in to view your examination seating details.</div>
+
+      <div id="alert-box" class="auth-alert error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Student Email</label>
+          <input class="form-input" type="email" id="email" placeholder="e.g. rahul@student.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:10px;">Sign In</button>
+      </form>
+
+      <div class="auth-footer-link">Don't have an account? <a href="signup.html">Create Account</a></div>
+      <div class="auth-footer-link">Are you an administrator? <a href="admin-login.html">Admin Login</a></div>
+      
+      <div class="auth-footer-link" style="margin-top:24px; padding:10px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:12px;">
+        Demo Student: <strong>rahul@student.com</strong> / <strong>student123</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // Clean form on open
+  document.getElementById("login-form").reset();
+
+  document.getElementById("login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const result = Auth.login({ email, password });
+    const alertBox = document.getElementById("alert-box");
+    if (!result.ok) {
+      alertBox.textContent = result.message;
+      alertBox.className = "auth-alert error show";
+      return;
+    }
+    alertBox.textContent = result.message;
+    alertBox.className = "auth-alert success show";
+    setTimeout(() => { window.location.href = "user-dashboard.html"; }, 350);
+  });
+</script>
+</body>
+</html>

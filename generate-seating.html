@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Generate Seating — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/seating.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Seating Plan Generator</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="two-col mb-20">
+        <div class="card">
+          <div class="card-title">Exam & Capacity Overview</div>
+          <div class="seat-hero-grid" style="grid-template-columns:1fr 1fr; margin-top:0;" id="overview-box"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Enforced Seating Constraints</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Same subject students never seated adjacent</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Adjacency check across Left, Right, Front and Back</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Automated overflow balancing across lecture halls</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Real-time collision detection & smart fallback swap</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex-between mb-14">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;">Generation Engine</div>
+            <div class="card-subtitle" style="margin-bottom:0;">Automated multi-room seating allocation algorithm</div>
+          </div>
+          <div id="gen-badge-holder"></div>
+        </div>
+
+        <!-- VISUAL 5-STEP STEPPER -->
+        <div class="generation-steps-container" id="steps-container">
+          <div class="gen-step-item" id="step-1"><div class="gen-step-num">1</div><span>Analyze Students</span></div>
+          <div class="gen-step-item" id="step-2"><div class="gen-step-num">2</div><span>Check Rooms</span></div>
+          <div class="gen-step-item" id="step-3"><div class="gen-step-num">3</div><span>Apply Constraints</span></div>
+          <div class="gen-step-item" id="step-4"><div class="gen-step-num">4</div><span>Generate Seating</span></div>
+          <div class="gen-step-item" id="step-5"><div class="gen-step-num">5</div><span>Validate Plan</span></div>
+        </div>
+
+        <div class="flex-gap mb-14">
+          <button class="btn btn-primary btn-lg" id="generate-btn">▶ Generate Seating Plan</button>
+          <button class="btn btn-outline" id="regenerate-btn" style="display:none;">↻ Regenerate Seating</button>
+          <a href="seating-plan.html" class="btn btn-secondary" id="view-plan-btn" style="display:none;">View Seating Plan →</a>
+        </div>
+
+        <div class="generation-console" id="console" style="display:none;"></div>
+
+        <div id="result-box" class="mt-20"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+
+  function renderOverview() {
+    const students = Students.all();
+    const rooms = Rooms.all();
+    const exam = Exams.activeExam();
+    const capacity = Rooms.totalCapacity();
+    document.getElementById("overview-box").innerHTML = `
+      <div class="seat-hero-field"><div class="field-label">Active Exam</div><div class="field-value">${exam ? escapeHTML(exam.name) : "No active exam"}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Total Students</div><div class="field-value">${students.length}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Available Seats</div><div class="field-value">${capacity} seats</div></div>
+      <div class="seat-hero-field"><div class="field-label">Available Rooms</div><div class="field-value">${rooms.length} rooms</div></div>
+    `;
+  }
+
+  function renderGenBadge() {
+    const plan = Seating.getCurrentPlan();
+    document.getElementById("gen-badge-holder").innerHTML = plan ? `<span class="gen-badge">Generation #${plan.generation} Active</span>` : "";
+    document.getElementById("regenerate-btn").style.display = plan ? "inline-flex" : "none";
+    document.getElementById("view-plan-btn").style.display = plan ? "inline-flex" : "none";
+    if (plan) renderResult(plan);
+  }
+
+  function resetSteps() {
+    for (let i = 1; i <= 5; i++) {
+      const step = document.getElementById(`step-${i}`);
+      if (step) step.className = "gen-step-item";
+    }
+  }
+
+  function setStep(stepNum, status) {
+    const step = document.getElementById(`step-${stepNum}`);
+    if (step) {
+      step.className = `gen-step-item ${status}`;
+    }
+  }
+
+  function typeConsoleLines(lines, onDone) {
+    const consoleBox = document.getElementById("console");
+    consoleBox.style.display = "block";
+    consoleBox.innerHTML = "";
+    resetSteps();
+
+    let i = 0;
+    function next() {
+      if (i >= lines.length) {
+        onDone();
+        return;
+      }
+      const lineData = lines[i];
+      if (lineData.step) {
+        if (lineData.step > 1) setStep(lineData.step - 1, "completed");
+        setStep(lineData.step, "active");
+      }
+
+      const line = document.createElement("div");
+      line.className = "console-line";
+      line.textContent = lineData.text;
+      consoleBox.appendChild(line);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+      i++;
+      setTimeout(next, 380);
+    }
+    next();
+  }
+
+  function runGeneration(isRegenerate) {
+    const students = Students.all();
+    const rooms = Rooms.all();
+    if (students.length === 0) {
+      showToast("Please add students before generating seating.", "warning");
+      return;
+    }
+    if (rooms.length === 0) {
+      showToast("Please add at least one room before generating seating.", "warning");
+      return;
+    }
+
+    document.getElementById("generate-btn").disabled = true;
+    document.getElementById("regenerate-btn").disabled = true;
+    document.getElementById("result-box").innerHTML = "";
+
+    const lines = [
+      { text: "Analyzing student records...", step: 1 },
+      { text: `Loaded ${students.length} students across ${new Set(students.map(s => s.subject)).size} distinct subject codes.`, step: 1 },
+      { text: "Inspecting examination hall capacities...", step: 2 },
+      { text: `${rooms.length} room(s) available with total capacity of ${Rooms.totalCapacity()} seats.`, step: 2 },
+      { text: "Executing constraint-based adjacency verification...", step: 3 },
+      { text: "Verifying left / right / front / back neighbor rules.", step: 3 },
+      { text: "Assigning students and balancing room overflows...", step: 4 },
+      { text: "Validating seating plan integrity & zero-conflict checks...", step: 5 }
+    ];
+
+    typeConsoleLines(lines, () => {
+      const plan = isRegenerate ? Seating.regenerate() : Seating.generateNew();
+      setStep(5, "completed");
+
+      const resultLine = document.createElement("div");
+      resultLine.className = "console-line result-line";
+      resultLine.textContent = plan.stats.totalConflicts === 0
+        ? "✓ Seating successfully generated with 100% constraint satisfaction & zero conflicts."
+        : `✓ Seating generated — ${plan.stats.totalConflicts} conflict(s) detected. View conflicts for resolution.`;
+      document.getElementById("console").appendChild(resultLine);
+
+      renderResult(plan);
+      renderGenBadge();
+      document.getElementById("generate-btn").disabled = false;
+      document.getElementById("regenerate-btn").disabled = false;
+      showToast("Seating generation complete.", "success");
+    });
+  }
+
+  function renderResult(plan) {
+    document.getElementById("result-box").innerHTML = `
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:20px;">
+        <div class="stat-card ${plan.stats.totalConflicts === 0 ? 'accent-success' : 'accent-error'}">
+          <div class="stat-card-header"><span class="stat-label">Conflicts</span><div class="stat-icon-wrap">${plan.stats.totalConflicts === 0 ? '✓' : '⚠'}</div></div>
+          <div class="stat-value">${plan.stats.totalConflicts}</div>
+        </div>
+        <div class="stat-card ${plan.stats.unassignedCount === 0 ? 'accent-success' : 'accent-warning'}">
+          <div class="stat-card-header"><span class="stat-label">Unassigned</span><div class="stat-icon-wrap">🎓</div></div>
+          <div class="stat-value">${plan.stats.unassignedCount}</div>
+        </div>
+        <div class="stat-card tint-3">
+          <div class="stat-card-header"><span class="stat-label">Rooms Used</span><div class="stat-icon-wrap">🏫</div></div>
+          <div class="stat-value">${plan.stats.roomsUsed}</div>
+        </div>
+        <div class="stat-card accent-primary">
+          <div class="stat-card-header"><span class="stat-label">Plan Validity</span><div class="stat-icon-wrap">📈</div></div>
+          <div class="stat-value">${plan.stats.validityPercentage}%</div>
+        </div>
+      </div>
+
+      <div style="background:#ffffff; border:1px solid var(--line); border-radius:var(--radius-md); padding:18px;">
+        <div class="card-title" style="margin-bottom:10px;">Room Occupancy Breakdown</div>
+        <div class="flex-gap" style="flex-wrap:wrap;">
+          ${plan.rooms.map((r) => `
+            <div style="padding:10px 14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:13px; font-weight:700; color:var(--ink);">
+              <span style="color:var(--purple-4);">${escapeHTML(r.roomNumber)}</span>: ${r.occupied} / ${r.capacity} occupied (${Math.round((r.occupied / r.capacity) * 100)}%)
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById("generate-btn").addEventListener("click", () => runGeneration(false));
+  document.getElementById("regenerate-btn").addEventListener("click", () => runGeneration(true));
+
+  renderOverview();
+  renderGenBadge();
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Seat — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/seating.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Student Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="user-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="my-exams.html"><span class="nav-icon">📘</span><span class="nav-label">My Exams</span></a>
+      <a href="my-seat.html"><span class="nav-icon">🎫</span><span class="nav-label">My Seat</span></a>
+      <a href="profile.html"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>My Examination Seat Card</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Student</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div id="seat-content" style="max-width:580px; margin:20px auto;"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireUser();
+
+  function render() {
+    const user = Auth.currentUser();
+    const seat = Dashboard.seatForUser(user);
+    const exam = Exams.activeExam();
+    const container = document.getElementById("seat-content");
+
+    if (!seat) {
+      container.innerHTML = `
+        <div class="empty-state card">
+          <div class="empty-icon">🎫</div>
+          <div class="empty-title">Seat not assigned yet</div>
+          <div class="empty-desc">Either the administrator hasn't generated the seating plan yet, or your roll number isn't linked to your profile. Check your Profile page to link your roll number.</div>
+          <a href="profile.html" class="btn btn-primary mt-14" style="display:inline-flex;">Go to Profile</a>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="seat-card-hero">
+        <div class="flex-between">
+          <div>
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple-4);">OFFICIAL SEATING PASS</div>
+            <div style="font-size:20px; font-weight:900; margin-top:4px; color:var(--ink);">${exam ? escapeHTML(exam.name) : "University Examination"}</div>
+          </div>
+          <div class="seat-big-badge">${escapeHTML(seat.seat)}</div>
+        </div>
+
+        <div class="seat-hero-grid" style="grid-template-columns:1fr 1fr; margin-top:20px;">
+          <div class="seat-hero-field"><div class="field-label">Date</div><div class="field-value">${exam ? formatDate(exam.date) : "-"}</div></div>
+          <div class="seat-hero-field"><div class="field-label">Time</div><div class="field-value">${exam ? formatTime(exam.time) : "-"}</div></div>
+          <div class="seat-hero-field"><div class="field-label">Assigned Hall</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(seat.roomNumber)}</div></div>
+          <div class="seat-hero-field"><div class="field-label">Allocated Seat</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(seat.seat)}</div></div>
+          <div class="seat-hero-field"><div class="field-label">Student Roll No.</div><div class="field-value">${escapeHTML(seat.rollNo)}</div></div>
+          <div class="seat-hero-field"><div class="field-label">Subject Code</div><div class="field-value">${escapeHTML(seat.subject)}</div></div>
+        </div>
+
+        <div style="margin-top:20px; padding:14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:12px; color:var(--muted); line-height:1.5;">
+          📌 <strong>Exam Hall Instructions:</strong> Please arrive at least 15 minutes before the scheduled time. Carry your university student ID card. Maintain proper silence in the examination room.
+        </div>
+
+        <button class="btn btn-secondary btn-block mt-20 no-print" onclick="window.print()">🖨 Print Seat Pass</button>
+      </div>
+    `;
+  }
+
+  render();
+</script>
+</body>
+</html>

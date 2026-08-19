@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manage Users — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>User Accounts Management</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="table-container" style="min-height:calc(100vh - 130px);">
+        <div class="table-toolbar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔎</span>
+            <input class="form-input" id="search-input" placeholder="Search by student name or email..." />
+          </div>
+          <button class="btn btn-primary" onclick="openModal('user-modal')">+ Add User Account</button>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Linked Roll No.</th>
+                <th>Account Status</th>
+                <th>Registration Date</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="user-rows"></tbody>
+          </table>
+          <div id="empty-state" class="table-empty" style="display:none;">
+            <div class="empty-icon">👥</div>
+            <div class="empty-title">No user accounts found</div>
+            <div class="empty-desc">Create student portal accounts or allow them to sign up.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="user-modal-title">Add User Account</h3>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="user-form">
+        <input type="hidden" id="user-id" />
+        <div class="form-group">
+          <label class="form-label" for="user-name">Full Name</label>
+          <input class="form-input" id="user-name" placeholder="e.g. Rahul Sharma" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="user-email">Email Address</label>
+          <input class="form-input" type="email" id="user-email" placeholder="e.g. rahul@student.com" required />
+        </div>
+        <div class="form-group" id="password-group">
+          <label class="form-label" for="user-password">Password</label>
+          <input class="form-input" type="password" id="user-password" placeholder="••••••••" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="user-rollno">Linked Roll Number (Optional)</label>
+          <input class="form-input" id="user-rollno" placeholder="e.g. 23CSE101" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('user-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-user-btn">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-message" class="text-dim text-sm"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/users.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+  let editingId = null;
+  let currentFilter = "";
+
+  function render() {
+    const users = Users.all();
+    const filtered = currentFilter
+      ? users.filter((u) => u.name.toLowerCase().includes(currentFilter.toLowerCase()) || u.email.toLowerCase().includes(currentFilter.toLowerCase()))
+      : users;
+
+    document.getElementById("empty-state").style.display = filtered.length ? "none" : "block";
+    document.getElementById("user-rows").innerHTML = filtered.map((u) => `
+      <tr>
+        <td style="font-weight:700; color:var(--ink);">${escapeHTML(u.name)}</td>
+        <td>${escapeHTML(u.email)}</td>
+        <td>${u.rollNo ? `<span class="badge badge-primary">${escapeHTML(u.rollNo)}</span>` : '<span class="text-faint">Unlinked</span>'}</td>
+        <td>
+          <span class="badge ${u.disabled ? 'badge-error' : 'badge-success'}">
+            ${u.disabled ? 'Disabled' : 'Active'}
+          </span>
+        </td>
+        <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+        <td style="text-align:right;">
+          <div class="flex-gap" style="justify-content:flex-end;">
+            <button class="btn btn-outline btn-sm" onclick="editUser('${u.id}')">Edit</button>
+            <button class="btn btn-outline btn-sm" onclick="toggleUser('${u.id}', ${!u.disabled})">${u.disabled ? 'Enable' : 'Disable'}</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}', '${escapeHTML(u.name)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  function resetForm() {
+    editingId = null;
+    document.getElementById("user-modal-title").textContent = "Add User Account";
+    document.getElementById("user-form").reset();
+    document.getElementById("password-group").style.display = "block";
+  }
+
+  function editUser(id) {
+    const user = Users.all().find((u) => u.id === id);
+    if (!user) return;
+    editingId = id;
+    document.getElementById("user-modal-title").textContent = "Edit User Account";
+    document.getElementById("user-name").value = user.name;
+    document.getElementById("user-email").value = user.email;
+    document.getElementById("user-rollno").value = user.rollNo || "";
+    document.getElementById("password-group").style.display = "none";
+    openModal("user-modal");
+  }
+
+  function toggleUser(id, disabled) {
+    Users.toggleStatus(id, disabled);
+    showToast(disabled ? "User disabled." : "User enabled.", "info");
+    render();
+  }
+
+  function deleteUser(id, name) {
+    confirmAction(`Delete user account "${name}"?`, () => {
+      Users.remove(id);
+      render();
+      showToast("User account deleted.", "success");
+    });
+  }
+
+  document.getElementById("save-user-btn").addEventListener("click", () => {
+    const name = document.getElementById("user-name").value.trim();
+    const email = document.getElementById("user-email").value.trim();
+    const password = document.getElementById("user-password").value;
+    const rollNo = document.getElementById("user-rollno").value.trim();
+
+    if (!name || !email) {
+      showToast("Please enter name and email.", "error");
+      return;
+    }
+
+    if (editingId) {
+      Users.update(editingId, { name, email, rollNo });
+      showToast("User account updated.", "success");
+    } else {
+      if (!password || password.length < 6) {
+        showToast("Password must be at least 6 characters.", "error");
+        return;
+      }
+      const result = Users.create({ name, email, password, rollNo });
+      if (!result.ok) {
+        showToast(result.message, "error");
+        return;
+      }
+      showToast("User account created.", "success");
+    }
+    closeModal("user-modal");
+    render();
+  });
+
+  document.getElementById("search-input").addEventListener("input", debounce((e) => {
+    currentFilter = e.target.value.trim();
+    render();
+  }, 250));
+
+  render();
+</script>
+</body>
+</html>
