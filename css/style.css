@@ -80,9 +80,9 @@ body.dark-theme {
   --bg-card: #171224;
   --bg-card-subtle: linear-gradient(180deg, #171224 0%, #1e182e 100%);
   --ink: #f5f0fb;
-  --muted: #a79ab7;
-  --muted-light: #857797;
-  --muted-dark: #635575;
+  --muted: #c4b8d1;
+  --muted-light: #d8cde2;
+  --muted-dark: #a99ab9;
   --line: rgba(255, 255, 255, 0.08);
   --line-purple: rgba(216, 165, 232, 0.2);
   --line-focus: rgba(216, 165, 232, 0.4);
@@ -1343,4 +1343,120 @@ tbody tr:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ==========================================================================
+   SETTINGS — DARK MODE VISUAL REFINEMENT
+   ========================================================================== */
+
+html[data-theme="dark"] .settings-section-desc,
+body.dark-theme .settings-section-desc {
+  color: #c9bfd4 !important;
+}
+
+html[data-theme="dark"] .settings-tab-item,
+body.dark-theme .settings-tab-item {
+  color: #d8d0e1 !important;
+}
+
+html[data-theme="dark"] .settings-tab-item:hover,
+body.dark-theme .settings-tab-item:hover {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .settings-tab-group-label,
+body.dark-theme .settings-tab-group-label {
+  color: #aaa0b8 !important;
+}
+
+html[data-theme="dark"] .settings-section-title,
+body.dark-theme .settings-section-title {
+  color: #f7f3fb !important;
+}
+
+html[data-theme="dark"] .settings-section-body,
+body.dark-theme .settings-section-body {
+  color: #d1c8db !important;
+}
+
+html[data-theme="dark"] .hero-subtitle,
+body.dark-theme .hero-subtitle {
+  color: #c7bdd2 !important;
+}
+
+html[data-theme="dark"] .settings-section input,
+html[data-theme="dark"] .settings-section select,
+html[data-theme="dark"] .settings-section textarea,
+body.dark-theme .settings-section input,
+body.dark-theme .settings-section select,
+body.dark-theme .settings-section textarea {
+  color: #f5f1f9 !important;
+  background: #111020 !important;
+}
+
+html[data-theme="dark"] .settings-section label,
+body.dark-theme .settings-section label {
+  color: #ded6e6 !important;
+}
+
+/* Settings cards */
+html[data-theme="dark"] .settings-section,
+body.dark-theme .settings-section {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(31, 24, 53, 0.96),
+      rgba(18, 16, 35, 0.98)
+    ) !important;
+  border-color: rgba(181, 128, 224, 0.18) !important;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+/* Main settings hero */
+html[data-theme="dark"] .settings-hero,
+body.dark-theme .settings-hero {
+  background:
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(154, 59, 185, 0.28),
+      transparent 42%
+    ),
+    linear-gradient(
+      135deg,
+      #1c1730 0%,
+      #251936 55%,
+      #30203f 100%
+    ) !important;
+}
+
+/* Toast notifications */
+html[data-theme="dark"] .toast,
+body.dark-theme .toast {
+  background: rgba(20, 17, 35, 0.97) !important;
+  color: #f4eff9 !important;
+  border: 1px solid rgba(181, 128, 224, 0.25) !important;
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(154, 59, 185, 0.08) !important;
+}
+
+html[data-theme="dark"] .toast *,
+body.dark-theme .toast * {
+  color: inherit !important;
+}
+
+/* Small secondary text */
+html[data-theme="dark"] small,
+html[data-theme="dark"] .text-muted,
+body.dark-theme small,
+body.dark-theme .text-muted {
+  color: #aaa0b8 !important;
+}
+
+/* Better dark-mode dividers */
+html[data-theme="dark"] .settings-tab-divider,
+body.dark-theme .settings-tab-divider {
+  background: rgba(255, 255, 255, 0.09) !important;
 }
