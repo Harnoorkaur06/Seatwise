@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Student Dashboard — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Student Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="user-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="my-exams.html"><span class="nav-icon">📘</span><span class="nav-label">My Exams</span></a>
+      <a href="my-seat.html"><span class="nav-icon">🎫</span><span class="nav-label">My Seat</span></a>
+      <a href="profile.html"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Student Workspace</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Student</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Dynamic Student Hero -->
+      <section class="dashboard-hero">
+        <div>
+          <div class="hero-eyebrow"><span class="pulse-dot"></span> Verified Candidate Portal</div>
+          <h2 class="hero-title" id="greeting-title">Welcome back, <span data-current-user-name>Student</span> 👋</h2>
+          <p class="hero-subtitle">Your allocated examination desk, venue directions, and timetable verification are synchronized below.</p>
+        </div>
+        <div class="hero-actions">
+          <a href="my-seat.html" class="btn btn-primary">🎫 Full Seat Pass →</a>
+        </div>
+      </section>
+
+      <!-- Live Exam Countdown HUD -->
+      <section class="exam-countdown-hud" id="countdown-section">
+        <div class="countdown-inner">
+          <div class="countdown-copy">
+            <small><span class="pulse-dot"></span> Upcoming Paper Countdown</small>
+            <h3 id="countdown-exam-name">Mid Semester Examination</h3>
+            <p id="countdown-exam-meta">25 August 2026 · Morning Session (10:00 AM)</p>
+          </div>
+          <div class="countdown-timer-wrap" id="countdown-timer-hud">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Two-Column Interactive Hub -->
+      <div class="two-col mb-24">
+        <!-- 3D Holographic Boarding Pass -->
+        <div class="hologram-ticket-card tilt-card" data-tilt id="ticket-container">
+          <div class="ticket-hologram-foil"></div>
+          <div class="ticket-header-row">
+            <div>
+              <div class="ticket-brand">SEATWISE OFFICIAL PASS</div>
+              <div class="ticket-pass-title" id="ticket-exam-title">Mid Semester Exam</div>
+            </div>
+            <div class="ticket-seat-spotlight">
+              <small>SEAT</small>
+              <strong id="ticket-seat-badge">A1</strong>
+            </div>
+          </div>
+
+          <div class="ticket-details-matrix">
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Candidate</span>
+              <span class="ticket-matrix-val" data-current-user-name>Rahul</span>
+            </div>
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Roll Number</span>
+              <span class="ticket-matrix-val" id="ticket-rollno">23CSE101</span>
+            </div>
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Subject Code</span>
+              <span class="ticket-matrix-val" id="ticket-subject" style="color:var(--purple-4);">CS301</span>
+            </div>
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Assigned Hall</span>
+              <span class="ticket-matrix-val" id="ticket-hall">LH-101</span>
+            </div>
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Desk Row/Col</span>
+              <span class="ticket-matrix-val" id="ticket-rowcol">Row A · Desk 1</span>
+            </div>
+            <div class="ticket-matrix-item">
+              <span class="ticket-matrix-label">Reporting</span>
+              <span class="ticket-matrix-val" style="color:#10b981;">09:45 AM</span>
+            </div>
+          </div>
+
+          <div class="ticket-barcode-strip">
+            <div class="barcode-sim">
+              <span class="barcode-bar" style="width:3px;"></span>
+              <span class="barcode-bar" style="width:1px;"></span>
+              <span class="barcode-bar" style="width:4px;"></span>
+              <span class="barcode-bar" style="width:2px;"></span>
+              <span class="barcode-bar" style="width:1px;"></span>
+              <span class="barcode-bar" style="width:5px;"></span>
+              <span class="barcode-bar" style="width:2px;"></span>
+              <span class="barcode-bar" style="width:3px;"></span>
+              <span class="barcode-bar" style="width:1px;"></span>
+              <span class="barcode-bar" style="width:4px;"></span>
+              <span class="barcode-bar" style="width:2px;"></span>
+              <span class="barcode-bar" style="width:3px;"></span>
+              <span class="barcode-bar" style="width:1px;"></span>
+              <span class="barcode-bar" style="width:5px;"></span>
+            </div>
+            <a href="my-seat.html" class="btn btn-outline btn-sm">🖨 Print Official Pass</a>
+          </div>
+        </div>
+
+        <!-- Live Classroom Seating Radar -->
+        <div class="classroom-radar-card tilt-card" data-tilt>
+          <div class="radar-header">
+            <div>
+              <span class="hero-eyebrow" style="margin-bottom:2px;"><span class="pulse-dot"></span> Live Classroom Radar</span>
+              <h3 style="font-size:16px; font-weight:800; margin:0; color:var(--ink);">Your Desk In Exam Hall</h3>
+            </div>
+            <span class="badge badge-success" style="font-size:11px;">✓ Zero Conflicts</span>
+          </div>
+
+          <div id="classroom-radar-mount">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Navigation 3D Action Cards -->
+      <div class="quick-actions-section">
+        <div class="section-header-compact">
+          <h2>Student Tools & Fast Actions</h2>
+        </div>
+        <div class="quick-actions-grid" style="grid-template-columns:repeat(3, 1fr);">
+          <a class="quick-action-card tilt-card" data-tilt href="my-exams.html">
+            <div class="quick-action-icon">📘</div>
+            <div class="quick-action-title">My Exam Schedule</div>
+            <div class="quick-action-desc">Check upcoming exam papers, timetable sessions, and course dates.</div>
+          </a>
+          <a class="quick-action-card tilt-card" data-tilt href="my-seat.html">
+            <div class="quick-action-icon">🎫</div>
+            <div class="quick-action-title">Official Seat Pass</div>
+            <div class="quick-action-desc">Inspect complete hall rules, print your pass and view instructions.</div>
+          </a>
+          <a class="quick-action-card tilt-card" data-tilt href="profile.html">
+            <div class="quick-action-icon">👤</div>
+            <div class="quick-action-title">Candidate Profile</div>
+            <div class="quick-action-desc">Update university roll number link and candidate contact details.</div>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireUser();
+
+  function renderStudentDashboard() {
+    const user = Auth.currentUser();
+    const exam = Exams.activeExam();
+    const seat = Dashboard.seatForUser(user);
+
+    // Personalized greeting
+    const greeting = Dashboard.getGreeting();
+    document.getElementById("greeting-title").innerHTML = `${greeting}, <span data-current-user-name>${escapeHTML(user ? user.name : "Student")}</span> 👋`;
+
+    if (exam) {
+      document.getElementById("countdown-exam-name").textContent = exam.name;
+      document.getElementById("countdown-exam-meta").textContent = `${formatDate(exam.date)} · ${formatTime(exam.time)} (${exam.duration || "2 Hours"})`;
+      document.getElementById("ticket-exam-title").textContent = exam.name;
+
+      Dashboard.startCountdown(exam.date, exam.time, document.getElementById("countdown-timer-hud"));
+    }
+
+    if (seat) {
+      document.getElementById("ticket-seat-badge").textContent = seat.seat;
+      document.getElementById("ticket-rollno").textContent = seat.rollNo;
+      document.getElementById("ticket-subject").textContent = seat.subject;
+      document.getElementById("ticket-hall").textContent = seat.roomNumber;
+      
+      const row = seat.seat.charAt(0);
+      const col = seat.seat.slice(1);
+      document.getElementById("ticket-rowcol").textContent = `Row ${row} · Desk ${col}`;
+
+      Dashboard.renderClassroomRadar(seat, document.getElementById("classroom-radar-mount"));
+    } else {
+      document.getElementById("ticket-seat-badge").textContent = "--";
+      document.getElementById("ticket-rollno").textContent = user.rollNo || "Unlinked";
+      document.getElementById("ticket-subject").textContent = "General";
+      document.getElementById("ticket-hall").textContent = "Pending";
+      document.getElementById("ticket-rowcol").textContent = "Not Allocated";
+
+      document.getElementById("classroom-radar-mount").innerHTML = `
+        <div class="empty-state" style="padding:20px;">
+          <div class="empty-icon">🎫</div>
+          <div class="empty-title" style="font-size:14px;">Seating arrangement not generated yet</div>
+          <div class="empty-desc" style="font-size:12px;">The administrator is preparing room allocations. Check back soon.</div>
+        </div>
+      `;
+    }
+
+    // Initialize 3D tilt effects
+    Dashboard.init3DTilt();
+  }
+
+  renderStudentDashboard();
+</script>
+</body>
+</html>
