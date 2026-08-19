@@ -84,11 +84,16 @@ explanation. Summary of approach:
 
 ## 6. Demo Data
 
-On first load, `js/app.js` seeds:
-- 4 rooms (LH-101 5×6, LH-102 5×6, LH-103 6×6, LH-104 5×8)
-- 55 students across CS301 / MA201 / PH201 / EC201
-- 1 exam ("Mid Semester Examination", 25 Aug 2026, 10:00 AM, 2 Hours)
-- 1 demo student account
+On first load, `js/app.js` seeds the default SEATWISE demonstration data, including:
+
+- Examination rooms with configured seating layouts and capacities
+- Student records
+- Examination records
+- Demo user and administrator data required for the application
+
+The seeded data provides a ready-to-use environment for testing the complete SEATWISE workflow, including student management, examination management, room configuration, seating generation, conflict detection, and seating-plan review.
+
+Use **Settings → Clear Saved Data** to remove locally stored application data, or **Settings → Reload Demo Data** to restore the default demonstration dataset.
 
 Use **Settings → Clear Saved Data** to wipe everything, or
 **Settings → Reload Demo Data** to restore the above.
