@@ -1,0 +1,12 @@
+[
+  { "rollNo": "23CSE201", "name": "Ravi Kumar", "subject": "CS301" },
+  { "rollNo": "23CSE202", "name": "Sanya Verma", "subject": "CS301" },
+  { "rollNo": "23CSE203", "name": "Farhan Ali", "subject": "MA201" },
+  { "rollNo": "23CSE204", "name": "Ishita Rao", "subject": "MA201" },
+  { "rollNo": "23CSE205", "name": "Devansh Gupta", "subject": "PH201" },
+  { "rollNo": "23CSE206", "name": "Kritika Jain", "subject": "PH201" },
+  { "rollNo": "23CSE207", "name": "Aryan Malhotra", "subject": "EC201" },
+  { "rollNo": "23CSE208", "name": "Bhavya Singh", "subject": "EC201" },
+  { "rollNo": "23CSE209", "name": "Omkar Patil", "subject": "CS301" },
+  { "rollNo": "23CSE210", "name": "Trisha Nair", "subject": "MA201" }
+]
