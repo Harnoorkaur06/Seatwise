@@ -88,7 +88,7 @@
 }
 
 .hero-title span {
-  background: linear-gradient(90deg, #9a3bb9 0%, #5b1d70 100%);
+  background: linear-gradient(90deg, var(--purple-3) 0%, var(--purple-5) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -871,4 +871,109 @@
   font-size: 10.5px;
   color: var(--muted);
   white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/* DARK THEME OVERRIDES FOR DASHBOARD COMPONENTS                             */
+/* -------------------------------------------------------------------------- */
+html[data-theme="dark"],
+body.dark-theme {
+  background-color: var(--bg-page) !important;
+  color: var(--ink) !important;
+}
+
+html[data-theme="dark"] .dashboard-hero,
+body.dark-theme .dashboard-hero {
+  background: linear-gradient(135deg, #1d162a 0%, #251c36 50%, #2e2143 100%) !important;
+  border-color: rgba(216, 165, 232, 0.25) !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .stat-card,
+body.dark-theme .stat-card {
+  background: #191426 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .stat-card.tint-1,
+html[data-theme="dark"] .stat-card.tint-2,
+html[data-theme="dark"] .stat-card.tint-3,
+html[data-theme="dark"] .stat-card.tint-4,
+html[data-theme="dark"] .stat-card.tint-5,
+html[data-theme="dark"] .stat-card.tint-6,
+body.dark-theme .stat-card.tint-1,
+body.dark-theme .stat-card.tint-2,
+body.dark-theme .stat-card.tint-3,
+body.dark-theme .stat-card.tint-4,
+body.dark-theme .stat-card.tint-5,
+body.dark-theme .stat-card.tint-6 {
+  background: linear-gradient(180deg, #191426 0%, #211b30 100%) !important;
+}
+
+html[data-theme="dark"] .quick-action-card,
+body.dark-theme .quick-action-card {
+  background: #191426 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .seating-status-card,
+body.dark-theme .seating-status-card,
+html[data-theme="dark"] .admin-sim-card,
+body.dark-theme .admin-sim-card,
+html[data-theme="dark"] .classroom-radar-card,
+body.dark-theme .classroom-radar-card {
+  background: #191426 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .hologram-ticket-card,
+body.dark-theme .hologram-ticket-card {
+  background: linear-gradient(145deg, #191426 0%, #221b33 60%, #2b2040 100%) !important;
+  border-color: rgba(216, 165, 232, 0.25) !important;
+}
+
+html[data-theme="dark"] .ticket-details-matrix,
+body.dark-theme .ticket-details-matrix {
+  background: #141020 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .radar-grid-5x10,
+body.dark-theme .radar-grid-5x10,
+html[data-theme="dark"] .sim-grid-canvas,
+body.dark-theme .sim-grid-canvas {
+  background: #141020 !important;
+  border-color: rgba(216, 165, 232, 0.18) !important;
+}
+
+html[data-theme="dark"] .radar-seat,
+body.dark-theme .radar-seat {
+  background: #231c33 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .sim-tab-btn,
+body.dark-theme .sim-tab-btn {
+  background: #231c33 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .sim-tab-btn.active,
+body.dark-theme .sim-tab-btn.active {
+  background: var(--purple-4) !important;
+  color: #ffffff !important;
+  border-color: var(--purple-4) !important;
+}
+
+html[data-theme="dark"] .activity-item,
+body.dark-theme .activity-item {
+  background: #211b30 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .seating-progress-track,
+body.dark-theme .seating-progress-track {
+  background: #2b233d !important;
 }

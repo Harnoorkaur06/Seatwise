@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Conflicts & Constraint Violations — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/seating.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Conflict Analysis & Resolution</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="stat-grid" id="stat-grid" style="grid-template-columns: repeat(4, 1fr);"></div>
+      <div id="conflict-list"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/conflicts.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+
+  function render() {
+    const plan = Seating.getCurrentPlan();
+    if (!plan) {
+      document.getElementById("stat-grid").innerHTML = "";
+      document.getElementById("conflict-list").innerHTML = `
+        <div class="empty-state card">
+          <div class="empty-icon">🗺</div>
+          <div class="empty-title">No seating plan generated yet</div>
+          <div class="empty-desc">Generate an examination seating plan first to view automatic conflict detection.</div>
+          <a href="generate-seating.html" class="btn btn-primary mt-14" style="display:inline-flex;">Go to Generate Seating</a>
+        </div>`;
+      return;
+    }
+
+    const stats = plan.stats;
+    document.getElementById("stat-grid").innerHTML = `
+      <div class="stat-card ${stats.totalConflicts === 0 ? 'accent-success' : 'accent-error'}">
+        <div class="stat-card-header"><span class="stat-label">Total Conflicts</span><div class="stat-icon-wrap">${stats.totalConflicts === 0 ? '✓' : '⚠'}</div></div>
+        <div class="stat-value">${stats.totalConflicts}</div>
+      </div>
+      <div class="stat-card ${stats.unassignedCount === 0 ? 'accent-success' : 'accent-warning'}">
+        <div class="stat-card-header"><span class="stat-label">Unassigned Students</span><div class="stat-icon-wrap">🎓</div></div>
+        <div class="stat-value">${stats.unassignedCount}</div>
+      </div>
+      <div class="stat-card tint-3">
+        <div class="stat-card-header"><span class="stat-label">Conflict Rate</span><div class="stat-icon-wrap">📊</div></div>
+        <div class="stat-value">${stats.conflictRate}%</div>
+      </div>
+      <div class="stat-card accent-primary">
+        <div class="stat-card-header"><span class="stat-label">Validity Score</span><div class="stat-icon-wrap">📈</div></div>
+        <div class="stat-value">${stats.validityPercentage}%</div>
+      </div>
+    `;
+
+    const listBox = document.getElementById("conflict-list");
+    if (plan.conflicts.length === 0) {
+      listBox.innerHTML = `
+        <div class="card" style="text-align:center; padding:48px 24px; background:linear-gradient(135deg, rgba(22,163,74,0.06) 0%, rgba(22,163,74,0.02) 100%); border:1px solid var(--color-success-border);">
+          <div style="width:54px; height:54px; border-radius:50%; background:var(--color-success-soft); color:var(--color-success); font-size:24px; font-weight:900; display:grid; place-items:center; margin:0 auto 14px;">✓</div>
+          <div class="card-title" style="justify-content:center; color:var(--color-success); font-size:18px; margin-bottom:6px;">All Seating Constraints Satisfied</div>
+          <p class="text-dim text-sm" style="max-width:440px; margin:0 auto 18px;">Every student is seated without any same-subject horizontal or vertical adjacency violation across all examination rooms.</p>
+          <a href="seating-plan.html" class="btn btn-secondary btn-sm" style="display:inline-flex;">View Seating Plan →</a>
+        </div>`;
+      return;
+    }
+
+    listBox.innerHTML = plan.conflicts.map((c, i) => `
+      <div class="conflict-card">
+        <div class="conflict-title">⚠ Conflict #${i + 1} — Examination Hall ${escapeHTML(c.roomNumber)}</div>
+        <div class="conflict-seats-row">
+          <div class="conflict-seat-chip">Seat ${escapeHTML(c.seatA)}<strong>${escapeHTML(c.studentA.rollNo)} — ${escapeHTML(c.subject)}</strong></div>
+          <div class="conflict-seat-chip">Seat ${escapeHTML(c.seatB)}<strong>${escapeHTML(c.studentB.rollNo)} — ${escapeHTML(c.subject)}</strong></div>
+        </div>
+        <div class="text-sm text-dim">Violation: Same subject (${escapeHTML(c.subject)}) students are placed directly adjacent.</div>
+        <div class="suggestion-row" id="suggestions-${i}"></div>
+        <button class="btn btn-primary btn-sm mt-14" onclick="resolveConflict(${i})">⚡ Auto-Resolve (Move ${escapeHTML(c.studentB.rollNo)})</button>
+      </div>
+    `).join("");
+
+    plan.conflicts.forEach((c, i) => {
+      const suggestions = SeatingAlgorithm.suggestSeats(plan, c.subject, c.studentB.rollNo, 3);
+      const holder = document.getElementById(`suggestions-${i}`);
+      holder.innerHTML = suggestions.length
+        ? suggestions.map((s) => `<span class="suggestion-chip" onclick="applyDirectSuggestion('${escapeHTML(c.studentB.rollNo)}', '${escapeHTML(s.roomNumber)}', ${s.row}, ${s.col})">Move to ${s.roomNumber} · ${s.seat}</span>`).join("")
+        : `<span class="text-faint text-sm">No alternative empty seats available right now.</span>`;
+    });
+  }
+
+  function applyDirectSuggestion(rollNo, roomNumber, row, col) {
+    Seating.applySuggestion(rollNo, { roomNumber, row, col });
+    showToast("Student moved to suggested seat.", "success");
+    render();
+  }
+
+  function resolveConflict(index) {
+    const plan = Seating.getCurrentPlan();
+    const conflict = plan.conflicts[index];
+    const result = Conflicts.resolve(conflict);
+    if (result.ok) {
+      showToast("Conflict resolved successfully.", "success");
+    } else {
+      showToast(result.message, "warning");
+    }
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>

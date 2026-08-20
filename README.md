@@ -1,232 +1,115 @@
-# SEATWISE — Dynamic Exam Seating & Conflict Resolver
-
-**A web-based system for simplifying examination seating management and generating organized seating plans.**
-
----
-
-## 1. About SEATWISE
-
-**SEATWISE** is a BEE engineering project developed to simplify the process of managing examination seating arrangements.
-
-It allows administrators to manage:
-
-- Students
-- Examinations
-- Examination rooms
-- Seating arrangements
-- Seating conflicts
-
-The system generates an organized seating plan based on the available student and room information.
-
-Students can log in and use **My Seat** to find their assigned examination room and seat.
+# SEATWISE
+### Smart Examination Seating & Conflict Resolution System
+*Evaluation 1 — Frontend Prototype*
 
 ---
 
-## 2. Problem Statement
-
-Preparing examination seating arrangements manually can become difficult when there are:
-
-- A large number of students
-- Multiple subjects
-- Several examination rooms
-- Different room capacities
-- Seating conflicts that need to be resolved
-
-SEATWISE aims to reduce this manual effort by providing a centralized system for managing and organizing examination seating.
-
----
-
-## 3. What Can SEATWISE Do?
-
-### For Administrators
-
-Administrators can:
-
-- Manage students
-- Manage users
-- Manage examinations
-- Configure examination rooms
-- Generate seating arrangements
-- View seating plans
-- Identify seating conflicts
-- Move or swap students
-- Regenerate seating arrangements
-
-### For Students
-
-Students can:
-
-- Create an account
-- Log in to the system
-- Access their account
-- Use **My Seat**
-- View their assigned examination room and seat
-
----
-
-## 4. Basic Project Workflow
-
-The overall SEATWISE workflow is:
-
-**Admin Login**
-
-↓
-
-**Manage Students & Exams**
-
-↓
-
-**Configure Rooms**
-
-↓
-
-**Generate Seating**
-
-↓
-
-**Review Seating Plan**
-
-↓
-
-**Check & Resolve Conflicts**
-
-↓
-
-**Finalize Seating**
-
-↓
-
-**Student Checks My Seat**
-
-### Project Workflow Flowchart
-
-
-![SEATWISE Project Workflow](docs/images/seatwise-workflow.png)
-
----
-
-## 5. Seating Management
-
-SEATWISE automatically generates seating arrangements using the available student and room information.
-
-The system attempts to keep students from the **same subject** from being seated directly next to each other.
-
-If a conflict is identified, the administrator can review the seating arrangement and make necessary adjustments.
-
-The seating plan can then be checked again before it is finalized.
-
-### Seating & Conflict Flowchart
-
-
-![SEATWISE Seating Generation and Conflict Resolution](docs/images/seating-generation-flow.png)
-
----
-
-## 6. Student Experience
-
-After the seating plan has been prepared, students can log in and use **My Seat** to find their examination seat.
-
-The student workflow is:
-
-**Student Login**
-
-↓
-
-**My Seat**
-
-↓
-
-**View Assigned Room & Seat**
-
-### Student Workflow Flowchart
-
-
-![SEATWISE Student Workflow](docs/images/student-workflow.png)
-
----
-
-## 7. Current Capacity
-
-The current demonstration setup supports:
-
-**10 Rooms × 50 Seats = 500 Seats**
-
-Each room currently contains:
-
-- 5 Rows
-- 10 Columns
-- 50 Seats
-
-The room configuration can be modified according to examination requirements.
-
----
-
-## 8. Technology Used
-
-### Frontend
-
-- HTML5
-- CSS3
-- Vanilla JavaScript
-- ES6 Modules
-
-### Additional Technologies
-
-- LocalStorage for current data persistence
-- GSAP for animations
-- Lucide Icons for interface icons
-
----
-
-## 9. Future Scope
-
-SEATWISE is currently implemented using **Vanilla JavaScript and LocalStorage**.
-
-The project can be further developed into a full MERN stack application using:
-
-- React
-- Node.js
-- Express.js
-- MongoDB
-
-Possible future improvements include:
-
-- Centralized database storage
-- Backend authentication
-- Advanced seating management
-- Improved scalability
-- Multi-user administration
-
----
-
-## 10. Project Team
-
-| Team Member | Role |
-|-------------|------|
-| Namya Gupta | Team Leader |
-| Harnoor Buttar | Team Member |
-| Sarthak Kanwar | Team Member |
-
-The project is developed collaboratively through planning, development, testing, and integration.
-
----
-
-## 11. Project Goal
-
-The goal of **SEATWISE** is to provide a simple and organized solution for examination seating management.
-
-It aims to:
-
-- Reduce manual work for administrators
-- Organize examination seating
-- Identify seating conflicts
-- Allow necessary seating adjustments
-- Make seat information easily accessible to students
-
----
-
-## SEATWISE
-
-**Dynamic Exam Seating & Conflict Resolver**
-
-***Generate smarter. Resolve conflicts. Seat better.***
+## 1. Overview
+
+SEATWISE automatically generates examination seating arrangements while
+enforcing a core constraint:
+
+> **Students belonging to the same subject/course code must never sit
+> directly adjacent to one another (left, right, front, or back).
+> Diagonal seating is allowed.**
+
+This is a classic **Constraint Satisfaction Problem**, similar to graph
+colouring, and is solved with a genuine (non-random) greedy,
+constraint-checking algorithm in `js/seatingAlgorithm.js`.
+
+## 2. Tech Stack
+
+- HTML5, CSS3, Vanilla JavaScript (ES6+)
+- Browser `localStorage` for all persistence
+- No frameworks, no backend, no external database — pure client-side app
+
+## 3. Running the Project
+
+Simply open `index.html` in any modern browser (Chrome/Edge/Firefox).
+No build step, server, or installation required.
+
+**Demo Student Login:** `rahul@student.com` / `student123`
+**Admin Login:** username `admin`, password `seatwise@admin123` (or `examseat@admin123`)
+(centralized in `js/config.js`)
+
+## 4. Folder Structure
+
+```
+examseat/
+├── index.html, login.html, signup.html, admin-login.html
+├── user-dashboard.html, my-exams.html, my-seat.html, profile.html
+├── admin-dashboard.html, manage-users.html, manage-exams.html,
+│   students.html, rooms.html, generate-seating.html,
+│   seating-plan.html, conflicts.html, settings.html
+├── css/          (style, auth, dashboard, seating, responsive)
+├── js/           (config, storage, utils, auth, app, dashboard,
+│                  users, exams, students, rooms, seatingAlgorithm,
+│                  seating, conflicts, export)
+└── data/sample-students.json
+```
+
+## 5. The Seating Algorithm (Core Academic Contribution)
+
+Located in `js/seatingAlgorithm.js`, heavily commented for viva
+explanation. Summary of approach:
+
+1. **Group & interleave** — students are grouped by subject, then
+   merged round-robin (largest group first) into a single queue so
+   that same-subject students are naturally spread apart before
+   placement even begins.
+2. **Greedy row-major placement** — for every seat, the algorithm
+   checks the LEFT and TOP (front) neighbours already placed, and
+   picks the next queued student whose subject doesn't clash. Right
+   and back neighbours are guaranteed safe because they perform the
+   same check when *they* are placed.
+3. **Forced placement fallback** — if no legal candidate remains
+   (rare, but possible with heavily skewed subject counts), the
+   algorithm places the best available student anyway rather than
+   wasting a seat, and flags it during the next step.
+4. **Independent conflict-detection pass** — after every room is
+   filled, the entire grid is re-scanned for any left/right/front/back
+   same-subject pairs. This is authoritative and always accurate,
+   including for manual overrides.
+5. **Multi-room overflow** — students left over after one room fills
+   automatically continue into the next room, in the order rooms were
+   created.
+6. **Regenerate** — re-shuffles the queue with a new seed and re-runs
+   the whole pipeline, typically reducing conflicts on subsequent
+   attempts.
+7. **Manual override + revalidation** — `seating.js` lets an admin
+   swap two students' seats. Before applying, it calls
+   `SeatingAlgorithm.wouldConflict()`; if a conflict would occur, it
+   returns `suggestSeats()` alternatives instead of silently applying
+   a bad swap (with an explicit "force override" escape hatch).
+
+## 6. Demo Data
+
+On first load, `js/app.js` seeds the default SEATWISE demonstration data, including:
+
+- Examination rooms with configured seating layouts and capacities
+- Student records
+- Examination records
+- Demo user and administrator data required for the application
+
+The seeded data provides a ready-to-use environment for testing the complete SEATWISE workflow, including student management, examination management, room configuration, seating generation, conflict detection, and seating-plan review.
+
+Use **Settings → Clear Saved Data** to remove locally stored application data, or **Settings → Reload Demo Data** to restore the default demonstration dataset.
+
+Use **Settings → Clear Saved Data** to wipe everything, or
+**Settings → Reload Demo Data** to restore the above.
+
+## 7. Phase 2 (MERN) Migration Notes
+
+The code is deliberately organized so each `js/*.js` module maps
+cleanly onto a future Express/MongoDB layer:
+
+| Current (LocalStorage)          | Phase 2 (MERN)                              |
+|----------------------------------|----------------------------------------------|
+| `storage.js`                     | REST client calling Express endpoints        |
+| `auth.js` + `config.js`          | JWT auth, bcrypt-hashed admin in MongoDB      |
+| `students.js` / `rooms.js` / `exams.js` | `Student`, `Room`, `Exam` Mongoose schemas |
+| `seatingAlgorithm.js`            | Runs server-side, exposed via `POST /api/exams/:id/generate-seating` |
+| `seating.js` overrides           | `PUT /api/seating/:id/override`               |
+
+No backend code has been implemented yet, per the Evaluation-1 scope —
+this table exists purely to document the intended migration path.

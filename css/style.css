@@ -24,6 +24,10 @@
   --purple-3: #9a3bb9;
   --purple-4: #7a229d;
   --purple-5: #5b1d70;
+  --accent-color: #9a3bb9;
+  --accent-hover: #7a229d;
+  --accent-soft: rgba(154, 59, 185, 0.1);
+  --accent-border: rgba(154, 59, 185, 0.22);
   --deep: #2b153e;
   --deep-2: #1c1029;
 
@@ -63,6 +67,139 @@
 
   /* Typography */
   --font-main: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* -------------------------------------------------------------------------- */
+/* DARK THEME OVERRIDES                                                       */
+/* -------------------------------------------------------------------------- */
+html[data-theme="dark"],
+body.dark-theme {
+  --white: #1b1629;
+  --paper: #140f21;
+  --bg-page: #0d0918;
+  --bg-card: #171224;
+  --bg-card-subtle: linear-gradient(180deg, #171224 0%, #1e182e 100%);
+  --ink: #f5f0fb;
+  --muted: #c4b8d1;
+  --muted-light: #d8cde2;
+  --muted-dark: #a99ab9;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-purple: rgba(216, 165, 232, 0.2);
+  --line-focus: rgba(216, 165, 232, 0.4);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 18px 45px rgba(0, 0, 0, 0.6);
+  background-color: #0d0918 !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .app-shell,
+body.dark-theme .app-shell {
+  background: #0d0918 !important;
+}
+
+html[data-theme="dark"] .sidebar,
+body.dark-theme .sidebar {
+  background: #140f21 !important;
+  border-right-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .topbar,
+body.dark-theme .topbar {
+  background: rgba(20, 15, 33, 0.9) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .settings-tab-list,
+html[data-theme="dark"] .settings-section,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .table-container,
+html[data-theme="dark"] .modal-box,
+body.dark-theme .settings-tab-list,
+body.dark-theme .settings-section,
+body.dark-theme .card,
+body.dark-theme .table-container,
+body.dark-theme .modal-box {
+  background: #171224 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .settings-section-header,
+body.dark-theme .settings-section-header {
+  background: linear-gradient(180deg, #171224 0%, #1f1930 100%) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .settings-save-bar,
+body.dark-theme .settings-save-bar {
+  background: rgba(23, 18, 36, 0.95) !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .form-input,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .form-textarea,
+body.dark-theme .form-input,
+body.dark-theme .form-select,
+body.dark-theme .form-textarea {
+  background: #110d1c !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .form-input:focus,
+html[data-theme="dark"] .form-select:focus,
+html[data-theme="dark"] .form-textarea:focus,
+body.dark-theme .form-input:focus,
+body.dark-theme .form-select:focus,
+body.dark-theme .form-textarea:focus {
+  background: #161124 !important;
+  border-color: var(--purple-3) !important;
+}
+
+html[data-theme="dark"] thead th,
+body.dark-theme thead th {
+  background: #1f1930 !important;
+  color: var(--purple-1) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] tbody td,
+body.dark-theme tbody td {
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] tbody tr:hover,
+body.dark-theme tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] .user-dropdown-menu,
+body.dark-theme .user-dropdown-menu {
+  background: #191327 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+}
+
+html[data-theme="dark"] .btn-secondary,
+body.dark-theme .btn-secondary {
+  background: #1f1930 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--purple-1) !important;
+}
+
+html[data-theme="dark"] .btn-secondary:hover,
+body.dark-theme .btn-secondary:hover {
+  background: #27203b !important;
+  border-color: var(--purple-2) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .toggle-slider,
+body.dark-theme .toggle-slider {
+  background: #312847 !important;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -257,13 +394,13 @@ ul {
 }
 
 .sidebar-nav a:hover {
-  background: rgba(154, 59, 185, 0.05);
+  background: var(--accent-soft);
   color: var(--purple-4);
   transform: translateX(2px);
 }
 
 .sidebar-nav a.active {
-  background: linear-gradient(90deg, rgba(154, 59, 185, 0.1) 0%, rgba(216, 165, 232, 0.04) 100%);
+  background: linear-gradient(90deg, var(--accent-soft) 0%, rgba(216, 165, 232, 0.04) 100%);
   color: var(--purple-4);
   font-weight: 700;
   box-shadow: inset 3px 0 0 var(--purple-3);
@@ -305,6 +442,45 @@ ul {
 .sidebar-footer button:hover {
   background: var(--color-error-soft);
   color: var(--color-error);
+}
+
+/* -------------------------------------------------------------------------- */
+/* COMPACT SIDEBAR (icons only — toggled from Settings → Appearance)          */
+/* -------------------------------------------------------------------------- */
+html[data-sidebar="collapsed"],
+body.sidebar-collapsed {
+  --sidebar-width: 76px;
+}
+
+html[data-sidebar="collapsed"] .sidebar-brand .brand-copy,
+html[data-sidebar="collapsed"] .sidebar-nav .nav-label,
+html[data-sidebar="collapsed"] .sidebar-footer .nav-label,
+body.sidebar-collapsed .sidebar-brand .brand-copy,
+body.sidebar-collapsed .sidebar-nav .nav-label,
+body.sidebar-collapsed .sidebar-footer .nav-label {
+  display: none;
+}
+
+html[data-sidebar="collapsed"] .sidebar-brand,
+body.sidebar-collapsed .sidebar-brand {
+  justify-content: center;
+  padding: 16px 8px;
+}
+
+html[data-sidebar="collapsed"] .sidebar-nav a,
+body.sidebar-collapsed .sidebar-nav a {
+  justify-content: center;
+  padding: 12px;
+}
+
+html[data-sidebar="collapsed"] .sidebar-footer button,
+body.sidebar-collapsed .sidebar-footer button {
+  justify-content: center;
+  padding: 12px;
+}
+
+.app-shell {
+  transition: grid-template-columns var(--transition-normal);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -359,16 +535,16 @@ ul {
   color: var(--ink);
   padding: 4px 12px 4px 5px;
   border-radius: 999px;
-  background: rgba(154, 59, 185, 0.06);
-  border: 1px solid rgba(154, 59, 185, 0.14);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
   cursor: pointer;
   user-select: none;
   transition: all var(--transition-fast);
 }
 
 .user-chip:hover {
-  background: rgba(154, 59, 185, 0.12);
-  border-color: rgba(154, 59, 185, 0.28);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(154, 59, 185, 0.1);
 }
@@ -1167,4 +1343,120 @@ tbody tr:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ==========================================================================
+   SETTINGS — DARK MODE VISUAL REFINEMENT
+   ========================================================================== */
+
+html[data-theme="dark"] .settings-section-desc,
+body.dark-theme .settings-section-desc {
+  color: #c9bfd4 !important;
+}
+
+html[data-theme="dark"] .settings-tab-item,
+body.dark-theme .settings-tab-item {
+  color: #d8d0e1 !important;
+}
+
+html[data-theme="dark"] .settings-tab-item:hover,
+body.dark-theme .settings-tab-item:hover {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .settings-tab-group-label,
+body.dark-theme .settings-tab-group-label {
+  color: #aaa0b8 !important;
+}
+
+html[data-theme="dark"] .settings-section-title,
+body.dark-theme .settings-section-title {
+  color: #f7f3fb !important;
+}
+
+html[data-theme="dark"] .settings-section-body,
+body.dark-theme .settings-section-body {
+  color: #d1c8db !important;
+}
+
+html[data-theme="dark"] .hero-subtitle,
+body.dark-theme .hero-subtitle {
+  color: #c7bdd2 !important;
+}
+
+html[data-theme="dark"] .settings-section input,
+html[data-theme="dark"] .settings-section select,
+html[data-theme="dark"] .settings-section textarea,
+body.dark-theme .settings-section input,
+body.dark-theme .settings-section select,
+body.dark-theme .settings-section textarea {
+  color: #f5f1f9 !important;
+  background: #111020 !important;
+}
+
+html[data-theme="dark"] .settings-section label,
+body.dark-theme .settings-section label {
+  color: #ded6e6 !important;
+}
+
+/* Settings cards */
+html[data-theme="dark"] .settings-section,
+body.dark-theme .settings-section {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(31, 24, 53, 0.96),
+      rgba(18, 16, 35, 0.98)
+    ) !important;
+  border-color: rgba(181, 128, 224, 0.18) !important;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+/* Main settings hero */
+html[data-theme="dark"] .settings-hero,
+body.dark-theme .settings-hero {
+  background:
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(154, 59, 185, 0.28),
+      transparent 42%
+    ),
+    linear-gradient(
+      135deg,
+      #1c1730 0%,
+      #251936 55%,
+      #30203f 100%
+    ) !important;
+}
+
+/* Toast notifications */
+html[data-theme="dark"] .toast,
+body.dark-theme .toast {
+  background: rgba(20, 17, 35, 0.97) !important;
+  color: #f4eff9 !important;
+  border: 1px solid rgba(181, 128, 224, 0.25) !important;
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(154, 59, 185, 0.08) !important;
+}
+
+html[data-theme="dark"] .toast *,
+body.dark-theme .toast * {
+  color: inherit !important;
+}
+
+/* Small secondary text */
+html[data-theme="dark"] small,
+html[data-theme="dark"] .text-muted,
+body.dark-theme small,
+body.dark-theme .text-muted {
+  color: #aaa0b8 !important;
+}
+
+/* Better dark-mode dividers */
+html[data-theme="dark"] .settings-tab-divider,
+body.dark-theme .settings-tab-divider {
+  background: rgba(255, 255, 255, 0.09) !important;
 }
