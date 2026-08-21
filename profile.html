@@ -3,10 +3,96 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Profile — SEATWISE</title>
+<title>Student Profile — SEATWISE</title>
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/responsive.css" />
+<style>
+  /* Profile Redesign Layout Styles */
+  .profile-header-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  
+  @media (max-width: 640px) {
+    .profile-header-grid {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+  }
+
+  .avatar-upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar-preview-frame {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-3), var(--purple-5));
+    color: #ffffff;
+    font-size: 42px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(154, 59, 185, 0.25);
+    border: 3px solid #ffffff;
+    position: relative;
+  }
+
+  .avatar-preview-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 840px) {
+    .profile-two-col-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .notification-count-badge {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    animation: pulseBadge 2s infinite;
+  }
+
+  @keyframes pulseBadge {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+
+  .unread-complaint-row {
+    background: rgba(154, 59, 185, 0.08) !important;
+    border-left: 3px solid var(--purple-4) !important;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
 <div class="dashboard-bg" aria-hidden="true">
@@ -45,118 +131,164 @@
       </div>
     </header>
 
-    <main class="page-content" style="max-width:760px; margin:0 auto;">
+    <main class="page-content" style="max-width:980px; margin:0 auto;">
       
-      <!-- 1. PERSONAL INFORMATION -->
+      <!-- 1. TOP BLOCK: PHOTO UPLOADER & PERSONAL DETAILS -->
       <div class="card mb-24">
-        <div class="card-title">Personal Information</div>
-        <div class="form-hint mb-16">Update your candidate profile details, contact info, and linked roll number.</div>
-        <form id="profile-personal-form">
-          <div class="form-group">
-            <label class="form-label" for="profile-name">Full Name</label>
-            <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
+        <div class="card-title">Student Profile</div>
+        <div class="profile-header-grid">
+          
+          <!-- Photo Box -->
+          <div class="avatar-upload-box">
+            <div class="avatar-preview-frame" id="avatar-frame">
+              <span id="avatar-initial" data-current-user-initial>?</span>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none;" />
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('avatar-input').click()">📷 Upload Photo</button>
+              <button class="btn btn-ghost btn-sm" type="button" id="btn-remove-photo" style="display:none;" onclick="ProfileManager.removePhoto()">Remove</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="profile-email">Email Address</label>
-            <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
+
+          <!-- Personal Information Form -->
+          <div>
+            <form id="profile-personal-form">
+              <div class="form-group">
+                <label class="form-label" for="profile-name">Full Name</label>
+                <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="profile-email">Email Address</label>
+                <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="profile-rollno">University Roll Number</label>
+                <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
+              </div>
+              <button type="submit" class="btn btn-primary mt-10">Save Personal Info</button>
+            </form>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="profile-mobile">Mobile Number</label>
-            <input class="form-input" id="profile-mobile" type="tel" placeholder="e.g. +91 98765 43210" />
-            <div class="form-hint">Used for urgent examination venue alerts and notifications.</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="profile-rollno">University Roll Number</label>
-            <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
-            <div class="form-hint">Must match your official student record to see assigned seats.</div>
-          </div>
-          <button type="submit" class="btn btn-primary mt-14">Save Profile Changes</button>
-        </form>
+
+        </div>
       </div>
 
-      <!-- 2. CHANGE PASSWORD -->
+      <!-- 2. MIDDLE BLOCK: COMBINED SECURITY & MOBILE NUMBER (ONE DIV) -->
       <div class="card mb-24">
-        <div class="card-title">Security & Password</div>
-        <div class="form-hint mb-16">Ensure your account remains safe with a strong password.</div>
-        <form id="profile-pwd-form">
-          <div class="form-group">
-            <label class="form-label" for="pwd-current">Current Password</label>
-            <input class="form-input" type="password" id="pwd-current" placeholder="••••••••" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="pwd-new">New Password</label>
-            <input class="form-input" type="password" id="pwd-new" placeholder="At least 6 characters" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="pwd-confirm">Confirm New Password</label>
-            <input class="form-input" type="password" id="pwd-confirm" placeholder="Re-enter new password" required />
-          </div>
-          <button type="submit" class="btn btn-primary mt-14">Update Password</button>
-        </form>
-      </div>
-
-      <!-- 3. APPEARANCE PREFERENCES -->
-      <div class="card mb-24">
-        <div class="card-title">Appearance & Preferences</div>
-        <div class="form-hint mb-16">Customize your workspace visual theme and navigation layout.</div>
+        <div class="card-title">Account Security & Contact Information</div>
+        <div class="form-hint mb-16">Manage your account password and primary mobile contact number in one place.</div>
         
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--line);">
-          <div>
-            <div style="font-weight:700; color:var(--ink);">Dark Mode</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Switch interface between Light and Dark theme.</div>
+        <div class="profile-two-col-grid">
+          
+          <!-- Left Column: Update Password -->
+          <div style="padding-right:12px; border-right:1px solid var(--line);">
+            <div style="font-weight:800; font-size:14px; color:var(--ink); margin-bottom:12px;">🔒 Change Password</div>
+            <form id="profile-pwd-form">
+              <div class="form-group">
+                <label class="form-label" for="pwd-current">Current Password</label>
+                <input class="form-input" type="password" id="pwd-current" placeholder="••••••••" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pwd-new">New Password</label>
+                <input class="form-input" type="password" id="pwd-new" placeholder="At least 6 characters" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pwd-confirm">Confirm New Password</label>
+                <input class="form-input" type="password" id="pwd-confirm" placeholder="Re-enter new password" required />
+              </div>
+              <button type="submit" class="btn btn-secondary mt-10">Update Password</button>
+            </form>
           </div>
-          <label class="toggle-wrap">
-            <input type="checkbox" id="pref-theme-toggle" />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; margin-top:4px;">
-          <div>
-            <div style="font-weight:700; color:var(--ink);">Compact Sidebar</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Collapse left navigation bar to icon-only view.</div>
+          <!-- Right Column: Mobile Number -->
+          <div style="padding-left:12px;">
+            <div style="font-weight:800; font-size:14px; color:var(--ink); margin-bottom:12px;">📱 Mobile Contact Number</div>
+            <div style="margin-bottom:14px; padding:10px 14px; background:var(--purple-0); border:1px solid var(--accent-border); border-radius:var(--radius-md);">
+              <div style="font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--purple-4); letter-spacing:0.05em;">CURRENT MOBILE</div>
+              <div id="current-mobile-display" style="font-size:15px; font-weight:700; color:var(--ink); margin-top:2px;">Not added</div>
+            </div>
+
+            <form id="profile-mobile-form">
+              <div class="form-group">
+                <label class="form-label" for="mobile-input">New Mobile Number</label>
+                <input class="form-input" id="mobile-input" type="tel" placeholder="e.g. +91 98765 43210" required />
+                <div class="form-hint">7 to 15 digits for seating SMS alerts.</div>
+              </div>
+              <button type="submit" class="btn btn-secondary mt-10">Save Mobile Number</button>
+            </form>
           </div>
-          <label class="toggle-wrap">
-            <input type="checkbox" id="pref-sidebar-toggle" />
-            <span class="toggle-slider"></span>
-          </label>
+
         </div>
       </div>
 
-      <!-- 4. CONTACT ADMINISTRATOR / COMPLAINT -->
-      <div class="card mb-24">
-        <div class="card-title">Contact Administrator / Issue Reporting</div>
-        <div class="form-hint mb-16">Submit a formal request or seating issue directly to the examination department.</div>
-        <form id="profile-complaint-form">
-          <div class="form-group">
-            <label class="form-label" for="complaint-category">Issue Category</label>
-            <select class="form-select" id="complaint-category">
-              <option value="Seating Issue">Seating Issue</option>
-              <option value="Exam Issue">Exam Issue</option>
-              <option value="Profile Issue">Profile Issue</option>
-              <option value="Technical Issue">Technical Issue</option>
-              <option value="Other">Other</option>
-            </select>
+      <!-- 3. BOTTOM BLOCK: 2 HORIZONTAL DIVS (COMPLAINTS LEFT, PREFERENCES RIGHT) -->
+      <div class="profile-two-col-grid mb-24">
+        
+        <!-- Left Horizontal Div: Complaints & Admin Messages -->
+        <div class="card">
+          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Contact Administrator</span>
+            <span id="unread-count-badge" class="notification-count-badge" style="display:none;">0</span>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="complaint-subject">Subject</label>
-            <input class="form-input" id="complaint-subject" placeholder="e.g. Desk allocation mismatch in LH-102" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="complaint-message">Complaint Details</label>
-            <textarea class="form-input" id="complaint-message" rows="4" placeholder="Describe your issue in detail..." required style="resize:vertical;"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary mt-14">Submit Complaint</button>
-        </form>
-      </div>
+          <div class="form-hint mb-14">Submit seating or timetable issues to the exam department.</div>
+          
+          <form id="profile-complaint-form" class="mb-20">
+            <div class="form-group">
+              <label class="form-label" for="complaint-category">Issue Category</label>
+              <select class="form-select" id="complaint-category">
+                <option value="Seating Issue">Seating Issue</option>
+                <option value="Exam Issue">Exam Issue</option>
+                <option value="Profile Issue">Profile Issue</option>
+                <option value="Technical Issue">Technical Issue</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="complaint-subject">Subject</label>
+              <input class="form-input" id="complaint-subject" placeholder="e.g. Desk mismatch in LH-102" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="complaint-message">Complaint Details</label>
+              <textarea class="form-input" id="complaint-message" rows="3" placeholder="Describe your issue..." required style="resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Submit Complaint</button>
+          </form>
 
-      <!-- 5. MY COMPLAINTS -->
-      <div class="card mb-24">
-        <div class="card-title">My Submitted Complaints</div>
-        <div class="form-hint mb-16">Track status updates on your previously filed requests.</div>
-        <div id="my-complaints-list">
-          <!-- Rendered dynamically by profile.js -->
+          <div style="border-top:1px solid var(--line); padding-top:14px;">
+            <div style="font-weight:800; font-size:13px; color:var(--ink); margin-bottom:8px;">My Complaints & Admin Replies</div>
+            <div id="my-complaints-list">
+              <!-- Rendered dynamically by profile.js -->
+            </div>
+          </div>
         </div>
+
+        <!-- Right Horizontal Div: Appearance & Preferences -->
+        <div class="card">
+          <div class="card-title">Appearance & Preferences</div>
+          <div class="form-hint mb-14">Customize your visual interface theme and layout behavior.</div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line);">
+            <div>
+              <div style="font-weight:700; color:var(--ink);">Dark Mode</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Switch between Light and Dark interface theme.</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" id="pref-theme-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; margin-top:4px;">
+            <div>
+              <div style="font-weight:700; color:var(--ink);">Compact Sidebar</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Collapse left navigation bar across all student pages.</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" id="pref-sidebar-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
       </div>
 
     </main>

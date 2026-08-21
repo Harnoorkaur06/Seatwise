@@ -30,7 +30,7 @@ const ComplaintsManager = {
       return true;
     });
 
-    // Update stats counters if elements exist
+    // Update stats counters
     const totalEl = document.getElementById("stat-total-complaints");
     const pendingEl = document.getElementById("stat-pending-complaints");
     const reviewEl = document.getElementById("stat-review-complaints");
@@ -56,9 +56,9 @@ const ComplaintsManager = {
         <table style="width:100%;">
           <thead>
             <tr>
-              <th>Student</th>
+              <th>Student Details</th>
               <th>Category</th>
-              <th>Subject & Details</th>
+              <th>Complaint & Admin Reply</th>
               <th>Date</th>
               <th>Status</th>
               <th>Action</th>
@@ -73,25 +73,32 @@ const ComplaintsManager = {
 
               return `
                 <tr>
-                  <td>
+                  <td style="vertical-align:top;">
                     <div style="font-weight:700; color:var(--ink);">${escapeHTML(c.userName || "Student")}</div>
                     <div style="font-size:12px; color:var(--muted); margin-top:2px;">${escapeHTML(c.userEmail || "")}</div>
                   </td>
-                  <td>
+                  <td style="vertical-align:top;">
                     <span class="badge" style="background:var(--purple-0); color:var(--purple-4); border:1px solid var(--accent-border);">
                       ${escapeHTML(c.category || "Other")}
                     </span>
                   </td>
-                  <td style="max-width:280px;">
+                  <td style="max-width:320px; vertical-align:top;">
                     <div style="font-weight:700; color:var(--ink);">${escapeHTML(c.subject)}</div>
                     <div style="font-size:12px; color:var(--muted); margin-top:3px; line-height:1.4;">${escapeHTML(c.message)}</div>
+                    
+                    <!-- Admin Reply Box -->
+                    <div style="margin-top:10px; padding:8px 10px; background:rgba(154,59,185,0.06); border:1px solid var(--accent-border); border-radius:var(--radius-sm);">
+                      <div style="font-size:11px; font-weight:800; color:var(--purple-4); text-transform:uppercase;">Admin Response / Reply Note:</div>
+                      <input type="text" class="form-input form-input-sm mt-4" id="reply-input-${c.id}" value="${escapeHTML(c.adminReply || "")}" placeholder="Type reply message to student..." style="font-size:12px; background:#fff;" />
+                      <button class="btn btn-primary btn-sm mt-4" onclick="ComplaintsManager.saveReply('${c.id}')" style="font-size:11px; padding:3px 10px;">Send Reply</button>
+                    </div>
                   </td>
-                  <td style="font-size:12px; color:var(--muted); white-space:nowrap;">${formattedDate}</td>
-                  <td>
+                  <td style="font-size:12px; color:var(--muted); white-space:nowrap; vertical-align:top;">${formattedDate}</td>
+                  <td style="vertical-align:top;">
                     <span class="badge ${badgeClass}">${escapeHTML(c.status || "Pending")}</span>
                   </td>
-                  <td style="white-space:nowrap;">
-                    <select class="form-select form-select-sm" style="font-size:12px; padding:4px 8px; width:auto;" onchange="ComplaintsManager.updateStatus('${c.id}', this.value)">
+                  <td style="white-space:nowrap; vertical-align:top;">
+                    <select class="form-select form-select-sm" id="status-select-${c.id}" style="font-size:12px; padding:4px 8px; width:auto;" onchange="ComplaintsManager.updateStatus('${c.id}', this.value)">
                       <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
                       <option value="In Review" ${c.status === "In Review" ? "selected" : ""}>In Review</option>
                       <option value="Resolved" ${c.status === "Resolved" ? "selected" : ""}>Resolved</option>
@@ -107,15 +114,41 @@ const ComplaintsManager = {
   },
 
   updateStatus(complaintId, newStatus) {
-    const ok = STORAGE.updateComplaintStatus(complaintId, newStatus);
+    const replyInput = document.getElementById(`reply-input-${complaintId}`);
+    const replyText = replyInput ? replyInput.value.trim() : undefined;
+    const ok = STORAGE.updateComplaintStatus(complaintId, newStatus, replyText);
     if (ok) {
       if (typeof showToast === "function") {
-        showToast(`Complaint status updated to "${newStatus}".`, "success");
+        showToast(`Status updated to "${newStatus}" & notification sent to student.`, "success");
       }
       this.renderComplaints();
     } else {
       if (typeof showToast === "function") {
         showToast("Failed to update status.", "error");
+      }
+    }
+  },
+
+  saveReply(complaintId) {
+    const statusSelect = document.getElementById(`status-select-${complaintId}`);
+    const replyInput = document.getElementById(`reply-input-${complaintId}`);
+    const newStatus = statusSelect ? statusSelect.value : "In Review";
+    const replyText = replyInput ? replyInput.value.trim() : "";
+
+    if (!replyText) {
+      if (typeof showToast === "function") showToast("Please type a reply message before sending.", "error");
+      return;
+    }
+
+    const ok = STORAGE.updateComplaintStatus(complaintId, newStatus, replyText);
+    if (ok) {
+      if (typeof showToast === "function") {
+        showToast("✓ Admin reply sent to student!", "success");
+      }
+      this.renderComplaints();
+    } else {
+      if (typeof showToast === "function") {
+        showToast("Failed to send reply.", "error");
       }
     }
   },

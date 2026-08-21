@@ -91,18 +91,30 @@ const STORAGE = {
   setComplaints(complaints) { return this.set(STORAGE_KEYS.COMPLAINTS, complaints); },
   addComplaint(complaint) {
     const complaints = this.getComplaints();
+    complaint.unread = false;
+    complaint.adminReply = "";
     complaints.unshift(complaint);
     this.setComplaints(complaints);
     this.logActivity(`Complaint submitted by ${complaint.userName || "User"}`);
     return true;
   },
-  updateComplaintStatus(id, newStatus) {
+  updateComplaintStatus(id, newStatus, adminReply) {
     const complaints = this.getComplaints();
     const idx = complaints.findIndex((c) => c.id === id);
     if (idx === -1) return false;
-    complaints[idx].status = newStatus;
+    if (newStatus) complaints[idx].status = newStatus;
+    if (adminReply !== undefined) complaints[idx].adminReply = adminReply;
+    complaints[idx].unread = true; // Flag as unread for the student notification badge
     this.setComplaints(complaints);
-    this.logActivity(`Complaint status updated to ${newStatus}`);
+    this.logActivity(`Complaint status updated to "${newStatus}" with reply`);
+    return true;
+  },
+  markComplaintRead(id) {
+    const complaints = this.getComplaints();
+    const idx = complaints.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    complaints[idx].unread = false;
+    this.setComplaints(complaints);
     return true;
   }
 };

@@ -27,9 +27,14 @@ const App = {
 
   _highlightActiveNav() {
     const path = window.location.pathname.split("/").pop() || "index.html";
+    const profilePages = ["profile.html", "update-password.html", "mobile-number.html", "complaint.html", "preferences.html"];
+    const isProfileGroup = profilePages.includes(path);
+
     document.querySelectorAll(".sidebar-nav a").forEach((link) => {
       const href = link.getAttribute("href");
-      if (href === path) link.classList.add("active");
+      if (href === path || (isProfileGroup && href === "profile.html")) {
+        link.classList.add("active");
+      }
     });
   },
 
@@ -49,7 +54,11 @@ const App = {
       el.textContent = user ? user.name : "Guest";
     });
     document.querySelectorAll("[data-current-user-initial]").forEach((el) => {
-      el.textContent = user ? user.name.charAt(0).toUpperCase() : "?";
+      if (user && user.avatar) {
+        el.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" alt="Profile" />`;
+      } else {
+        el.textContent = user ? user.name.charAt(0).toUpperCase() : "?";
+      }
     });
 
     // Enhance every user-chip with an interactive dropdown menu & logout action

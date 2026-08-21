@@ -1029,3 +1029,62 @@ body.dark-theme .toggle-slider {
   background: #312847 !important;
 }
 
+/* Profile Sub-Navigation Tabs */
+.profile-subnav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 24px;
+}
+
+.subnav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.subnav-item:hover {
+  color: var(--purple-4);
+  background: var(--purple-0);
+  border-color: var(--accent-border);
+}
+
+.subnav-item.active {
+  background: var(--purple-4) !important;
+  color: #ffffff !important;
+  border-color: var(--purple-4) !important;
+  box-shadow: 0 4px 12px rgba(122, 34, 157, 0.25);
+}
+
+html[data-theme="dark"] .subnav-item,
+body.dark-theme .subnav-item {
+  background: #231c33 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .subnav-item:hover,
+body.dark-theme .subnav-item:hover {
+  background: #2d2442 !important;
+  color: var(--purple-1) !important;
+}
+
+html[data-theme="dark"] .subnav-item.active,
+body.dark-theme .subnav-item.active {
+  background: var(--purple-4) !important;
+  color: #ffffff !important;
+}
+
+
