@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Complaints — SEATWISE Admin</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="complaints.html"><span class="nav-icon">📩</span><span class="nav-label">Complaints</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <!-- Topbar -->
+    <header class="topbar">
+      <h1>Student Complaints & Support</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Administrator</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      
+      <!-- Stats Row -->
+      <div class="stats-grid mb-24">
+        <div class="stat-card">
+          <div class="stat-icon purple">📩</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total-complaints">0</div>
+            <div class="stat-label">Total Filed</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow">⏳</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-pending-complaints">0</div>
+            <div class="stat-label">Pending Action</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🔍</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-review-complaints">0</div>
+            <div class="stat-label">In Review</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✓</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-resolved-complaints">0</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Complaints Container Card -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:0;">Student Complaints Register</div>
+          
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="search-complaints" class="form-input form-input-sm" placeholder="Search by student, email or subject..." style="width:240px; font-size:12px;" />
+            
+            <select id="filter-category" class="form-select form-select-sm" style="width:140px; font-size:12px;">
+              <option value="ALL">All Categories</option>
+              <option value="Seating Issue">Seating Issue</option>
+              <option value="Exam Issue">Exam Issue</option>
+              <option value="Profile Issue">Profile Issue</option>
+              <option value="Technical Issue">Technical Issue</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <select id="filter-status" class="form-select form-select-sm" style="width:130px; font-size:12px;">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Review">In Review</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="admin-complaints-mount">
+          <!-- Rendered dynamically by complaints.js -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/complaints.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

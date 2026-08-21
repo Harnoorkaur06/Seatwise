@@ -36,7 +36,7 @@
 
   <div class="main-area">
     <header class="topbar">
-      <h1>Student Profile</h1>
+      <h1>Student Account & Preferences</h1>
       <div class="topbar-right">
         <div class="user-chip">
           <div class="user-avatar" data-current-user-initial>?</div>
@@ -45,26 +45,120 @@
       </div>
     </header>
 
-    <main class="page-content">
-      <div class="card" style="max-width:520px; margin:20px auto;">
-        <div class="card-title">Student Account Details</div>
-        <form id="profile-form">
+    <main class="page-content" style="max-width:760px; margin:0 auto;">
+      
+      <!-- 1. PERSONAL INFORMATION -->
+      <div class="card mb-24">
+        <div class="card-title">Personal Information</div>
+        <div class="form-hint mb-16">Update your candidate profile details, contact info, and linked roll number.</div>
+        <form id="profile-personal-form">
           <div class="form-group">
-            <label class="form-label" for="name">Full Name</label>
-            <input class="form-input" id="name" placeholder="e.g. Rahul Sharma" required />
+            <label class="form-label" for="profile-name">Full Name</label>
+            <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
           </div>
           <div class="form-group">
-            <label class="form-label" for="email">Email Address</label>
-            <input class="form-input" id="email" type="email" placeholder="e.g. rahul@student.com" required />
+            <label class="form-label" for="profile-email">Email Address</label>
+            <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
           </div>
           <div class="form-group">
-            <label class="form-label" for="rollNo">Linked University Roll Number</label>
-            <input class="form-input" id="rollNo" placeholder="e.g. 23CSE101" />
-            <div class="form-hint">Link your exact roll number to see your allocated seat and exam room. Must match a record in the student directory.</div>
+            <label class="form-label" for="profile-mobile">Mobile Number</label>
+            <input class="form-input" id="profile-mobile" type="tel" placeholder="e.g. +91 98765 43210" />
+            <div class="form-hint">Used for urgent examination venue alerts and notifications.</div>
           </div>
-          <button type="submit" class="btn btn-primary btn-block mt-20">Save Profile Changes</button>
+          <div class="form-group">
+            <label class="form-label" for="profile-rollno">University Roll Number</label>
+            <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
+            <div class="form-hint">Must match your official student record to see assigned seats.</div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-14">Save Profile Changes</button>
         </form>
       </div>
+
+      <!-- 2. CHANGE PASSWORD -->
+      <div class="card mb-24">
+        <div class="card-title">Security & Password</div>
+        <div class="form-hint mb-16">Ensure your account remains safe with a strong password.</div>
+        <form id="profile-pwd-form">
+          <div class="form-group">
+            <label class="form-label" for="pwd-current">Current Password</label>
+            <input class="form-input" type="password" id="pwd-current" placeholder="••••••••" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pwd-new">New Password</label>
+            <input class="form-input" type="password" id="pwd-new" placeholder="At least 6 characters" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pwd-confirm">Confirm New Password</label>
+            <input class="form-input" type="password" id="pwd-confirm" placeholder="Re-enter new password" required />
+          </div>
+          <button type="submit" class="btn btn-primary mt-14">Update Password</button>
+        </form>
+      </div>
+
+      <!-- 3. APPEARANCE PREFERENCES -->
+      <div class="card mb-24">
+        <div class="card-title">Appearance & Preferences</div>
+        <div class="form-hint mb-16">Customize your workspace visual theme and navigation layout.</div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--line);">
+          <div>
+            <div style="font-weight:700; color:var(--ink);">Dark Mode</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Switch interface between Light and Dark theme.</div>
+          </div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="pref-theme-toggle" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; margin-top:4px;">
+          <div>
+            <div style="font-weight:700; color:var(--ink);">Compact Sidebar</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">Collapse left navigation bar to icon-only view.</div>
+          </div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="pref-sidebar-toggle" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 4. CONTACT ADMINISTRATOR / COMPLAINT -->
+      <div class="card mb-24">
+        <div class="card-title">Contact Administrator / Issue Reporting</div>
+        <div class="form-hint mb-16">Submit a formal request or seating issue directly to the examination department.</div>
+        <form id="profile-complaint-form">
+          <div class="form-group">
+            <label class="form-label" for="complaint-category">Issue Category</label>
+            <select class="form-select" id="complaint-category">
+              <option value="Seating Issue">Seating Issue</option>
+              <option value="Exam Issue">Exam Issue</option>
+              <option value="Profile Issue">Profile Issue</option>
+              <option value="Technical Issue">Technical Issue</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="complaint-subject">Subject</label>
+            <input class="form-input" id="complaint-subject" placeholder="e.g. Desk allocation mismatch in LH-102" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="complaint-message">Complaint Details</label>
+            <textarea class="form-input" id="complaint-message" rows="4" placeholder="Describe your issue in detail..." required style="resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary mt-14">Submit Complaint</button>
+        </form>
+      </div>
+
+      <!-- 5. MY COMPLAINTS -->
+      <div class="card mb-24">
+        <div class="card-title">My Submitted Complaints</div>
+        <div class="form-hint mb-16">Track status updates on your previously filed requests.</div>
+        <div id="my-complaints-list">
+          <!-- Rendered dynamically by profile.js -->
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -75,37 +169,7 @@
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/users.js"></script>
-<script src="js/dashboard.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/app.js"></script>
-<script>
-  Auth.requireUser();
-
-  function loadUser() {
-    const current = Auth.currentUser();
-    const record = STORAGE.getUsers().find((u) => u.id === current.id);
-    if (!record) return;
-    document.getElementById("name").value = record.name || "";
-    document.getElementById("email").value = record.email || "";
-    document.getElementById("rollNo").value = record.rollNo || "";
-  }
-
-  document.getElementById("profile-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const current = Auth.currentUser();
-    const result = Users.update(current.id, {
-      name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      rollNo: document.getElementById("rollNo").value.trim()
-    });
-    if (result.ok) {
-      showToast("Profile updated successfully.", "success");
-      App._renderCurrentUserBadge();
-    } else {
-      showToast(result.message, "error");
-    }
-  });
-
-  loadUser();
-</script>
 </body>
 </html>

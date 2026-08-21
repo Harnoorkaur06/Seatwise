@@ -31,6 +31,7 @@ const Auth = {
       role: "user",
       disabled: false,
       rollNo: "",
+      mobile: "",
       createdAt: new Date().toISOString()
     };
     users.push(newUser);

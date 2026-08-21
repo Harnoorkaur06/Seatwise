@@ -39,7 +39,7 @@ const Users = {
     // keep current-session copy in sync if this is the logged-in user
     const current = STORAGE.getCurrentUser();
     if (current && current.id === id) {
-      STORAGE.setCurrentUser({ ...current, name: users[idx].name, email: users[idx].email });
+      STORAGE.setCurrentUser({ ...current, ...users[idx] });
     }
     STORAGE.logActivity(`User updated: ${users[idx].name}`);
     return { ok: true };

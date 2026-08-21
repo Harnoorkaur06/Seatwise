@@ -18,6 +18,7 @@ const STORAGE_KEYS = Object.freeze({
   ROOMS: "examseat_rooms",
   SEATING_PLAN: "examseat_seating_plan",
   ACTIVITY: "examseat_activity",
+  COMPLAINTS: "examseat_complaints",
   SEEDED: "examseat_seeded"
 });
 
@@ -84,5 +85,24 @@ const STORAGE = {
     activity.unshift({ message, time: new Date().toISOString() });
     // keep only the most recent 30 entries
     this.set(STORAGE_KEYS.ACTIVITY, activity.slice(0, 30));
+  },
+
+  getComplaints() { return this.get(STORAGE_KEYS.COMPLAINTS, []); },
+  setComplaints(complaints) { return this.set(STORAGE_KEYS.COMPLAINTS, complaints); },
+  addComplaint(complaint) {
+    const complaints = this.getComplaints();
+    complaints.unshift(complaint);
+    this.setComplaints(complaints);
+    this.logActivity(`Complaint submitted by ${complaint.userName || "User"}`);
+    return true;
+  },
+  updateComplaintStatus(id, newStatus) {
+    const complaints = this.getComplaints();
+    const idx = complaints.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    complaints[idx].status = newStatus;
+    this.setComplaints(complaints);
+    this.logActivity(`Complaint status updated to ${newStatus}`);
+    return true;
   }
 };
