@@ -16,6 +16,8 @@
   function init() {
     setFooterYear();
     setupLoader();
+    setupCinematicBackground();
+    setupCinematicParallax();
     setupHeader();
     setupMobileMenu();
     setupScrollProgress();
@@ -30,88 +32,259 @@
     setupBackToTop();
     setupSmoothAnchors();
     setupCTAGrid();
+    setupConflictResolver();
+    setupTechPath();
   }
 
-  /* ==========================================================================
-     LOADER
-     Keeps the SEATWISE opening screen visible for approximately 5 seconds.
-     Everything else in the landing page remains unchanged.
-     ========================================================================== */
 
-  // function setupLoader() {
-  //   const loader = $("#site-loader");
-  //   if (!loader) return;
+  function setupCinematicBackground() {
+    const canvas = $("#cinematic-bg-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  //   let pageLoaded = document.readyState === "complete";
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  //   const hide = () => {
-  //     /*
-  //      * Keep the loader visible for 5 seconds before starting
-  //      * the exit animation.
-  //      */
-  //     window.setTimeout(() => {
-  //       loader.classList.add("hidden");
-  //     }, state.reduceMotion ? 5000 : 5000);
-  //   };
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 32 : 80;
+    const mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
+    let scrollY = window.scrollY;
+    let targetScrollY = window.scrollY;
+    let scrollVelocity = 0;
+    let prevScrollY = window.scrollY;
 
-  //   /*
-  //    * If the page is already completely loaded, start the
-  //    * 5-second loader immediately.
-  //    */
-  //   if (pageLoaded) {
-  //     hide();
-  //   } else {
-  //     /*
-  //      * Wait for the complete page to load first.
-  //      * Then keep the loader visible for 5 seconds.
-  //      */
-  //     window.addEventListener("load", hide, { once: true });
-  //   }
+    const particles = [];
+    const colors = [
+      "rgba(224, 177, 237, ",
+      "rgba(192, 132, 252, ",
+      "rgba(168, 85, 247, ",
+      "rgba(129, 140, 248, ",
+      "rgba(255, 255, 255, "
+    ];
 
-  //   /*
-  //    * Safety fallback:
-  //    * Even if something prevents the load event from firing,
-  //    * the loader will still disappear after 5 seconds.
-  //    */
-  //   window.setTimeout(() => {
-  //     loader.classList.add("hidden");
-  //   }, 5000);
-  // }
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: Math.random() * 0.8 + 0.2, 
+        size: Math.random() * 2.2 + 0.8,
+        colorPrefix: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random() * 0.6 + 0.2,
+        baseAlpha: Math.random() * 0.5 + 0.2,
+        pulseSpeed: Math.random() * 0.02 + 0.005,
+        pulseVal: Math.random() * Math.PI * 2,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+      });
+    }
+    
+    const orbs = [
+      { xRatio: 0.82, yRatio: 0.22, radius: 460, color: "rgba(168, 85, 247, 0.16)", phase: 0 },
+      { xRatio: 0.15, yRatio: 0.55, radius: 430, color: "rgba(99, 102, 241, 0.14)", phase: 2 },
+      { xRatio: 0.88, yRatio: 0.78, radius: 480, color: "rgba(217, 70, 239, 0.14)", phase: 4 },
+      { xRatio: 0.35, yRatio: 0.92, radius: 410, color: "rgba(147, 51, 234, 0.18)", phase: 1 }
+    ];
 
-// function setupLoader() {
-//   const loader = $("#site-loader");
-//   if (!loader) return;
+    const palettes = [
+      { stop: 0.0, top: [18, 9, 31], bottom: [33, 14, 52] },
+      { stop: 0.25, top: [24, 11, 38], bottom: [20, 9, 34] },
+      { stop: 0.55, top: [20, 10, 36], bottom: [16, 7, 28] },
+      { stop: 0.8, top: [22, 9, 38], bottom: [18, 8, 30] },
+      { stop: 1.0, top: [16, 6, 26], bottom: [36, 12, 58] }
+    ];
 
-//   // Keep the opening SEATWISE screen visible for 5 seconds.
-//   // Start the timer immediately after the DOM is ready.
-//   window.setTimeout(() => {
-//     loader.classList.add("hidden");
-//   }, state.reduceMotion ? 2000 : 2000);
-// }
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    window.addEventListener("pointermove", e => {
+      mouse.targetX = e.clientX;
+      mouse.targetY = e.clientY;
+    }, { passive: true });
+
+    function interpolatePalette(progress) {
+      let p1 = palettes[0], p2 = palettes[palettes.length - 1];
+      for (let i = 0; i < palettes.length - 1; i++) {
+        if (progress >= palettes[i].stop && progress <= palettes[i + 1].stop) {
+          p1 = palettes[i];
+          p2 = palettes[i + 1];
+          break;
+        }
+      }
+      const span = p2.stop - p1.stop || 1;
+      const t = (progress - p1.stop) / span;
+
+      const top = [
+        Math.round(p1.top[0] + (p2.top[0] - p1.top[0]) * t),
+        Math.round(p1.top[1] + (p2.top[1] - p1.top[1]) * t),
+        Math.round(p1.top[2] + (p2.top[2] - p1.top[2]) * t)
+      ];
+
+      const bottom = [
+        Math.round(p1.bottom[0] + (p2.bottom[0] - p1.bottom[0]) * t),
+        Math.round(p1.bottom[1] + (p2.bottom[1] - p1.bottom[1]) * t),
+        Math.round(p1.bottom[2] + (p2.bottom[2] - p1.bottom[2]) * t)
+      ];
+
+      return { top: `rgb(${top[0]},${top[1]},${top[2]})`, bottom: `rgb(${bottom[0]},${bottom[1]},${bottom[2]})` };
+    }
+
+    let time = 0;
+
+    function render() {
+      if (document.hidden) {
+        requestAnimationFrame(render);
+        return;
+      }
+
+      time += 0.016;
+      mouse.x += (mouse.targetX - mouse.x) * 0.08;
+      mouse.y += (mouse.targetY - mouse.y) * 0.08;
+      targetScrollY = window.scrollY;
+      scrollY += (targetScrollY - scrollY) * 0.1;
+      scrollVelocity = (targetScrollY - prevScrollY) * 0.35;
+      prevScrollY = targetScrollY;
+      const docHeight = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const scrollProgress = Math.min(Math.max(scrollY / docHeight, 0), 1);
+      const pal = interpolatePalette(scrollProgress);
+      const bgGrad = ctx.createLinearGradient(0, 0, width * 0.5, height);
+      bgGrad.addColorStop(0, pal.top);
+      bgGrad.addColorStop(1, pal.bottom);
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+      
+      orbs.forEach((orb, idx) => {
+        const floatX = Math.sin(time * 0.8 + orb.phase) * 55;
+        const floatY = Math.cos(time * 0.6 + orb.phase) * 45;
+        const parallaxY = (scrollY * 0.12 * (idx % 2 === 0 ? 1 : -0.8));
+
+        const ox = (width * orb.xRatio) + floatX + (mouse.x - width / 2) * 0.035;
+        const oy = ((height * orb.yRatio) + floatY - (parallaxY % (height * 1.5)) + height * 1.5) % (height * 1.5) - height * 0.25;
+
+        const orbGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, orb.radius);
+        orbGrad.addColorStop(0, orb.color);
+        orbGrad.addColorStop(0.5, orb.color.replace(/[\d\.]+\)$/, '0.04)'));
+        orbGrad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = orbGrad;
+        ctx.beginPath();
+        ctx.arc(ox, oy, orb.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      const velY = Math.max(-12, Math.min(12, scrollVelocity));
+
+      particles.forEach(p => {
+        p.pulseVal += p.pulseSpeed;
+        p.alpha = p.baseAlpha + Math.sin(p.pulseVal) * 0.25;
+
+        p.x += p.vx * p.z;
+        p.y += p.vy * p.z - (velY * p.z * 0.4);
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          const force = (120 - dist) / 120 * 1.5;
+          p.x += (dx / dist) * force;
+          p.y += (dy / dist) * force;
+        }
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+        if (p.y < -10) p.y = height + 10;
+        if (p.y > height + 10) p.y = -10;
+
+        ctx.fillStyle = `${p.colorPrefix}${Math.max(0, Math.min(1, p.alpha))})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.z, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      if (!state.reduceMotion) {
+        requestAnimationFrame(render);
+      }
+    }
+
+    if (!state.reduceMotion) {
+      render();
+    } else {
+      const pal = interpolatePalette(0);
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+      bgGrad.addColorStop(0, pal.top);
+      bgGrad.addColorStop(1, pal.bottom);
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+    }
+  }
+
+  function setupCinematicParallax() {
+    if (state.reduceMotion || window.innerWidth < 800) return;
+
+    const heroCopy = $(".hero-copy");
+    const heroProduct = $(".hero-product");
+    const heroOrbs = $$(".hero-orb");
+    const heroStreaks = $$(".hero-streak");
+    const floatCards = $$(".floating-card");
+    const chips = $$(".story-chip");
+
+    let ticking = false;
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          if (scrollY < 1200) {
+            if (heroCopy) heroCopy.style.transform = `translateY(${scrollY * 0.12}px)`;
+            if (heroProduct) heroProduct.style.transform = `translateY(${scrollY * 0.06}px)`;
+            heroOrbs.forEach((orb, i) => {
+              orb.style.transform = `translate3d(0, ${scrollY * (0.15 + i * 0.08)}px, 0)`;
+            });
+            heroStreaks.forEach((streak, i) => {
+              streak.style.transform = `translateX(${scrollY * (0.2 + i * 0.1)}px) rotate(-25deg)`;
+            });
+            floatCards.forEach((card, i) => {
+              card.style.transform = `translateY(${Math.sin(Date.now() * 0.002 + i) * 6 + scrollY * 0.05}px)`;
+            });
+          }
+
+          chips.forEach((chip, i) => {
+            chip.style.transform = `translateY(${Math.sin(Date.now() * 0.002 + i * 2) * 5}px)`;
+          });
+
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
 
 function setupLoader() {
   const intro = $("#seatwise-intro");
   if (!intro) return;
 
-  // Do NOT change or interrupt the existing intro animation.
-  // Wait until the animation has completely finished.
   const finishIntro = () => {
-    // Start the existing CSS exit transition.
     intro.classList.add("intro-hidden");
 
-    // Completely remove the intro from interaction/layout
-    // after the fade-out has finished.
     window.setTimeout(() => {
       intro.style.display = "none";
       intro.setAttribute("aria-hidden", "true");
     }, 800);
   };
 
-  // Give the existing intro animation time to finish.
-  window.setTimeout(finishIntro, 5000);
+  window.setTimeout(finishIntro, 7000);
 }
-
-
 
 
   function setupHeader() {
@@ -176,7 +349,8 @@ function setupLoader() {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
+        } else {
+          entry.target.classList.remove("visible");
         }
       });
     }, {
@@ -486,41 +660,37 @@ function setupLoader() {
   }
 
   function setupMagneticButtons() {
-    if (
-      state.reduceMotion ||
-      window.innerWidth < 850
-    ) {
-      return;
-    }
+    if (state.reduceMotion || window.innerWidth < 850) return;
 
     $$(".magnetic").forEach(button => {
-      button.addEventListener(
-        "pointermove",
-        event => {
-          const rect =
-            button.getBoundingClientRect();
+      let x = 0, y = 0;
+      let targetX = 0, targetY = 0;
+      let rafId = null;
 
-          const x =
-            event.clientX -
-            rect.left -
-            rect.width / 2;
-
-          const y =
-            event.clientY -
-            rect.top -
-            rect.height / 2;
-
-          button.style.transform =
-            `translate(${x * 0.08}px, ${y * 0.08}px)`;
+      function spring() {
+        x += (targetX - x) * 0.2;
+        y += (targetY - y) * 0.2;
+        button.style.transform = `translate(${x}px, ${y}px)`;
+        if (Math.abs(targetX - x) > 0.1 || Math.abs(targetY - y) > 0.1) {
+          rafId = requestAnimationFrame(spring);
+        } else {
+          button.style.transform = targetX === 0 ? "" : `translate(${targetX}px, ${targetY}px)`;
+          rafId = null;
         }
-      );
+      }
 
-      button.addEventListener(
-        "pointerleave",
-        () => {
-          button.style.transform = "";
-        }
-      );
+      button.addEventListener("pointermove", event => {
+        const rect = button.getBoundingClientRect();
+        targetX = (event.clientX - rect.left - rect.width / 2) * 0.22;
+        targetY = (event.clientY - rect.top - rect.height / 2) * 0.22;
+        if (!rafId) rafId = requestAnimationFrame(spring);
+      });
+
+      button.addEventListener("pointerleave", () => {
+        targetX = 0;
+        targetY = 0;
+        if (!rafId) rafId = requestAnimationFrame(spring);
+      });
     });
   }
 
@@ -535,28 +705,41 @@ function setupLoader() {
       return;
     }
 
+    let cx = window.innerWidth / 2;
+    let cy = window.innerHeight / 2;
+    let targetX = cx;
+    let targetY = cy;
+    let isVisible = false;
+
     window.addEventListener(
       "pointermove",
       event => {
-        glow.style.left =
-          `${event.clientX}px`;
-
-        glow.style.top =
-          `${event.clientY}px`;
-
-        glow.style.opacity = "1";
+        targetX = event.clientX;
+        targetY = event.clientY;
+        if (!isVisible) {
+          isVisible = true;
+          glow.style.opacity = "1";
+        }
       },
-      {
-        passive: true
-      }
+      { passive: true }
     );
 
     window.addEventListener(
       "pointerleave",
       () => {
+        isVisible = false;
         glow.style.opacity = "0";
       }
     );
+
+    function loop() {
+      cx += (targetX - cx) * 0.15;
+      cy += (targetY - cy) * 0.15;
+      glow.style.left = `${cx}px`;
+      glow.style.top = `${cy}px`;
+      requestAnimationFrame(loop);
+    }
+    loop();
   }
 
   function setupBackToTop() {
@@ -636,6 +819,41 @@ function setupLoader() {
       grid.appendChild(span);
     }
   }
+  function setupConflictResolver() {
+    const rows = $$(".resolver-row");
+    const map = $(".conflict-map");
+    if (!rows.length || !map) return;
+
+    const activate = row => {
+      rows.forEach(r => r.classList.remove("active"));
+      row.classList.add("active");
+      map.dataset.conflictStep = row.dataset.step || "1";
+    };
+
+    rows.forEach(row => {
+      row.addEventListener("click", () => activate(row));
+    });
+
+    if (!state.reduceMotion) {
+      let stepIndex = 0;
+      window.setInterval(() => {
+        stepIndex = (stepIndex + 1) % rows.length;
+        activate(rows[stepIndex]);
+      }, 3000);
+    }
+  }
+
+  function setupTechPath() {
+    const nodes = $$(".tech-node");
+    if (!nodes.length) return;
+
+    nodes.forEach(node => {
+      node.addEventListener("click", () => {
+        nodes.forEach(n => n.classList.remove("active"));
+        node.classList.add("active");
+      });
+    });
+  }
 
   function setFooterYear() {
     const year = $("#footer-year");
@@ -646,24 +864,45 @@ function setupLoader() {
     }
   }
 
+function setupConflictResolver() {
+  const rows = $$(".resolver-row");
+  const map = $(".conflict-map");
+  if (!rows.length || !map) return;
+
+  const activate = row => {
+    rows.forEach(r => r.classList.remove("active"));
+    row.classList.add("active");
+    map.dataset.conflictStep = row.dataset.step || "1";
+  };
+
+  rows.forEach(row => {
+    row.addEventListener("click", () => activate(row));
+  });
+
+  activate(rows[0]); 
+  if (!state.reduceMotion) {
+    let stepIndex = 0;
+    window.setInterval(() => {
+      stepIndex = (stepIndex + 1) % rows.length;
+      activate(rows[stepIndex]);
+    }, 3000);
+  }
+}
+
+function setupTechPath() {
+  const nodes = $$(".tech-node");
+  if (!nodes.length) return;
+
+  nodes.forEach(node => {
+    node.addEventListener("click", () => {
+      nodes.forEach(n => n.classList.remove("active"));
+      node.classList.add("active");
+    });
+  });
+}
+
 })();
 
-
-
-
-
-
-/* =========================================================
-   SEATWISE — INTERACTIVE CONFLICT-RESOLUTION DEMO
-   ---------------------------------------------------------
-   Deterministic simulation that demonstrates the SEATWISE
-   conflict-detection-and-swap concept using a fixed 24-seat
-   grid with real student roll numbers and course codes.
-
-   STATE MACHINE:
-     READY → ANALYZING → CONFLICT_DETECTED → SEARCHING →
-     OPTIMIZING → SWITCHING → RESOLVED → READY
-   ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -679,27 +918,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!grid || !generateBtn) return;
 
 
-    /* ==========================================================
-       DETERMINISTIC STUDENT DATA  (4 rows × 6 columns = 24)
-       ----------------------------------------------------------
-       Row labels: A B C D     Column labels: 1–6
-       Each entry: { roll, course }
-
-       Intentional conflict:
-         Index 0 (A1) → CSE-07 / CS301
-         Index 1 (A2) → CSE-08 / CS301    ← same course, adjacent!
-
-       Swap target:
-         Index 17 (C6) → ECE-18 / EC201   ← different course, safe
-       ========================================================== */
-
     const ROWS = 4;
     const COLS = 6;
 
     const SEAT_DATA = [
         /* Row A */
         { roll: "CSE-07", course: "CS301" },
-        { roll: "CSE-08", course: "CS301" },   // ← conflict with A1
+        { roll: "CSE-08", course: "CS301" },  
         { roll: "ECE-02", course: "EC201" },
         { roll: "ME-03",  course: "MA201" },
         { roll: "PHY-04", course: "PH201" },
@@ -717,7 +942,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { roll: "ME-16",  course: "MA201" },
         { roll: "ECE-17", course: "EC201" },
         { roll: "PHY-19", course: "PH201" },
-        { roll: "ECE-18", course: "EC201" },   // ← swap target (C6)
+        { roll: "ECE-18", course: "EC201" },   
         /* Row D */
         { roll: "CSE-20", course: "CS301" },
         { roll: "ME-21",  course: "MA201" },
@@ -727,29 +952,17 @@ document.addEventListener("DOMContentLoaded", () => {
         { roll: "PHY-25", course: "PH201" }
     ];
 
-    /* Fixed conflict and swap indices (deterministic) */
-    const CONFLICT_A = 0;   // A1 — CSE-07 / CS301
-    const CONFLICT_B = 1;   // A2 — CSE-08 / CS301
-    const SWAP_TARGET = 17; // C6 — ECE-18 / EC201
+    const CONFLICT_A = 0;   
+    const CONFLICT_B = 1;   
+    const SWAP_TARGET = 17; 
 
-    /* Working copy that gets mutated during the simulation */
     let liveData = [];
-
-
-    /* ==========================================================
-       SEAT LABEL HELPER — e.g. index 0 → "A1", index 7 → "B2"
-       ========================================================== */
 
     function seatLabel(index) {
         const row = String.fromCharCode(65 + Math.floor(index / COLS));
         const col = (index % COLS) + 1;
         return `${row}${col}`;
     }
-
-
-    /* ==========================================================
-       COURSE → CSS CLASS for color-coding
-       ========================================================== */
 
     function courseClass(course) {
         const map = {
@@ -761,27 +974,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return map[course] || "";
     }
 
-
-    /* ==========================================================
-       BUILD / REBUILD THE 24-SEAT GRID
-       ========================================================== */
-
     function createGrid() {
-        /* Reset working data to the original deterministic layout */
         liveData = SEAT_DATA.map(s => ({ ...s }));
 
         grid.innerHTML = "";
 
         liveData.forEach((student, i) => {
             const seat = document.createElement("div");
-            seat.className = `sw-seat occupied ${courseClass(student.course)}`;
+            seat.className = `sw-seat occupied`;
             seat.dataset.index = String(i);
             seat.style.animationDelay = `${i * 25}ms`;
 
             seat.innerHTML =
-                `<small class="sw-seat-label">${seatLabel(i)}</small>` +
-                `<span class="sw-seat-roll">${student.roll}</span>` +
-                `<span class="sw-seat-course">${student.course}</span>`;
+                `<span class="sw-seat-label">${seatLabel(i)}</span>` +
+                `<span class="sw-seat-code">${student.roll}${student.course}</span>`;
 
             grid.appendChild(seat);
         });
@@ -789,31 +995,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     createGrid();
 
-
-    /* ==========================================================
-       UPDATE A SINGLE SEAT TILE to reflect liveData[index]
-       ========================================================== */
-
     function updateSeatContent(index) {
         const el   = grid.children[index];
         const data = liveData[index];
         if (!el || !data) return;
 
-        /* Remove old course class, add new */
-        el.classList.remove("sw-course-cs", "sw-course-ma", "sw-course-ph", "sw-course-ec");
-        el.classList.add(courseClass(data.course));
-
         el.innerHTML =
-            `<small class="sw-seat-label">${seatLabel(index)}</small>` +
-            `<span class="sw-seat-roll">${data.roll}</span>` +
-            `<span class="sw-seat-course">${data.course}</span>`;
+            `<span class="sw-seat-label">${seatLabel(index)}</span>` +
+            `<span class="sw-seat-code">${data.roll}${data.course}</span>`;
     }
-
-
-    /* ==========================================================
-       GENERATE BUTTON
-       ========================================================== */
-
     let running = false;
 
     generateBtn.addEventListener("click", async () => {
@@ -828,33 +1018,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    /* ==========================================================
-       SIMULATION — deterministic multi-stage state machine
-       ========================================================== */
-
     async function runSimulation() {
 
         const seats = () => [...grid.children];
-
-        /* -------------------------------------------------------
-           STAGE 0 — READY: reset grid to initial state
-           ------------------------------------------------------- */
         createGrid();
 
         studentsEl.textContent  = "24";
         conflictsEl.textContent = "00";
         systemStatus.textContent = "ANALYZING";
         gridStatus.textContent   = "PROCESSING";
-        demoTitle.textContent    = "Analyzing Seating Constraints";
+        demoTitle.innerHTML      = "Analyzing Seating<br />Constraints";
         demoMessage.textContent  = "SEATWISE is scanning all 24 student assignments and checking neighbouring-seat constraints.";
 
         await wait(1200);
 
-
-        /* -------------------------------------------------------
-           STAGE 1 — CONFLICT DETECTED
-           Highlight BOTH conflicting seats A1 and A2.
-           ------------------------------------------------------- */
         const seatA = grid.children[CONFLICT_A];
         const seatB = grid.children[CONFLICT_B];
 
@@ -864,7 +1041,7 @@ document.addEventListener("DOMContentLoaded", () => {
         conflictsEl.textContent  = "01";
         systemStatus.textContent = "CONFLICT DETECTED";
         gridStatus.textContent   = "ATTENTION";
-        demoTitle.textContent    = "Conflict Detected";
+        demoTitle.innerHTML      = "Conflict Detected";
         demoMessage.textContent  =
             `Seats ${seatLabel(CONFLICT_A)} and ${seatLabel(CONFLICT_B)} contain students from the same course (CS301). ` +
             `SEATWISE is searching for a valid alternative.`;
@@ -872,68 +1049,48 @@ document.addEventListener("DOMContentLoaded", () => {
         await wait(2000);
 
 
-        /* -------------------------------------------------------
-           STAGE 2 — SEARCHING
-           Show intermediate optimization state.
-           ------------------------------------------------------- */
         systemStatus.textContent = "SEARCHING";
         gridStatus.textContent   = "SEARCHING";
-        demoTitle.textContent    = "Constraint Search";
+        demoTitle.innerHTML      = "Constraint Search";
         demoMessage.textContent  = "Evaluating available positions and checking neighbouring-seat constraints.";
 
         await wait(1000);
 
-
-        /* -------------------------------------------------------
-           STAGE 3 — OPTIMIZING
-           Highlight the candidate destination seat (C6).
-           ------------------------------------------------------- */
         const seatC = grid.children[SWAP_TARGET];
         seatC.classList.add("sw-candidate");
 
         systemStatus.textContent = "OPTIMIZING";
         gridStatus.textContent   = "OPTIMIZING";
-        demoTitle.textContent    = "Evaluating Candidate";
+        demoTitle.innerHTML      = "Evaluating Candidate";
         demoMessage.textContent  =
-            `Seat ${seatLabel(SWAP_TARGET)} (${liveData[SWAP_TARGET].roll} / ${liveData[SWAP_TARGET].course}) ` +
+            `Seat ${seatLabel(SWAP_TARGET)} (${liveData[SWAP_TARGET].roll}${liveData[SWAP_TARGET].course}) ` +
             `is a valid swap candidate — no same-course neighbours.`;
 
         await wait(1500);
 
-
-        /* -------------------------------------------------------
-           STAGE 4 — SWITCHING
-           Actually swap the student data between A2 and C6,
-           then animate the visual change.
-           ------------------------------------------------------- */
         systemStatus.textContent = "SWITCHING STUDENT ASSIGNMENT";
         gridStatus.textContent   = "SWITCHING";
-        demoTitle.textContent    = "Switching Student Assignment";
+        demoTitle.innerHTML      = "Switching Student Assignment";
         demoMessage.textContent  =
-            `Swapping ${liveData[CONFLICT_B].roll} (${liveData[CONFLICT_B].course}) ↔ ` +
-            `${liveData[SWAP_TARGET].roll} (${liveData[SWAP_TARGET].course}).`;
+            `Swapping ${liveData[CONFLICT_B].roll}${liveData[CONFLICT_B].course} ↔ ` +
+            `${liveData[SWAP_TARGET].roll}${liveData[SWAP_TARGET].course}.`;
 
-        /* Remove conflict / candidate highlighting */
         seatA.classList.remove("conflict");
         seatB.classList.remove("conflict");
         seatC.classList.remove("sw-candidate");
 
-        /* Add switching animation class to both affected seats */
         seatB.classList.add("sw-switching");
         seatC.classList.add("sw-switching");
 
         await wait(500);
 
-        /* Perform the actual data swap */
         const temp = { ...liveData[CONFLICT_B] };
         liveData[CONFLICT_B] = { ...liveData[SWAP_TARGET] };
         liveData[SWAP_TARGET] = { ...temp };
 
-        /* Update the DOM to reflect the new assignments */
         updateSeatContent(CONFLICT_B);
         updateSeatContent(SWAP_TARGET);
 
-        /* Remove switching, add resolved */
         seatB.classList.remove("sw-switching");
         seatC.classList.remove("sw-switching");
         seatB.classList.add("resolved");
@@ -942,14 +1099,10 @@ document.addEventListener("DOMContentLoaded", () => {
         await wait(1000);
 
 
-        /* -------------------------------------------------------
-           STAGE 5 — RESOLVED / SYSTEM OPTIMAL
-           Final validation: zero conflicts.
-           ------------------------------------------------------- */
         conflictsEl.textContent  = "00";
         systemStatus.textContent = "SYSTEM OPTIMAL";
         gridStatus.textContent   = "RESOLVED";
-        demoTitle.textContent    = "Conflict Resolved — System Optimal";
+        demoTitle.innerHTML      = "Conflict Resolved — System Optimal";
         demoMessage.textContent  =
             "The students were automatically reassigned to valid seats. " +
             "Final constraint validation confirms zero conflicts.";
@@ -957,31 +1110,17 @@ document.addEventListener("DOMContentLoaded", () => {
         await wait(3000);
 
 
-        /* -------------------------------------------------------
-           STAGE 6 — RETURN TO READY
-           ------------------------------------------------------- */
         systemStatus.textContent = "SYSTEM READY";
         gridStatus.textContent   = "OPTIMAL";
-        demoTitle.textContent    = "Intelligent Conflict Resolution";
+        demoTitle.innerHTML      = "Intelligent Conflict<br />Resolution";
         demoMessage.textContent  = "SEATWISE continuously checks seating constraints and resolves conflicts automatically.";
 
-        /* Rebuild the grid to its original deterministic state */
         createGrid();
     }
-
-
-    /* ==========================================================
-       DELAY HELPER
-       ========================================================== */
 
     function wait(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-
-
-    /* ==========================================================
-       MOUSE TILT EFFECT  (preserved from original)
-       ========================================================== */
 
     const demo = document.querySelector(".sw-demo-container");
 
@@ -1003,10 +1142,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* ==========================================================
-       SCROLL REVEAL  (preserved from original)
-       ========================================================== */
-
     const observer = new IntersectionObserver(
         entries => {
             entries.forEach(entry => {
@@ -1024,5 +1159,6 @@ document.addEventListener("DOMContentLoaded", () => {
         wowSection.classList.add("sw-hidden");
         observer.observe(wowSection);
     }
+
 
 });
