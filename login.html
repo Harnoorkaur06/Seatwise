@@ -81,8 +81,9 @@
       
       <div class="auth-footer-link" style="margin-top:20px; padding:12px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:12px; line-height:1.5; text-align:left;">
         📌 <strong>Sign In Options:</strong><br />
-        • <strong>Option A:</strong> Email (`rahul@student.com`) + Password<br />
-        • <strong>Option B:</strong> Roll Number (`23CSE101`) + Password<br />
+        • <strong>Option A (Email):</strong> `harnoor@student.com` or `rahul@student.com`<br />
+        • <strong>Option B (Roll No):</strong> `2410992925` or `23CSE101`<br />
+        • <strong>Password:</strong> `student123`<br />
         • <strong>First-Time Student:</strong> Click <em>"Set Up Password"</em> using your Email or Roll Number.
       </div>
     </div>
@@ -130,7 +131,9 @@
 <script src="js/storage.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/app.js"></script>
 <script>
+  App.init();
   Auth.redirectIfLoggedIn();
 
   // Login Form Submission

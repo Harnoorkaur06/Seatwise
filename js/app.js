@@ -192,11 +192,32 @@ const App = {
     const students = [];
     let rollCounter = 101;
 
+    // Featured student matching official Chitkara university format
+    students.push({
+      id: "student_harnoor",
+      name: "HARNOOR KAUR",
+      email: "harnoor@student.com",
+      rollNo: "2410992925",
+      fatherName: "Mr. SATINDER SINGH",
+      classBranch: "2024-BE-CSE-AI-4 SEM",
+      department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+      coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+      password: "student123",
+      passwordSet: true,
+      mobile: "9876543210",
+      course: "CSE-AI",
+      semester: "4th Semester",
+      subject: "24CAI0201",
+      role: "student",
+      disabled: false,
+      createdAt: new Date().toISOString()
+    });
+
     for (let i = 0; i < 500; i++) {
       const firstName = firstNames[i % firstNames.length];
       const name = firstName + (i >= firstNames.length ? ` ${Math.floor(i / firstNames.length) + 1}` : "");
       const subject = subjects[i % subjects.length];
-      const rollNo = `23CSE${rollCounter}`;
+      const rollNo = `2410992${rollCounter}`;
       
       // Dedicated emails for key demo students, generated emails for remaining
       let email = "";
@@ -206,16 +227,23 @@ const App = {
       else if (i === 3) email = "disabled@student.com";
       else email = `${firstName.toLowerCase()}${rollCounter}@student.com`;
 
+      const tempStudent = { name, rollNo };
+      const fatherName = STORAGE._getFatherName ? STORAGE._getFatherName(tempStudent, i + 1) : "Mr. RAJESH SHARMA";
+
       students.push({
         id: `student_${rollCounter}`,
         name,
         email,
         rollNo,
+        fatherName,
+        classBranch: i % 2 === 0 ? "2024-BE-CSE-AI-4 SEM" : "2024-BE-CSE-4 SEM",
+        department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+        coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
         password: "student123",
         passwordSet: true,
         mobile: "9876543210",
         course: i % 2 === 0 ? "CSE-AI" : "CSE",
-        semester: "5th Semester",
+        semester: "4th Semester",
         subject,
         role: "student",
         disabled: i === 3, // Student #4 (disabled@student.com / 23CSE104) disabled by default for testing
@@ -231,11 +259,15 @@ const App = {
       name: "First Login Test Student",
       email: "newstudent@student.com",
       rollNo: "23CSE999",
+      fatherName: "Mr. RAJESH SHARMA",
+      classBranch: "2024-BE-CSE-4 SEM",
+      department: "Department of Computer Science & Engineering",
+      coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "Curriculum"],
       password: "",
       passwordSet: false,
       mobile: "9876543210",
       course: "CSE",
-      semester: "5th Semester",
+      semester: "4th Semester",
       subject: "CS301",
       role: "student",
       disabled: false,

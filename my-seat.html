@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Seat — SEATWISE</title>
+<title>Examination Admit Card — CHITKARA UNIVERSITY</title>
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/seating.css" />
@@ -16,7 +16,7 @@
 </div>
 
 <div class="app-shell">
-  <aside class="sidebar">
+  <aside class="sidebar no-print">
     <div class="sidebar-brand">
       <div class="brand-mark">S</div>
       <div class="brand-copy">
@@ -27,7 +27,7 @@
     <nav class="sidebar-nav">
       <a href="user-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
       <a href="my-exams.html"><span class="nav-icon">📘</span><span class="nav-label">My Exams</span></a>
-      <a href="my-seat.html"><span class="nav-icon">🎫</span><span class="nav-label">My Seat</span></a>
+      <a href="my-seat.html" class="active"><span class="nav-icon">🎫</span><span class="nav-label">Admit Card</span></a>
       <a href="profile.html"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></a>
     </nav>
     <div class="sidebar-footer">
@@ -36,8 +36,8 @@
   </aside>
 
   <div class="main-area">
-    <header class="topbar">
-      <h1>My Examination Seat Card</h1>
+    <header class="topbar no-print">
+      <h1>Official Examination Admit Card</h1>
       <div class="topbar-right">
         <div class="user-chip">
           <div class="user-avatar" data-current-user-initial>?</div>
@@ -46,18 +46,18 @@
       </div>
     </header>
 
-    <main class="page-content" style="max-width:680px; margin:0 auto;">
+    <main class="page-content" style="max-width:880px; margin:0 auto; padding-bottom:60px;">
       
-      <!-- EXAMINATION SELECTOR TOOLBAR -->
-      <div class="card mb-20">
-        <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
-          <div>
-            <div class="card-title" style="margin-bottom:2px;">Select Examination Pass</div>
-            <div class="card-subtitle" style="margin-bottom:0;">Choose an examination to inspect your allocated seating pass</div>
-          </div>
-          <div style="min-width:240px;">
-            <select class="form-select" id="exam-select" style="font-weight:700; font-size:14px; padding:10px 14px; border-color:var(--accent-border);"></select>
-          </div>
+      <!-- TOP ACTION & EXAM SELECTOR BAR -->
+      <div class="admit-actions-toolbar no-print">
+        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:260px;">
+          <label for="exam-select" style="font-weight:800; font-size:13px; color:var(--ink); white-space:nowrap;">Select Session:</label>
+          <select class="form-select" id="exam-select" style="font-weight:700; font-size:13.5px; padding:8px 12px; border-color:var(--accent-border);"></select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="window.print()" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>🖨</span> Download / Print Admit Card (PDF)
+          </button>
         </div>
       </div>
 
@@ -102,11 +102,11 @@
       examSelect.value = requestedExamId;
     }
 
-    examSelect.addEventListener("change", () => renderSeatPass());
-    renderSeatPass();
+    examSelect.addEventListener("change", () => renderAdmitCard());
+    renderAdmitCard();
   }
 
-  function renderSeatPass() {
+  function renderAdmitCard() {
     const selectedExamId = examSelect.value;
     const user = Auth.currentUser();
     const exams = Exams.all();
@@ -126,51 +126,186 @@
       return;
     }
 
-    if (!plan) {
-      container.innerHTML = `
-        <div class="empty-state card">
-          <div class="empty-icon">🎫</div>
-          <div class="empty-title">Seating has not been generated for this examination yet</div>
-          <div class="empty-desc">The examination department is preparing room allocations for <strong>${escapeHTML(exam ? exam.name : "this exam")}</strong>. Please check back soon.</div>
+    // Determine Dynamic Student Fields
+    const studentName = (user.name || "HARNOOR KAUR").toUpperCase();
+    const rawRoll = (user.rollNo || "").toString().trim().toUpperCase();
+    const universityId = (rawRoll && rawRoll !== studentName && rawRoll !== "STUDENT" && rawRoll !== "UNLINKED")
+      ? rawRoll
+      : (typeof STORAGE !== "undefined" && STORAGE._getUniversityId ? STORAGE._getUniversityId(user, 1) : (studentName.includes("HARNOOR") ? "2410992925" : "2410992101"));
+    const fatherName = (user.fatherName && user.fatherName !== "Mr. SATINDER SINGH" && !studentName.includes("RAHUL"))
+      ? user.fatherName.toUpperCase()
+      : (typeof STORAGE !== "undefined" && STORAGE._getFatherName ? STORAGE._getFatherName({ name: studentName, rollNo: universityId }, 1) : (studentName.includes("HARNOOR") ? "Mr. SATINDER SINGH" : "Mr. RAJESH SHARMA"));
+    const classBranch = (user.classBranch || (user.course ? `2024-BE-${user.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM")).toUpperCase();
+    const departmentName = user.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)";
+    
+    // Courses Appearing list
+    const defaultCourses = ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"];
+    const courseCodes = (user.coursesList && Array.isArray(user.coursesList) && user.coursesList.length > 0)
+      ? user.coursesList
+      : defaultCourses;
+
+    // Student Photo Rendering
+    let photoHTML = "";
+    if (user.avatar) {
+      photoHTML = `<img src="${user.avatar}" alt="Candidate Photo" />`;
+    } else {
+      photoHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:#f1f5f9;">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="#94a3b8">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span style="font-size:9.5px; font-weight:800; color:#64748b; margin-top:4px; text-transform:uppercase;">Photo</span>
         </div>`;
-      return;
     }
 
-    if (!seat) {
-      container.innerHTML = `
-        <div class="empty-state card">
-          <div class="empty-icon">🎫</div>
-          <div class="empty-title">No seat assigned for this examination</div>
-          <div class="empty-desc">Seating was generated for ${escapeHTML(exam ? exam.name : "this exam")}, but your roll number (<strong>${escapeHTML(user.rollNo)}</strong>) was not found in this seating plan. Contact administrator if this is an issue.</div>
-          <a href="complaint.html" class="btn btn-secondary mt-14" style="display:inline-flex;">Contact Admin</a>
-        </div>`;
-      return;
-    }
+    // Session title
+    const examYear = exam && exam.date ? new Date(exam.date).getFullYear() : "2026";
+    const sessionText = `Jan/Jun${examYear}`;
+
+    // Venue Allocation Info
+    const hallNumber = seat ? seat.roomNumber : (plan ? "Pending" : "Awaiting Seating");
+    const seatNumber = seat ? seat.seat : (plan ? "Pending" : "Awaiting Seating");
 
     container.innerHTML = `
-      <div class="seat-card-hero">
-        <div class="flex-between">
-          <div>
-            <div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple-4);">OFFICIAL SEATING PASS</div>
-            <div style="font-size:22px; font-weight:900; margin-top:4px; color:var(--ink);">${escapeHTML(exam ? exam.name : "Examination")}</div>
+      <div class="chitkara-admit-card-container">
+        <div class="chitkara-admit-card" id="admit-card-document">
+          
+          <!-- HEADER -->
+          <div class="admit-header-row">
+            <div class="admit-brand-col">
+              <img src="assets/chitkara-university-logo.png" alt="Chitkara University" class="admit-univ-logo" />
+            </div>
+
+            <div class="admit-title-col">
+              <div class="admit-main-title">ADMIT CARD</div>
+              <div class="admit-sub-title">End Term Examination</div>
+              <div class="admit-session-title">${sessionText}</div>
+            </div>
           </div>
-          <div class="seat-big-badge">${escapeHTML(seat.seat)}</div>
-        </div>
 
-        <div class="seat-hero-grid" style="grid-template-columns:1fr 1fr; margin-top:20px;">
-          <div class="seat-hero-field"><div class="field-label">Date</div><div class="field-value">${exam ? formatDate(exam.date) : "-"}</div></div>
-          <div class="seat-hero-field"><div class="field-label">Time</div><div class="field-value">${exam ? formatTime(exam.time) : "-"}</div></div>
-          <div class="seat-hero-field"><div class="field-label">Assigned Hall</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(seat.roomNumber)}</div></div>
-          <div class="seat-hero-field"><div class="field-label">Allocated Seat</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(seat.seat)}</div></div>
-          <div class="seat-hero-field"><div class="field-label">Student Roll No.</div><div class="field-value">${escapeHTML(seat.rollNo)}</div></div>
-          <div class="seat-hero-field"><div class="field-label">Subject Code</div><div class="field-value">${escapeHTML(seat.subject)}</div></div>
-        </div>
+          <!-- STUDENT INFO MATRIX & PASSPORT PHOTO -->
+          <div class="admit-body-grid">
+            <div class="admit-student-info">
+              <div class="admit-info-row">
+                <div class="admit-info-label">Name of Student</div>
+                <div class="admit-info-colon">:</div>
+                <div class="admit-info-val">${escapeHTML(studentName)}</div>
+              </div>
+              <div class="admit-info-row">
+                <div class="admit-info-label">Father's Name</div>
+                <div class="admit-info-colon">:</div>
+                <div class="admit-info-val">${escapeHTML(fatherName)}</div>
+              </div>
+              <div class="admit-info-row">
+                <div class="admit-info-label">University ID</div>
+                <div class="admit-info-colon">:</div>
+                <div class="admit-info-val">${escapeHTML(universityId)}</div>
+              </div>
+              <div class="admit-info-row">
+                <div class="admit-info-label">Class/Branch</div>
+                <div class="admit-info-colon">:</div>
+                <div class="admit-info-val">${escapeHTML(classBranch)}</div>
+              </div>
+            </div>
 
-        <div style="margin-top:20px; padding:14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:12px; color:var(--muted); line-height:1.5;">
-          📌 <strong>Exam Hall Instructions:</strong> Please arrive at least 15 minutes before the scheduled time. Carry your university student ID card. Maintain proper silence in the examination room.
-        </div>
+            <div class="admit-photo-box">
+              ${photoHTML}
+            </div>
+          </div>
 
-        <button class="btn btn-secondary btn-block mt-20 no-print" onclick="window.print()">🖨 Print Seat Pass</button>
+          <!-- LIVE SEATING PASS VENUE HIGHLIGHT RIBBON -->
+          <div class="admit-seat-highlight-box">
+            <div class="admit-seat-metric">
+              <div class="admit-seat-metric-label">Target Examination</div>
+              <div class="admit-seat-metric-val" style="font-size:14px; color:#111827;">${escapeHTML(exam ? exam.name : "End Term Exam")}</div>
+            </div>
+            <div class="admit-seat-metric">
+              <div class="admit-seat-metric-label">Exam Date & Time</div>
+              <div class="admit-seat-metric-val" style="font-size:14px; color:#111827;">${exam ? formatDate(exam.date) : "-"} · ${exam ? formatTime(exam.time) : "-"}</div>
+            </div>
+            <div class="admit-seat-metric">
+              <div class="admit-seat-metric-label">Allocated Hall / Room</div>
+              <div class="admit-seat-metric-val" style="color:#2563eb;">${escapeHTML(hallNumber)}</div>
+            </div>
+            <div class="admit-seat-metric">
+              <div class="admit-seat-metric-label">Assigned Seat Pass</div>
+              <div class="admit-seat-metric-val" style="color:#7a229d;">${escapeHTML(seatNumber)}</div>
+            </div>
+          </div>
+
+          <!-- COURSES APPEARING FOR TABLE -->
+          <div class="admit-courses-table-container">
+            <table class="admit-courses-table">
+              <thead>
+                <tr>
+                  <th style="width:130px;" rowspan="1">Type of Exam</th>
+                  <th colspan="${courseCodes.length}" class="col-header-main">Courses appearing for</th>
+                </tr>
+                <tr>
+                  <th class="type-label-cell" style="background:#f8fafc;">Course Code</th>
+                  ${courseCodes.map((code) => `<th class="course-code-cell">${escapeHTML(code)}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="type-label-cell">Regular</td>
+                  ${courseCodes.map(() => `<td>Regular</td>`).join("")}
+                </tr>
+                <tr>
+                  <td class="sign-label-cell">Invigilator Sign.</td>
+                  ${courseCodes.map(() => `<td class="sign-box-cell"></td>`).join("")}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- MANDATORY NOTES & DEBARRED NOTICE -->
+          <div class="admit-instructions-block">
+            <div class="admit-debarred-notice">
+              You are allowed to sit for End Term Examination only if your name is not in the Debarred list from your Department.
+            </div>
+            <div class="admit-notes-title">Note:</div>
+            <ul class="admit-notes-list">
+              <li>Carrying of Admit Card is Mandatory in the examination hall.</li>
+              <li>In case of lost of Admit Card, duplicate will be issued on payment of Rs. 500 from the DOE office.</li>
+            </ul>
+          </div>
+
+          <!-- FOOTER / OFFICIAL DEAN SEAL -->
+          <div class="admit-footer-wrap">
+            <div class="admit-dept-info">
+              <div class="admit-dept-title">
+                ${escapeHTML(departmentName)}
+              </div>
+              <div class="admit-univ-location">
+                Chitkara University, Punjab
+              </div>
+
+              <!-- BLUE CIRCULAR OFFICIAL STAMP -->
+              <div class="admit-stamp-box">
+                <div class="admit-circular-seal">
+                  <div class="seal-text-top">CHITKARA UNIVERSITY</div>
+                  <div class="seal-text-center">OFFICE OF DEAN<br/>(EXAMINATIONS)</div>
+                  <div class="seal-text-bottom">OFFICIAL SEAL</div>
+                </div>
+                <div>
+                  <div style="font-size:12.5px; font-weight:800; color:#1e40af;">Office of Dean (Examinations)</div>
+                  <div style="font-size:10px; font-weight:700; color:#6b7280;">Controller of Examinations</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <div style="height:44px; display:flex; align-items:flex-end; justify-content:flex-end; margin-bottom:4px;">
+                <span style="font-family:cursive; font-size:17px; color:#1e40af; font-weight:bold; letter-spacing:1px; transform:rotate(-4deg); display:inline-block;">Dean Exams</span>
+              </div>
+              <div style="border-top:1.5px solid #000; width:170px; padding-top:4px; font-size:11.5px; font-weight:800; text-align:center;">
+                Authorized Signatory
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     `;
   }

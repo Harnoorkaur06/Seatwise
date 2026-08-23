@@ -70,18 +70,165 @@ const STORAGE = {
   getExams() { return this.get(STORAGE_KEYS.EXAMS, []); },
   setExams(exams) { return this.set(STORAGE_KEYS.EXAMS, exams); },
 
+  _getFatherName(student, idx = 0) {
+    if (student && student.fatherName && student.fatherName !== "Mr. SATINDER SINGH" && student.fatherName !== "Mr. Satinder Singh") {
+      return student.fatherName;
+    }
+    const sName = (student?.name || "").toString().trim().toUpperCase();
+    const sRoll = (student?.rollNo || "").toString().trim().toUpperCase();
+    if (sName.includes("HARNOOR") || sRoll === "2410992925") {
+      return "Mr. SATINDER SINGH";
+    }
+    if (sName.includes("RAHUL") || sRoll.includes("101")) {
+      return "Mr. RAJESH SHARMA";
+    }
+    if (sName.includes("AMAN") || sRoll.includes("102")) {
+      return "Mr. HARPREET SINGH";
+    }
+    if (sName.includes("PRIYA") || sRoll.includes("103")) {
+      return "Mr. ANIL KUMAR";
+    }
+    if (sName.includes("SNEHA") || sRoll.includes("104")) {
+      return "Mr. RAMESH VERMA";
+    }
+    if (sName.includes("VIKRAM") || sRoll.includes("105")) {
+      return "Mr. SANJAY GUPTA";
+    }
+    
+    const fatherFirst = [
+      "Rajesh", "Harpreet", "Anil", "Ramesh", "Sanjay", "Manoj", "Davinder", "Vikram",
+      "Naresh", "Surinder", "Praveen", "Ashok", "Kuldeep", "Jaswant", "Rakesh", "Suresh",
+      "Balwinder", "Gurdeep", "Vinod", "Subhash", "Ajay", "Sunil", "Dharmendra", "Bhupinder",
+      "Kamal", "Rajendra", "Ravinder", "Manmohan", "Devendra", "Jagjit", "Tarun", "Deepak", "Vijay", "Mukesh"
+    ];
+    const lastNames = [
+      "Sharma", "Singh", "Verma", "Gupta", "Malhotra", "Kapoor", "Joshi",
+      "Bhatia", "Chopra", "Mehta", "Bansal", "Arora", "Soni", "Aggarwal",
+      "Kumar", "Chawla", "Gill", "Sandhu", "Dhillon", "Rawat", "Saxena"
+    ];
+    const hash = (sRoll + sName + idx).split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const f = fatherFirst[hash % fatherFirst.length];
+    const l = lastNames[(hash * 5 + 7) % lastNames.length];
+    return `Mr. ${f.toUpperCase()} ${l.toUpperCase()}`;
+  },
+
+  _getUniversityId(student, idx = 0) {
+    let roll = (student?.rollNo || "").toString().trim().toUpperCase();
+    const sName = (student?.name || "").toString().trim().toUpperCase();
+    if (sName.includes("HARNOOR") || roll === "2410992925") return "2410992925";
+    if (!roll || roll === sName || roll === "STUDENT" || roll === "UNLINKED") {
+      return String(2410992100 + (idx || 1));
+    }
+    return roll;
+  },
+
   getStudents() {
-    const list = this.get(STORAGE_KEYS.STUDENTS, []);
-    return list.map((s, idx) => ({
-      ...s,
-      id: s.id || `student_${s.rollNo || idx}`,
-      rollNo: (s.rollNo || "").toString().trim().toUpperCase(),
-      email: (s.email || `${s.rollNo || idx}@student.com`).toString().trim(),
-      name: (s.name || "Student").toString().trim(),
-      password: s.password || "student123",
-      role: "student",
-      disabled: s.disabled === true
-    }));
+    let list = this.get(STORAGE_KEYS.STUDENTS, null);
+    if (!list || !Array.isArray(list) || list.length === 0) {
+      list = [
+        {
+          id: "student_harnoor",
+          name: "HARNOOR KAUR",
+          email: "harnoor@student.com",
+          rollNo: "2410992925",
+          fatherName: "Mr. SATINDER SINGH",
+          classBranch: "2024-BE-CSE-AI-4 SEM",
+          department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+          coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+          password: "student123",
+          passwordSet: true,
+          mobile: "9876543210",
+          course: "CSE-AI",
+          semester: "4th Semester",
+          subject: "24CAI0201",
+          role: "student",
+          disabled: false
+        },
+        {
+          id: "student_101",
+          name: "Rahul",
+          email: "rahul@student.com",
+          rollNo: "2410992101",
+          fatherName: "Mr. RAJESH SHARMA",
+          classBranch: "2024-BE-CSE-AI-4 SEM",
+          department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+          coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+          password: "student123",
+          passwordSet: true,
+          mobile: "9876543210",
+          course: "CSE-AI",
+          semester: "4th Semester",
+          subject: "24CAI0201",
+          role: "student",
+          disabled: false
+        },
+        {
+          id: "student_102",
+          name: "Aman",
+          email: "aman@student.com",
+          rollNo: "2410992102",
+          fatherName: "Mr. HARPREET SINGH",
+          classBranch: "2024-BE-CSE-4 SEM",
+          department: "Department of Computer Science & Engineering",
+          coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "Curriculum"],
+          password: "student123",
+          passwordSet: true,
+          mobile: "9876543210",
+          course: "CSE",
+          semester: "4th Semester",
+          subject: "CS301",
+          role: "student",
+          disabled: false
+        }
+      ];
+      this.set(STORAGE_KEYS.STUDENTS, list);
+    }
+
+    // Ensure Harnoor is always present in existing lists
+    if (!list.some((s) => String(s.rollNo || "").toUpperCase() === "2410992925" || String(s.email || "").toLowerCase() === "harnoor@student.com")) {
+      list.unshift({
+        id: "student_harnoor",
+        name: "HARNOOR KAUR",
+        email: "harnoor@student.com",
+        rollNo: "2410992925",
+        fatherName: "Mr. SATINDER SINGH",
+        classBranch: "2024-BE-CSE-AI-4 SEM",
+        department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+        coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+        password: "student123",
+        passwordSet: true,
+        mobile: "9876543210",
+        course: "CSE-AI",
+        semester: "4th Semester",
+        subject: "24CAI0201",
+        role: "student",
+        disabled: false
+      });
+      this.set(STORAGE_KEYS.STUDENTS, list);
+    }
+
+    return list.map((s, idx) => {
+      const studentName = (s.name || "Student").toString().trim();
+      const studentRoll = this._getUniversityId(s, idx + 1);
+      const studentFather = this._getFatherName(s, idx + 1);
+
+      return {
+        ...s,
+        id: s.id || `student_${studentRoll || idx}`,
+        rollNo: studentRoll,
+        email: (s.email || `${studentRoll}@student.com`).toString().trim(),
+        name: studentName,
+        fatherName: studentFather,
+        classBranch: s.classBranch || (s.course ? `2024-BE-${s.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
+        coursesList: s.coursesList && Array.isArray(s.coursesList) && s.coursesList.length > 0
+          ? s.coursesList
+          : ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+        department: s.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+        password: s.password || "student123",
+        role: "student",
+        disabled: s.disabled === true
+      };
+    });
   },
   setStudents(students) { return this.set(STORAGE_KEYS.STUDENTS, students); },
 
