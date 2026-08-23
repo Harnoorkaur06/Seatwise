@@ -41,14 +41,60 @@ const Auth = {
   },
 
   /** Log in a normal user. Returns {ok, message} */
-  login({ email, password }) {
+  login({ email, password, name, rollNo }) {
     const users = STORAGE.getUsers();
-    const user = users.find((u) => u.email.toLowerCase() === (email || "").toLowerCase());
-    if (!user) return { ok: false, message: "No account found with this email." };
-    if (user.disabled) return { ok: false, message: "This account has been disabled. Contact admin." };
-    if (user.password !== password) return { ok: false, message: "Incorrect password." };
+    let user = users.find((u) => u.email.toLowerCase() === (email || "").toLowerCase());
+    
+    if (!user) {
+      if (name && email && password) {
+        // Safe auto-creation if student credentials provided for new account
+        user = {
+          id: typeof generateId === "function" ? generateId("user") : "user_" + Date.now(),
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          role: "user",
+          disabled: false,
+          rollNo: (rollNo || "").trim(),
+          mobile: "",
+          createdAt: new Date().toISOString()
+        };
+        users.push(user);
+        STORAGE.setUsers(users);
+      } else {
+        return { ok: false, message: "No account found with this email." };
+      }
+    } else {
+      if (user.disabled) return { ok: false, message: "This account has been disabled. Contact admin." };
+      if (user.password !== password) return { ok: false, message: "Incorrect password." };
 
-    STORAGE.setCurrentUser({ id: user.id, name: user.name, email: user.email, role: "user" });
+      // Update name and rollNo if provided during login
+      let updated = false;
+      if (name && name.trim() && user.name !== name.trim()) {
+        user.name = name.trim();
+        updated = true;
+      }
+      if (rollNo !== undefined && rollNo.trim() && user.rollNo !== rollNo.trim()) {
+        user.rollNo = rollNo.trim();
+        updated = true;
+      }
+      if (user.rollNo === undefined) { user.rollNo = ""; updated = true; }
+      if (user.mobile === undefined) { user.mobile = ""; updated = true; }
+
+      if (updated) {
+        STORAGE.setUsers(users);
+      }
+    }
+
+    STORAGE.setCurrentUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      rollNo: user.rollNo || "",
+      mobile: user.mobile || "",
+      avatar: user.avatar || "",
+      role: "user"
+    });
     STORAGE.logActivity(`${user.name} logged in`);
     return { ok: true, message: "Login successful." };
   },
@@ -73,7 +119,12 @@ const Auth = {
   },
 
   currentUser() {
-    return STORAGE.getCurrentUser();
+    const user = STORAGE.getCurrentUser();
+    if (user) {
+      if (user.rollNo === undefined) user.rollNo = "";
+      if (user.mobile === undefined) user.mobile = "";
+    }
+    return user;
   },
 
   isLoggedIn() {

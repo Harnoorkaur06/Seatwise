@@ -8,42 +8,51 @@
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/responsive.css" />
 <style>
-  /* Profile Redesign Layout Styles */
-  .profile-header-grid {
+  /* Profile Layout Styles */
+  .profile-two-col-grid {
     display: grid;
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 24px;
-    align-items: center;
+    align-items: stretch;
   }
-  
-  @media (max-width: 640px) {
-    .profile-header-grid {
+
+  @media (max-width: 840px) {
+    .profile-two-col-grid {
       grid-template-columns: 1fr;
-      justify-items: center;
-      text-align: center;
     }
+  }
+
+  .profile-summary-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 20px;
+    height: 100%;
+    justify-content: center;
   }
 
   .avatar-upload-box {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
   .avatar-preview-frame {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--purple-3), var(--purple-5));
     color: #ffffff;
-    font-size: 42px;
+    font-size: 40px;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(154, 59, 185, 0.25);
+    box-shadow: 0 6px 20px rgba(154, 59, 185, 0.25);
     border: 3px solid #ffffff;
     position: relative;
   }
@@ -54,43 +63,134 @@
     object-fit: cover;
   }
 
-  .profile-two-col-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+  .profile-summary-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 4px;
   }
 
-  @media (max-width: 840px) {
-    .profile-two-col-grid {
+  .profile-summary-rollno {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--purple-4);
+    background: var(--purple-0);
+    border: 1px solid var(--accent-border);
+    padding: 3px 12px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .profile-summary-email {
+    font-size: 13px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+
+  .profile-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .profile-actions-grid {
       grid-template-columns: 1fr;
     }
   }
 
-  .notification-count-badge {
-    background: #ef4444;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 999px;
-    margin-left: 8px;
-    display: inline-flex;
+  .profile-action-card {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-action-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--purple-2), var(--purple-4));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+
+  .profile-action-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-border);
+    box-shadow: 0 8px 24px rgba(54, 24, 69, 0.08);
+  }
+
+  .profile-action-card:hover::before {
+    opacity: 1;
+  }
+
+  .profile-action-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .profile-action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--purple-0);
+    border: 1px solid var(--accent-border);
+    display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-    animation: pulseBadge 2s infinite;
+    font-size: 16px;
+    color: var(--purple-4);
+    flex-shrink: 0;
   }
 
-  @keyframes pulseBadge {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
+  .profile-action-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink);
   }
 
-  .unread-complaint-row {
-    background: rgba(154, 59, 185, 0.08) !important;
-    border-left: 3px solid var(--purple-4) !important;
-    cursor: pointer;
+  .profile-action-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .profile-action-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--purple-4);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color var(--transition-fast);
+  }
+
+  .profile-action-card:hover .profile-action-link {
+    color: var(--purple-5);
+  }
+
+  html[data-theme="dark"] .profile-action-card,
+  body.dark-theme .profile-action-card {
+    background: #231c33;
+    border-color: rgba(255, 255, 255, 0.1);
   }
 </style>
 </head>
@@ -122,7 +222,7 @@
 
   <div class="main-area">
     <header class="topbar">
-      <h1>Student Account & Preferences</h1>
+      <h1>Student Account & Profile</h1>
       <div class="topbar-right">
         <div class="user-chip">
           <div class="user-avatar" data-current-user-initial>?</div>
@@ -131,164 +231,116 @@
       </div>
     </header>
 
-    <main class="page-content" style="max-width:980px; margin:0 auto;">
+    <main class="page-content" style="max-width:960px; margin:0 auto;">
       
-      <!-- 1. TOP BLOCK: PHOTO UPLOADER & PERSONAL DETAILS -->
-      <div class="card mb-24">
-        <div class="card-title">Student Profile</div>
-        <div class="profile-header-grid">
-          
-          <!-- Photo Box -->
+      <!-- PROFILE SUB-NAVIGATION TABS -->
+      <nav class="profile-subnav mb-24">
+        <a href="profile.html" class="subnav-item active">👤 Personal Information</a>
+        <a href="update-password.html" class="subnav-item">🔒 Update Password</a>
+        <a href="mobile-number.html" class="subnav-item">📱 Mobile Number</a>
+        <a href="complaint.html" class="subnav-item">💬 Complaint</a>
+        <a href="preferences.html" class="subnav-item">⚙ Preferences</a>
+      </nav>
+
+      <!-- TWO-COLUMN LAYOUT: STUDENT PROFILE SUMMARY & PERSONAL INFORMATION -->
+      <div class="profile-two-col-grid mb-24">
+        
+        <!-- LEFT COLUMN: STUDENT PROFILE CARD -->
+        <div class="card profile-summary-card">
           <div class="avatar-upload-box">
             <div class="avatar-preview-frame" id="avatar-frame">
               <span id="avatar-initial" data-current-user-initial>?</span>
             </div>
             <input type="file" id="avatar-input" accept="image/*" style="display:none;" />
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:8px;">
               <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('avatar-input').click()">📷 Upload Photo</button>
               <button class="btn btn-ghost btn-sm" type="button" id="btn-remove-photo" style="display:none;" onclick="ProfileManager.removePhoto()">Remove</button>
             </div>
           </div>
 
-          <!-- Personal Information Form -->
-          <div>
-            <form id="profile-personal-form">
-              <div class="form-group">
-                <label class="form-label" for="profile-name">Full Name</label>
-                <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="profile-email">Email Address</label>
-                <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="profile-rollno">University Roll Number</label>
-                <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
-              </div>
-              <button type="submit" class="btn btn-primary mt-10">Save Personal Info</button>
-            </form>
-          </div>
-
+          <div class="profile-summary-name" id="summary-name" data-current-user-name>Student</div>
+          <div class="profile-summary-rollno" id="summary-rollno">Roll No: Unlinked</div>
+          <div class="profile-summary-email" id="summary-email">student@domain.com</div>
         </div>
-      </div>
 
-      <!-- 2. MIDDLE BLOCK: COMBINED SECURITY & MOBILE NUMBER (ONE DIV) -->
-      <div class="card mb-24">
-        <div class="card-title">Account Security & Contact Information</div>
-        <div class="form-hint mb-16">Manage your account password and primary mobile contact number in one place.</div>
-        
-        <div class="profile-two-col-grid">
-          
-          <!-- Left Column: Update Password -->
-          <div style="padding-right:12px; border-right:1px solid var(--line);">
-            <div style="font-weight:800; font-size:14px; color:var(--ink); margin-bottom:12px;">🔒 Change Password</div>
-            <form id="profile-pwd-form">
-              <div class="form-group">
-                <label class="form-label" for="pwd-current">Current Password</label>
-                <input class="form-input" type="password" id="pwd-current" placeholder="••••••••" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="pwd-new">New Password</label>
-                <input class="form-input" type="password" id="pwd-new" placeholder="At least 6 characters" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="pwd-confirm">Confirm New Password</label>
-                <input class="form-input" type="password" id="pwd-confirm" placeholder="Re-enter new password" required />
-              </div>
-              <button type="submit" class="btn btn-secondary mt-10">Update Password</button>
-            </form>
-          </div>
-
-          <!-- Right Column: Mobile Number -->
-          <div style="padding-left:12px;">
-            <div style="font-weight:800; font-size:14px; color:var(--ink); margin-bottom:12px;">📱 Mobile Contact Number</div>
-            <div style="margin-bottom:14px; padding:10px 14px; background:var(--purple-0); border:1px solid var(--accent-border); border-radius:var(--radius-md);">
-              <div style="font-size:10.5px; font-weight:800; text-transform:uppercase; color:var(--purple-4); letter-spacing:0.05em;">CURRENT MOBILE</div>
-              <div id="current-mobile-display" style="font-size:15px; font-weight:700; color:var(--ink); margin-top:2px;">Not added</div>
-            </div>
-
-            <form id="profile-mobile-form">
-              <div class="form-group">
-                <label class="form-label" for="mobile-input">New Mobile Number</label>
-                <input class="form-input" id="mobile-input" type="tel" placeholder="e.g. +91 98765 43210" required />
-                <div class="form-hint">7 to 15 digits for seating SMS alerts.</div>
-              </div>
-              <button type="submit" class="btn btn-secondary mt-10">Save Mobile Number</button>
-            </form>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 3. BOTTOM BLOCK: 2 HORIZONTAL DIVS (COMPLAINTS LEFT, PREFERENCES RIGHT) -->
-      <div class="profile-two-col-grid mb-24">
-        
-        <!-- Left Horizontal Div: Complaints & Admin Messages -->
+        <!-- RIGHT COLUMN: PERSONAL INFORMATION FORM -->
         <div class="card">
-          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
-            <span>Contact Administrator</span>
-            <span id="unread-count-badge" class="notification-count-badge" style="display:none;">0</span>
-          </div>
-          <div class="form-hint mb-14">Submit seating or timetable issues to the exam department.</div>
+          <div class="card-title">Personal Information</div>
+          <div class="form-hint mb-16">Update your personal account details and university roll number linkage.</div>
           
-          <form id="profile-complaint-form" class="mb-20">
+          <form id="profile-personal-form">
             <div class="form-group">
-              <label class="form-label" for="complaint-category">Issue Category</label>
-              <select class="form-select" id="complaint-category">
-                <option value="Seating Issue">Seating Issue</option>
-                <option value="Exam Issue">Exam Issue</option>
-                <option value="Profile Issue">Profile Issue</option>
-                <option value="Technical Issue">Technical Issue</option>
-                <option value="Other">Other</option>
-              </select>
+              <label class="form-label" for="profile-name">Full Name</label>
+              <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
             </div>
             <div class="form-group">
-              <label class="form-label" for="complaint-subject">Subject</label>
-              <input class="form-input" id="complaint-subject" placeholder="e.g. Desk mismatch in LH-102" required />
+              <label class="form-label" for="profile-email">Email Address</label>
+              <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
             </div>
             <div class="form-group">
-              <label class="form-label" for="complaint-message">Complaint Details</label>
-              <textarea class="form-input" id="complaint-message" rows="3" placeholder="Describe your issue..." required style="resize:vertical;"></textarea>
+              <label class="form-label" for="profile-rollno">University Roll Number</label>
+              <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">Submit Complaint</button>
+            <button type="submit" class="btn btn-primary mt-10">Save Personal Info</button>
           </form>
-
-          <div style="border-top:1px solid var(--line); padding-top:14px;">
-            <div style="font-weight:800; font-size:13px; color:var(--ink); margin-bottom:8px;">My Complaints & Admin Replies</div>
-            <div id="my-complaints-list">
-              <!-- Rendered dynamically by profile.js -->
-            </div>
-          </div>
         </div>
 
-        <!-- Right Horizontal Div: Appearance & Preferences -->
-        <div class="card">
-          <div class="card-title">Appearance & Preferences</div>
-          <div class="form-hint mb-14">Customize your visual interface theme and layout behavior.</div>
+      </div>
+
+      <!-- PROFILE ACTION NAVIGATION CARDS -->
+      <div class="mb-24">
+        <div class="card-title mb-16">Account Management & Actions</div>
+        <div class="profile-actions-grid">
           
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line);">
+          <!-- CARD 1: UPDATE PASSWORD -->
+          <a href="update-password.html" class="profile-action-card">
             <div>
-              <div style="font-weight:700; color:var(--ink);">Dark Mode</div>
-              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Switch between Light and Dark interface theme.</div>
+              <div class="profile-action-header">
+                <div class="profile-action-icon">🔒</div>
+                <div class="profile-action-title">Update Password</div>
+              </div>
+              <div class="profile-action-desc">Change your account password securely.</div>
             </div>
-            <label class="toggle-wrap">
-              <input type="checkbox" id="pref-theme-toggle" />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
+            <div class="profile-action-link">Manage →</div>
+          </a>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; margin-top:4px;">
+          <!-- CARD 2: MOBILE NUMBER -->
+          <a href="mobile-number.html" class="profile-action-card">
             <div>
-              <div style="font-weight:700; color:var(--ink);">Compact Sidebar</div>
-              <div style="font-size:12px; color:var(--muted); margin-top:2px;">Collapse left navigation bar across all student pages.</div>
+              <div class="profile-action-header">
+                <div class="profile-action-icon">📱</div>
+                <div class="profile-action-title">Mobile Number</div>
+              </div>
+              <div class="profile-action-desc">Update your primary contact number.</div>
             </div>
-            <label class="toggle-wrap">
-              <input type="checkbox" id="pref-sidebar-toggle" />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
+            <div class="profile-action-link">Manage →</div>
+          </a>
+
+          <!-- CARD 3: COMPLAINT -->
+          <a href="complaint.html" class="profile-action-card">
+            <div>
+              <div class="profile-action-header">
+                <div class="profile-action-icon">💬</div>
+                <div class="profile-action-title">Complaint</div>
+              </div>
+              <div class="profile-action-desc">Report an issue or contact the administrator.</div>
+            </div>
+            <div class="profile-action-link">Contact Admin →</div>
+          </a>
+
+          <!-- CARD 4: PREFERENCES -->
+          <a href="preferences.html" class="profile-action-card">
+            <div>
+              <div class="profile-action-header">
+                <div class="profile-action-icon">⚙</div>
+                <div class="profile-action-title">Preferences</div>
+              </div>
+              <div class="profile-action-desc">Manage your theme and sidebar preferences.</div>
+            </div>
+            <div class="profile-action-link">Open Preferences →</div>
+          </a>
+
         </div>
-
       </div>
 
     </main>
