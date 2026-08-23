@@ -497,7 +497,7 @@
         <div>
           <div class="hero-eyebrow"><span class="pulse-dot"></span> Administrator Control Panel</div>
           <h2 class="hero-title" style="font-size:22px;">System Settings &amp; Preferences</h2>
-          <p class="hero-subtitle" style="font-size:13px;">Manage your account, platform configuration, seating algorithm behaviour, and data maintenance.</p>
+          <p class="hero-subtitle" style="font-size:13px;">Manage your account, platform configuration, appearance, and data maintenance.</p>
         </div>
         <div class="hero-actions">
           <span class="badge badge-primary">✓ v1.0 Stable</span>
@@ -519,9 +519,6 @@
 
           <div class="settings-tab-divider"></div>
           <div class="settings-tab-group-label">Platform</div>
-          <button class="settings-tab-item" data-tab="algorithm" onclick="switchTab('algorithm', this)">
-            <span class="tab-icon">⚙</span> Algorithm Config
-          </button>
           <button class="settings-tab-item" data-tab="appearance" onclick="switchTab('appearance', this)">
             <span class="tab-icon">🎨</span> Appearance
           </button>
@@ -687,92 +684,6 @@
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ══ ALGORITHM PANEL ══ -->
-          <div class="settings-panel" id="panel-algorithm">
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <div>
-                  <div class="settings-section-title">⚙ Seating Algorithm Configuration</div>
-                  <div class="settings-section-desc">Fine-tune the constraint-satisfaction seating engine behaviour.</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="setting-row">
-                  <div>
-                    <div class="setting-label">Prevent Same-Subject Left/Right Adjacency</div>
-                    <div class="setting-hint">Core rule — students with identical courses cannot sit side-by-side horizontally.</div>
-                  </div>
-                  <label class="toggle-wrap">
-                    <input type="checkbox" id="algo-lr" checked />
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div class="setting-row">
-                  <div>
-                    <div class="setting-label">Prevent Same-Subject Front/Back Adjacency</div>
-                    <div class="setting-hint">Also restrict vertical (row-to-row) same-subject seating proximity.</div>
-                  </div>
-                  <label class="toggle-wrap">
-                    <input type="checkbox" id="algo-fb" checked />
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div class="setting-row">
-                  <div>
-                    <div class="setting-label">Auto Multi-Room Overflow</div>
-                    <div class="setting-hint">When a hall is at capacity, automatically continue allocation in the next room.</div>
-                  </div>
-                  <label class="toggle-wrap">
-                    <input type="checkbox" id="algo-overflow" checked />
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div class="setting-row">
-                  <div>
-                    <div class="setting-label">Randomize Student Placement Order</div>
-                    <div class="setting-hint">Shuffle student input before running the constraint algorithm each time.</div>
-                  </div>
-                  <label class="toggle-wrap">
-                    <input type="checkbox" id="algo-shuffle" checked />
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div class="setting-row" style="border-bottom:none;">
-                  <div>
-                    <div class="setting-label">Maximum Retry Attempts per Seat</div>
-                    <div class="setting-hint">How many times the engine re-attempts placement before marking a conflict.</div>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="range" id="algo-retries" min="1" max="20" value="10" style="width:100px; accent-color:var(--purple-3);" oninput="document.getElementById('algo-retries-val').textContent = this.value" />
-                    <span id="algo-retries-val" style="font-weight:800; color:var(--purple-4); width:24px;">10</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <div>
-                  <div class="settings-section-title">🏫 Room &amp; Capacity Defaults</div>
-                  <div class="settings-section-desc">Set default values when adding new rooms.</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="form-row" style="margin-bottom:14px;">
-                  <div class="form-group" style="margin:0;">
-                    <label class="form-label">Default Rows per Room</label>
-                    <input type="number" id="def-rows" class="form-input" value="5" min="1" max="20" />
-                  </div>
-                  <div class="form-group" style="margin:0;">
-                    <label class="form-label">Default Columns per Room</label>
-                    <input type="number" id="def-cols" class="form-input" value="10" min="1" max="30" />
-                  </div>
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="saveAlgorithmSettings()">✓ Save Algorithm Config</button>
               </div>
             </div>
           </div>
