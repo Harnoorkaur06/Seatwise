@@ -186,17 +186,68 @@ const STORAGE = {
     const idx = complaints.findIndex((c) => c.id === id);
     if (idx === -1) return false;
     if (newStatus) complaints[idx].status = newStatus;
-    if (adminReply !== undefined) complaints[idx].adminReply = adminReply;
-    complaints[idx].unread = true; // Flag as unread for the student notification badge
+    if (adminReply !== undefined) {
+      complaints[idx].adminReply = adminReply;
+      if (adminReply.trim() !== "") {
+        complaints[idx].unreadReply = true;
+      }
+    }
+    complaints[idx].unread = true;
     this.setComplaints(complaints);
     this.logActivity(`Complaint status updated to "${newStatus}" with reply`);
     return true;
   },
+
+  getUnreadRepliesCountForStudent(studentIdOrUser) {
+    if (!studentIdOrUser) return 0;
+    const complaints = this.getComplaints();
+    
+    let targetId = typeof studentIdOrUser === "string" ? studentIdOrUser : studentIdOrUser.id;
+    let targetEmail = typeof studentIdOrUser === "object" ? (studentIdOrUser.email || "").toLowerCase() : "";
+    let targetRoll = typeof studentIdOrUser === "object" ? (studentIdOrUser.rollNo || "").toUpperCase() : (typeof studentIdOrUser === "string" ? studentIdOrUser.toUpperCase() : "");
+
+    return complaints.filter((c) => {
+      const match = c.userId === targetId ||
+        c.studentId === targetId ||
+        (targetEmail && c.userEmail && c.userEmail.toLowerCase() === targetEmail) ||
+        (targetRoll && c.rollNo && String(c.rollNo).toUpperCase() === targetRoll);
+      
+      return match && Boolean(c.adminReply && c.adminReply.trim() !== "") && c.unreadReply === true;
+    }).length;
+  },
+
+  clearUnreadRepliesForStudent(studentIdOrUser) {
+    if (!studentIdOrUser) return;
+    const complaints = this.getComplaints();
+
+    let targetId = typeof studentIdOrUser === "string" ? studentIdOrUser : studentIdOrUser.id;
+    let targetEmail = typeof studentIdOrUser === "object" ? (studentIdOrUser.email || "").toLowerCase() : "";
+    let targetRoll = typeof studentIdOrUser === "object" ? (studentIdOrUser.rollNo || "").toUpperCase() : (typeof studentIdOrUser === "string" ? studentIdOrUser.toUpperCase() : "");
+
+    let updated = false;
+    complaints.forEach((c) => {
+      const match = c.userId === targetId ||
+        c.studentId === targetId ||
+        (targetEmail && c.userEmail && c.userEmail.toLowerCase() === targetEmail) ||
+        (targetRoll && c.rollNo && String(c.rollNo).toUpperCase() === targetRoll);
+
+      if (match && c.unreadReply) {
+        c.unreadReply = false;
+        updated = true;
+      }
+    });
+
+    if (updated) {
+      this.setComplaints(complaints);
+    }
+  },
+
   markComplaintRead(id) {
     const complaints = this.getComplaints();
     const idx = complaints.findIndex((c) => c.id === id);
     if (idx === -1) return false;
     complaints[idx].unread = false;
+    complaints[idx].unreadReply = false;
     this.setComplaints(complaints);
     return true;
   }

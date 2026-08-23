@@ -1,5 +1,5 @@
 /* ==========================================================================
-   complaint.js — Contact Administrator / Complaint Controller
+   complaint.js — Contact Administrator / Complaint Controller (Student Side)
    ========================================================================== */
 
 const ComplaintManager = {
@@ -32,10 +32,12 @@ const ComplaintManager = {
       userId: current.id,
       userName: current.name,
       userEmail: current.email,
+      rollNo: current.rollNo || "",
       category,
       subject,
       message,
       status: "Pending",
+      adminReply: "",
       createdAt: new Date().toISOString()
     };
 
@@ -58,7 +60,10 @@ const ComplaintManager = {
     if (!container) return;
 
     const allComplaints = STORAGE.getComplaints();
-    const myComplaints = allComplaints.filter((c) => c.userId === current.id);
+    // Filter for current student and sort newest first
+    const myComplaints = allComplaints
+      .filter((c) => c.userId === current.id || (c.userEmail && c.userEmail.toLowerCase() === current.email.toLowerCase()) || (c.rollNo && c.rollNo === current.rollNo))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     if (myComplaints.length === 0) {
       container.innerHTML = `
@@ -75,28 +80,37 @@ const ComplaintManager = {
         <table style="width:100%;">
           <thead>
             <tr>
-              <th>Subject & Details</th>
+              <th>Subject & Message</th>
               <th>Category</th>
               <th>Date</th>
-              <th>Status</th>
+              <th>Status & Admin Response</th>
             </tr>
           </thead>
           <tbody>
             ${myComplaints.map((c) => {
-              let badgeClass = "badge-warning";
-              if (c.status === "In Review") badgeClass = "badge-info";
-              if (c.status === "Resolved") badgeClass = "badge-success";
+              const isResolved = c.status === "Resolved";
+              const badgeClass = isResolved ? "badge-success" : "badge-warning";
               const formattedDate = typeof formatDate === "function" ? formatDate(c.createdAt) : new Date(c.createdAt).toLocaleDateString();
 
               return `
                 <tr>
-                  <td>
+                  <td style="vertical-align:top; max-width:300px;">
                     <div style="font-weight:700; color:var(--ink);">${escapeHTML(c.subject)}</div>
-                    <div style="font-size:12px; color:var(--muted); margin-top:2px;">${escapeHTML(c.message)}</div>
+                    <div style="font-size:12px; color:var(--muted); margin-top:3px; line-height:1.4;">${escapeHTML(c.message)}</div>
                   </td>
-                  <td><span class="badge" style="background:var(--purple-0); color:var(--purple-4); border:1px solid var(--accent-border);">${escapeHTML(c.category || "Other")}</span></td>
-                  <td style="font-size:12px; color:var(--muted);">${formattedDate}</td>
-                  <td><span class="badge ${badgeClass}">${escapeHTML(c.status || "Pending")}</span></td>
+                  <td style="vertical-align:top;"><span class="badge" style="background:var(--purple-0); color:var(--purple-4); border:1px solid var(--accent-border);">${escapeHTML(c.category || "Other")}</span></td>
+                  <td style="font-size:12px; color:var(--muted); vertical-align:top; white-space:nowrap;">${formattedDate}</td>
+                  <td style="vertical-align:top;">
+                    <span class="badge ${badgeClass}">${escapeHTML(c.status || "Pending")}</span>
+                    ${c.adminReply ? `
+                      <div style="margin-top:8px; padding:10px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:var(--radius-sm);">
+                        <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase;">Admin Response:</div>
+                        <div style="font-size:12px; color:var(--ink); margin-top:2px; line-height:1.4;">${escapeHTML(c.adminReply)}</div>
+                      </div>
+                    ` : `
+                      <div style="font-size:11.5px; color:var(--muted); margin-top:6px; font-style:italic;">Awaiting admin reply...</div>
+                    `}
+                  </td>
                 </tr>
               `;
             }).join("")}

@@ -237,6 +237,55 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* STUDENT DASHBOARD NOTIFICATION BELL                                        */
+/* -------------------------------------------------------------------------- */
+.notification-bell-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.notification-bell-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--purple-3);
+  background: var(--purple-0);
+}
+
+.bell-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* -------------------------------------------------------------------------- */
 /* LIVE EXAM COUNTDOWN HUD (STUDENT DASHBOARD)                                */
 /* -------------------------------------------------------------------------- */
 .exam-countdown-hud {

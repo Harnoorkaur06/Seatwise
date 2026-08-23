@@ -12,7 +12,10 @@ const ComplaintsManager = {
     const container = document.getElementById("admin-complaints-mount");
     if (!container) return;
 
-    const complaints = STORAGE.getComplaints();
+    // Get complaints sorted newest first
+    const rawComplaints = STORAGE.getComplaints();
+    const complaints = [...rawComplaints].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
     const filterCategory = document.getElementById("filter-category")?.value || "ALL";
     const filterStatus = document.getElementById("filter-status")?.value || "ALL";
     const searchQuery = (document.getElementById("search-complaints")?.value || "").trim().toLowerCase();
@@ -33,13 +36,14 @@ const ComplaintsManager = {
     // Update stats counters
     const totalEl = document.getElementById("stat-total-complaints");
     const pendingEl = document.getElementById("stat-pending-complaints");
-    const reviewEl = document.getElementById("stat-review-complaints");
     const resolvedEl = document.getElementById("stat-resolved-complaints");
 
+    const pendingCount = complaints.filter((c) => c.status === "Pending" || !c.status).length;
+    const resolvedCount = complaints.filter((c) => c.status === "Resolved").length;
+
     if (totalEl) totalEl.textContent = complaints.length;
-    if (pendingEl) pendingEl.textContent = complaints.filter((c) => c.status === "Pending").length;
-    if (reviewEl) reviewEl.textContent = complaints.filter((c) => c.status === "In Review").length;
-    if (resolvedEl) resolvedEl.textContent = complaints.filter((c) => c.status === "Resolved").length;
+    if (pendingEl) pendingEl.textContent = pendingCount;
+    if (resolvedEl) resolvedEl.textContent = resolvedCount;
 
     if (filtered.length === 0) {
       container.innerHTML = `
@@ -66,9 +70,8 @@ const ComplaintsManager = {
           </thead>
           <tbody>
             ${filtered.map((c) => {
-              let badgeClass = "badge-warning";
-              if (c.status === "In Review") badgeClass = "badge-info";
-              if (c.status === "Resolved") badgeClass = "badge-success";
+              const isResolved = c.status === "Resolved";
+              const badgeClass = isResolved ? "badge-success" : "badge-warning";
               const formattedDate = typeof formatDate === "function" ? formatDate(c.createdAt) : new Date(c.createdAt).toLocaleDateString();
 
               return `
@@ -87,10 +90,10 @@ const ComplaintsManager = {
                     <div style="font-size:12px; color:var(--muted); margin-top:3px; line-height:1.4;">${escapeHTML(c.message)}</div>
                     
                     <!-- Admin Reply Box -->
-                    <div style="margin-top:10px; padding:8px 10px; background:rgba(154,59,185,0.06); border:1px solid var(--accent-border); border-radius:var(--radius-sm);">
+                    <div style="margin-top:10px; padding:10px; background:rgba(154,59,185,0.06); border:1px solid var(--accent-border); border-radius:var(--radius-sm);">
                       <div style="font-size:11px; font-weight:800; color:var(--purple-4); text-transform:uppercase;">Admin Response / Reply Note:</div>
                       <input type="text" class="form-input form-input-sm mt-4" id="reply-input-${c.id}" value="${escapeHTML(c.adminReply || "")}" placeholder="Type reply message to student..." style="font-size:12px; background:#fff;" />
-                      <button class="btn btn-primary btn-sm mt-4" onclick="ComplaintsManager.saveReply('${c.id}')" style="font-size:11px; padding:3px 10px;">Send Reply</button>
+                      <button class="btn btn-primary btn-sm mt-4" onclick="ComplaintsManager.saveReply('${c.id}')" style="font-size:11px; padding:4px 12px;">Send Reply & Mark Resolved</button>
                     </div>
                   </td>
                   <td style="font-size:12px; color:var(--muted); white-space:nowrap; vertical-align:top;">${formattedDate}</td>
@@ -99,9 +102,8 @@ const ComplaintsManager = {
                   </td>
                   <td style="white-space:nowrap; vertical-align:top;">
                     <select class="form-select form-select-sm" id="status-select-${c.id}" style="font-size:12px; padding:4px 8px; width:auto;" onchange="ComplaintsManager.updateStatus('${c.id}', this.value)">
-                      <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
-                      <option value="In Review" ${c.status === "In Review" ? "selected" : ""}>In Review</option>
-                      <option value="Resolved" ${c.status === "Resolved" ? "selected" : ""}>Resolved</option>
+                      <option value="Pending" ${!isResolved ? "selected" : ""}>Pending</option>
+                      <option value="Resolved" ${isResolved ? "selected" : ""}>Resolved</option>
                     </select>
                   </td>
                 </tr>
@@ -119,7 +121,7 @@ const ComplaintsManager = {
     const ok = STORAGE.updateComplaintStatus(complaintId, newStatus, replyText);
     if (ok) {
       if (typeof showToast === "function") {
-        showToast(`Status updated to "${newStatus}" & notification sent to student.`, "success");
+        showToast(`✓ Complaint status updated to "${newStatus}".`, "success");
       }
       this.renderComplaints();
     } else {
@@ -130,9 +132,7 @@ const ComplaintsManager = {
   },
 
   saveReply(complaintId) {
-    const statusSelect = document.getElementById(`status-select-${complaintId}`);
     const replyInput = document.getElementById(`reply-input-${complaintId}`);
-    const newStatus = statusSelect ? statusSelect.value : "In Review";
     const replyText = replyInput ? replyInput.value.trim() : "";
 
     if (!replyText) {
@@ -140,10 +140,11 @@ const ComplaintsManager = {
       return;
     }
 
-    const ok = STORAGE.updateComplaintStatus(complaintId, newStatus, replyText);
+    // Sending reply automatically marks the complaint as Resolved
+    const ok = STORAGE.updateComplaintStatus(complaintId, "Resolved", replyText);
     if (ok) {
       if (typeof showToast === "function") {
-        showToast("✓ Admin reply sent to student!", "success");
+        showToast("✓ Reply sent to student & complaint marked as Resolved!", "success");
       }
       this.renderComplaints();
     } else {

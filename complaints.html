@@ -7,6 +7,19 @@
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/responsive.css" />
+<style>
+  .complaints-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .complaints-stats-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 </head>
 <body>
 <div class="dashboard-bg" aria-hidden="true">
@@ -58,39 +71,34 @@
     <!-- Page Content -->
     <main class="page-content">
       
-      <!-- Stats Row -->
-      <div class="stats-grid mb-24">
-        <div class="stat-card">
-          <div class="stat-icon purple">📩</div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-total-complaints">0</div>
-            <div class="stat-label">Total Filed</div>
+      <!-- HORIZONTAL STATS ROW (Side-by-side, In Review removed) -->
+      <div class="complaints-stats-row">
+        <div class="card tint-1" style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Total Complaints</div>
+            <div class="stat-value" id="stat-total-complaints" style="font-size:28px; font-weight:800; margin-top:4px;">0</div>
           </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:var(--purple-0); border:1px solid var(--accent-border); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--purple-4);">📩</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon yellow">⏳</div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-pending-complaints">0</div>
-            <div class="stat-label">Pending Action</div>
+
+        <div class="card tint-2" style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Pending Complaints</div>
+            <div class="stat-value" id="stat-pending-complaints" style="font-size:28px; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
           </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); display:flex; align-items:center; justify-content:center; font-size:20px; color:#f59e0b;">⏳</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon blue">🔍</div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-review-complaints">0</div>
-            <div class="stat-label">In Review</div>
+
+        <div class="card tint-3" style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Resolved Complaints</div>
+            <div class="stat-value" id="stat-resolved-complaints" style="font-size:28px; font-weight:800; color:#10b981; margin-top:4px;">0</div>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green">✓</div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-resolved-complaints">0</div>
-            <div class="stat-label">Resolved</div>
-          </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); display:flex; align-items:center; justify-content:center; font-size:20px; color:#10b981;">✓</div>
         </div>
       </div>
 
-      <!-- Main Complaints Container Card -->
+      <!-- Main Complaints Register Card -->
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div class="card-title" style="margin-bottom:0;">Student Complaints Register</div>
@@ -110,7 +118,6 @@
             <select id="filter-status" class="form-select form-select-sm" style="width:130px; font-size:12px;">
               <option value="ALL">All Statuses</option>
               <option value="Pending">Pending</option>
-              <option value="In Review">In Review</option>
               <option value="Resolved">Resolved</option>
             </select>
           </div>

@@ -38,6 +38,11 @@
     <header class="topbar">
       <h1>Student Workspace</h1>
       <div class="topbar-right">
+        <button type="button" class="notification-bell-btn" id="dashboard-notification-btn" title="Notifications — Click to view replies">
+          <span class="bell-icon">🔔</span>
+          <span class="notification-badge" id="dashboard-notification-badge" style="display:none;">0</span>
+        </button>
+
         <div class="user-chip">
           <div class="user-avatar" data-current-user-initial>?</div>
           <span data-current-user-name>Student</span>
@@ -309,6 +314,25 @@
           <div class="empty-desc" style="font-size:12px;">The examination department is preparing room allocations for ${escapeHTML(exam ? exam.name : "this exam")}.</div>
         </div>
       `;
+    }
+
+    // Initialize Student Notification Bell
+    const bellBtn = document.getElementById("dashboard-notification-btn");
+    const badge = document.getElementById("dashboard-notification-badge");
+
+    if (user && bellBtn && badge) {
+      const unreadCount = STORAGE.getUnreadRepliesCountForStudent(user);
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
+
+      bellBtn.onclick = () => {
+        STORAGE.clearUnreadRepliesForStudent(user);
+        window.location.href = "complaint.html";
+      };
     }
   }
 
