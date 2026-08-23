@@ -9,13 +9,8 @@
   <link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
-  <!-- <div class="site-loader" id="site-loader" aria-hidden="true">
-    <div class="loader-brand"><span>SEAT</span>WISE</div>
-    <div class="loader-line"><span></span></div>
-    <div class="loader-status">Preparing your seating workspace</div>
-  </div> -->
 <!-- =========================================================
-     SEATWISE CINEMATIC INTRO
+     SEATWISE INTRO
      ========================================================= -->
 <div id="seatwise-intro" class="seatwise-intro">
 
@@ -26,9 +21,9 @@
 
         <!-- Logo -->
         <div class="intro-logo-wrap">
-            <div class="intro-logo">
-                <span class="logo-seat">SEAT</span><span class="logo-wise">WISE</span>
-            </div>
+<div class="intro-logo">
+    <span class="logo-seat glitch" data-text="SEAT">SEAT</span><span class="logo-wise glitch" data-text="WISE">WISE</span>
+</div>
 
             <div class="intro-line">
                 <span></span>
@@ -76,13 +71,16 @@
 
 </div>
 
-  <div class="scroll-progress" id="scroll-progress"></div>
+  <div class="scroll-progress" id="scroll-progress"><span class="scroll-glow-head"></span></div>
   <div class="cursor-glow" id="cursor-glow"></div>
+  <canvas class="cinematic-bg-canvas" id="cinematic-bg-canvas" aria-hidden="true"></canvas>
+  <div class="cinematic-vignette" aria-hidden="true"></div>
+  <div class="cinematic-light-sweep" aria-hidden="true"></div>
   <div class="noise" aria-hidden="true"></div>
 
   <header class="site-header" id="site-header">
     <nav class="navbar container" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="SEATWISE home">
+      <a class="brand" href="index.html" aria-label="SEATWISE home">
         <span class="brand-mark">S</span>
         <span class="brand-copy"><strong>SEAT</strong>WISE<small>SMART EXAM SEATING</small></span>
       </a>
@@ -113,7 +111,7 @@
       <div class="hero-particles" id="hero-particles" aria-hidden="true"></div>
 
       <div class="container hero-layout">
-        <div class="hero-copy reveal reveal-left">
+        <div class="hero-copy">
           <div class="eyebrow"><span class="pulse-dot"></span> Intelligent examination seating</div>
           <h1 id="hero-title">Turn exam seating into a <span class="gradient-text">controlled system.</span></h1>
           <p class="hero-subtitle">SEATWISE helps administrators organize students, configure rooms, generate smarter seating plans, detect conflicts and produce a clear plan ready for use.</p>
@@ -130,7 +128,7 @@
           </div>
         </div>
 
-        <div class="hero-product reveal reveal-right tilt-card" data-tilt>
+        <div class="hero-product tilt-card" data-tilt>
           <div class="product-window">
             <div class="window-bar">
               <div class="window-dots"><i></i><i></i><i></i></div>
@@ -162,7 +160,7 @@
       <div class="hero-bottom container" aria-hidden="true"><span>SCROLL TO EXPLORE</span><i></i></div>
     </section>
 
-    <section class="stats-section section-light">
+    <section class="stats-section section-dark">
       <div class="container stats-grid">
         <article class="stat-card reveal"><span class="stat-icon">01</span><strong data-counter="500" data-suffix="+">0</strong><p>students supported by the current test capacity</p></article>
         <article class="stat-card dark reveal"><span class="stat-icon">02</span><strong data-counter="10" data-suffix="">0</strong><p>configured examination rooms in the current setup</p></article>
@@ -185,8 +183,8 @@
       </div>
     </section>
 
-    <section class="section workflow-section" id="workflow">
-      <div class="container">
+    <section class="section workflow-section" id="workflow" >
+      <div class="container" >
         <div class="section-heading centered reveal"><span class="section-kicker">THE WORKFLOW</span><h2>From student data to a <span>usable plan.</span></h2><p>Scroll through the process. Each stage represents a real part of the SEATWISE workflow.</p></div>
         <div class="story-layout">
           <div class="story-sticky">
@@ -223,26 +221,13 @@
       </div>
     </section>
 
+
+
 <!-- =========================================================
      SEATWISE — INTERACTIVE CONFLICT DEMO
 ========================================================= -->
 
 <section class="sw-wow-section" id="seatwise-demo">
-
-    <div class="sw-wow-heading">
-        <span class="sw-eyebrow">LIVE SIMULATION</span>
-
-        <h2>
-            Detect.
-            <span>Resolve.</span>
-            Repeat.
-        </h2>
-
-        <p>
-            Watch SEATWISE detect a seating conflict and automatically
-            find a better seat.
-        </p>
-    </div>
 
     <div class="sw-demo-container">
 
@@ -254,30 +239,29 @@
                 <span id="swSystemStatus">SYSTEM READY</span>
             </div>
 
-            <h3 id="swDemoTitle">
-                Intelligent Conflict Resolution
-            </h3>
+            <h2 id="swDemoTitle" class="sw-demo-title">
+                Intelligent Conflict<br />Resolution
+            </h2>
 
             <p id="swDemoMessage">
-                SEATWISE continuously checks seating constraints
-                and resolves conflicts automatically.
+                SEATWISE continuously checks seating constraints and resolves conflicts automatically.
             </p>
 
             <div class="sw-demo-stats">
 
                 <div class="sw-stat">
                     <strong id="swStudents">24</strong>
-                    <span>Students</span>
+                    <span>STUDENTS</span>
                 </div>
 
                 <div class="sw-stat">
                     <strong id="swRooms">02</strong>
-                    <span>Rooms</span>
+                    <span>ROOMS</span>
                 </div>
 
                 <div class="sw-stat">
                     <strong id="swConflicts">00</strong>
-                    <span>Conflicts</span>
+                    <span>CONFLICTS</span>
                 </div>
 
             </div>
@@ -296,7 +280,7 @@
 
                 <div>
                     <span class="sw-live-dot"></span>
-                    LIVE SEATING GRID
+                    <span>LIVE SEATING GRID</span>
                 </div>
 
                 <span id="swGridStatus">
@@ -311,12 +295,9 @@
             ></div>
 
             <div class="sw-grid-footer">
-                <span><i class="sw-legend sw-legend-cs"></i> CS301</span>
-                <span><i class="sw-legend sw-legend-ec"></i> EC201</span>
-                <span><i class="sw-legend sw-legend-ma"></i> MA201</span>
-                <span><i class="sw-legend sw-legend-ph"></i> PH201</span>
+                <span><i class="sw-legend available"></i> Available</span>
+                <span><i class="sw-legend occupied"></i> Occupied</span>
                 <span><i class="sw-legend conflict"></i> Conflict</span>
-                <span><i class="sw-legend resolved"></i> Resolved</span>
             </div>
 
         </div>
@@ -325,9 +306,11 @@
 
 </section>
 
+
+
     <section class="section feature-section" id="features">
       <div class="container">
-        <div class="section-heading reveal"><span class="section-kicker">FEATURES</span><h2>Built around the work an administrator <span>actually does.</span></h2><p>Not decoration for decoration's sake — the visual language is tied to the product workflow.</p></div>
+        <div class="section-heading reveal"><span class="section-kicker">FEATURES</span><h2>Built around the work an administrator <span>actually does.</span></h2></div>
         <div class="feature-grid">
           <article class="feature-card large reveal tilt-card" data-tilt><div class="feature-number">01</div><div class="feature-icon">▦</div><h3>Room-aware seating</h3><p>Configure multiple rooms, rows and columns while keeping capacity visible and predictable.</p><div class="feature-visual room-visual"><span></span><span></span><span></span><span></span><span></span><span></span></div></article>
           <article class="feature-card reveal tilt-card" data-tilt><div class="feature-number">02</div><div class="feature-icon">◎</div><h3>Conflict detection</h3><p>Identify same-subject adjacency and surface conflicts for review.</p><div class="pulse-visual"><i></i><i></i><i></i></div></article>
@@ -337,12 +320,13 @@
         </div>
       </div>
     </section>
+    <!-- <div style="height: 100vh;"></div> -->
 
     <section class="section conflict-section section-tint" id="conflicts-demo">
       <div class="container two-column conflict-layout">
-        <div class="conflict-copy reveal reveal-left"><span class="section-kicker">CONFLICT RESOLVER</span><h2>Detect it.<br /><span>Understand it. Resolve it.</span></h2><p>The product's most important story can be visualized directly: a student placement, a conflict, an alternate seat and a verified resolution.</p><div class="resolver-list"><div class="resolver-row active"><span>01</span><div><strong>Placement</strong><small>Student assigned to A4</small></div><i>✓</i></div><div class="resolver-row"><span>02</span><div><strong>Conflict</strong><small>Same subject detected nearby</small></div><i>!</i></div><div class="resolver-row"><span>03</span><div><strong>Resolution</strong><small>Alternate legal seat selected</small></div><i>✓</i></div></div></div>
+        <div class="conflict-copy reveal reveal-left"><span class="section-kicker">CONFLICT RESOLVER</span><h2>Detect it.<br /><span>Understand it. Resolve it.</span></h2><p>The product's most important story can be visualized directly: a student placement, a conflict, an alternate seat and a verified resolution.</p><div class="resolver-list"><div class="resolver-row active" data-step="1"><span>01</span><div><strong>Placement</strong><small>Student assigned to A4</small></div><i>✓</i></div><div class="resolver-row" data-step="2"><span>02</span><div><strong>Conflict</strong><small>Same subject detected nearby</small></div><i>!</i></div><div class="resolver-row" data-step="3"><span>03</span><div><strong>Resolution</strong><small>Alternate legal seat selected</small></div><i>✓</i></div></div></div>
         <div class="conflict-stage reveal reveal-right">
-          <div class="conflict-map"><div class="map-line line-one"></div><div class="map-line line-two"></div><div class="map-seat seat-a"><small>A4</small><strong>CS301</strong></div><div class="map-seat seat-b danger"><small>A5</small><strong>CS301</strong></div><div class="map-seat seat-c resolved"><small>C7</small><strong>CS301</strong></div><div class="conflict-badge"><span>!</span> CONFLICT</div><div class="resolved-badge">✓ RESOLVED</div></div>
+          <div class="conflict-map" data-conflict-step="1"><div class="map-line line-one"></div><div class="map-line line-two"></div><div class="map-seat seat-a"><small>A4</small><strong>CS301</strong></div><div class="map-seat seat-b danger"><small>A5</small><strong>CS301</strong></div><div class="map-seat seat-c resolved"><small>C7</small><strong>CS301</strong></div><div class="conflict-badge"><span>!</span> CONFLICT</div><div class="resolved-badge">✓ RESOLVED</div></div>
         </div>
       </div>
     </section>
@@ -365,14 +349,13 @@
 
   <footer class="site-footer">
     <div class="container footer-main">
-      <div class="footer-brand"><a class="brand" href="#top"><span class="brand-mark">S</span><span class="brand-copy"><strong>SEAT</strong>WISE<small>SMART EXAM SEATING</small></span></a><p>Plan smarter. Detect conflicts. Execute with confidence.</p></div>
-      <div class="footer-links"><div><strong>Explore</strong><a href="#problem">Problem</a><a href="#workflow">Workflow</a><a href="#features">Features</a></div><div><strong>Product</strong><a href="#seating">Seating grid</a><a href="#conflicts-demo">Conflict resolver</a><a href="portal.html">Open app</a></div><div><strong>Navigation</strong><a href="#technology">Technology</a><a href="#top">Back to top ↑</a></div></div>
+      <div class="footer-brand"><a class="brand"><span class="brand-mark">S</span><span class="brand-copy"><strong>SEAT</strong>WISE<small>SMART EXAM SEATING</small></span></a><p>Plan smarter. Detect conflicts. Execute with confidence.</p></div>
+      <div class="footer-links"><div><strong>Explore</strong><a href="#problem">Problem</a><a href="#workflow">Workflow</a><a href="#features">Features</a></div><div><strong>Product</strong><a href="#seating">Seating grid</a><a href="#conflicts-demo">Conflict resolver</a><a href="index.html">Open app</a></div><div><strong>Navigation</strong><a href="#technology">Technology</a><a href="#top">Back to top ↑</a></div></div>
     </div>
     <div class="container footer-bottom"><span>© <span id="footer-year"></span> SEATWISE</span><span>Designed for examination operations</span></div>
   </footer>
 
   <button class="back-to-top" id="back-to-top" aria-label="Back to top">↑</button>
-  <script src="js/settingsManager.js"></script>
   <script src="js/landing.js"></script>
 </body>
 </html>
