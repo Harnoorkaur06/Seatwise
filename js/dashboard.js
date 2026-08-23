@@ -20,8 +20,13 @@ const Dashboard = {
       utilization = Number(((assignedStudents / totalSeats) * 100).toFixed(1));
     }
 
+    const activeStudents = students.filter((s) => !s.disabled).length;
+    const disabledStudents = students.filter((s) => s.disabled).length;
+
     return {
       totalStudents: students.length,
+      activeStudents,
+      disabledStudents,
       totalRooms: rooms.length,
       totalSeats,
       totalExams: exams.length,
@@ -156,7 +161,6 @@ const Dashboard = {
       return;
     }
 
-    // Generate 5 rows x 10 cols mini room
     const subjects = ["CS301", "MA201", "PH201", "EC201"];
     let gridHTML = "";
     let seatIndex = 1;
@@ -204,9 +208,7 @@ const Dashboard = {
 
   seatForUser(user) {
     if (!user) return null;
-    const allUsers = STORAGE.getUsers();
-    const record = allUsers.find((u) => u.id === user.id);
-    const rollNo = record ? record.rollNo : null;
+    const rollNo = user.rollNo;
     if (!rollNo) return null;
     return Seating.findByRollNo(rollNo);
   }

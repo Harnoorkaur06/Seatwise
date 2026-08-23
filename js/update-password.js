@@ -1,5 +1,6 @@
 /* ==========================================================================
    update-password.js — Update Password Controller
+   Updates student.password in the Students database.
    ========================================================================== */
 
 const UpdatePasswordManager = {
@@ -21,14 +22,13 @@ const UpdatePasswordManager = {
     const newPwd = newPwdInput?.value || "";
     const confirmPwd = confirmPwdInput?.value || "";
 
-    const users = STORAGE.getUsers();
-    const record = users.find((u) => u.id === current.id);
-    if (!record) {
-      if (typeof showToast === "function") showToast("User record not found.", "error");
+    const student = Students.findById(current.id || current.rollNo);
+    if (!student) {
+      if (typeof showToast === "function") showToast("Student record not found.", "error");
       return;
     }
 
-    if (record.password !== currentPwd) {
+    if (student.password !== currentPwd) {
       if (typeof showToast === "function") showToast("⚠ Current password is incorrect.", "error");
       return;
     }
@@ -43,7 +43,7 @@ const UpdatePasswordManager = {
       return;
     }
 
-    const result = Users.update(current.id, { password: newPwd });
+    const result = Students.update(student.id || student.rollNo, { password: newPwd, passwordSet: true });
     if (result.ok) {
       if (typeof showToast === "function") showToast("✓ Password updated successfully.", "success");
       if (currentPwdInput) currentPwdInput.value = "";

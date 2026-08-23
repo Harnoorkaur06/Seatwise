@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/responsive.css" />
 <style>
-  /* Profile Layout Styles */
   .profile-two-col-grid {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -186,12 +185,6 @@
   .profile-action-card:hover .profile-action-link {
     color: var(--purple-5);
   }
-
-  html[data-theme="dark"] .profile-action-card,
-  body.dark-theme .profile-action-card {
-    background: #231c33;
-    border-color: rgba(255, 255, 255, 0.1);
-  }
 </style>
 </head>
 <body>
@@ -259,29 +252,29 @@
           </div>
 
           <div class="profile-summary-name" id="summary-name" data-current-user-name>Student</div>
-          <div class="profile-summary-rollno" id="summary-rollno">Roll No: Unlinked</div>
+          <div class="profile-summary-rollno" id="summary-rollno">Roll No: --</div>
           <div class="profile-summary-email" id="summary-email">student@domain.com</div>
         </div>
 
         <!-- RIGHT COLUMN: PERSONAL INFORMATION FORM -->
         <div class="card">
           <div class="card-title">Personal Information</div>
-          <div class="form-hint mb-16">Update your personal account details and university roll number linkage.</div>
+          <div class="form-hint mb-16">View your official candidate details. Roll number is controlled by university admin.</div>
           
           <form id="profile-personal-form">
             <div class="form-group">
               <label class="form-label" for="profile-name">Full Name</label>
-              <input class="form-input" id="profile-name" placeholder="e.g. Rahul Sharma" required />
+              <input class="form-input" id="profile-name" placeholder="e.g. Rahul" required />
             </div>
             <div class="form-group">
               <label class="form-label" for="profile-email">Email Address</label>
               <input class="form-input" id="profile-email" type="email" placeholder="e.g. rahul@student.com" required />
             </div>
             <div class="form-group">
-              <label class="form-label" for="profile-rollno">University Roll Number</label>
-              <input class="form-input" id="profile-rollno" placeholder="e.g. 23CSE101" />
+              <label class="form-label" for="profile-rollno">University Roll Number (Admin-Controlled)</label>
+              <input class="form-input" id="profile-rollno" readonly disabled style="background:var(--bg); cursor:not-allowed;" />
             </div>
-            <button type="submit" class="btn btn-primary mt-10">Save Personal Info</button>
+            <button type="submit" class="btn btn-primary mt-10">Save Profile</button>
           </form>
         </div>
 
@@ -352,7 +345,7 @@
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/users.js"></script>
+<script src="js/students.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/app.js"></script>
 </body>

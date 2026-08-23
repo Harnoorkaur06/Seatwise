@@ -25,7 +25,6 @@
     </div>
     <nav class="sidebar-nav">
       <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
-      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
       <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
       <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
       <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
@@ -56,7 +55,7 @@
         <div class="table-toolbar">
           <div>
             <div style="font-weight:800; font-size:15px; color:var(--ink);">All Examinations</div>
-            <div style="font-size:12px; color:var(--muted);">Create, update and configure active exam schedules</div>
+            <div style="font-size:12px; color:var(--muted);">Create, update, generate seating, and configure active exam schedules</div>
           </div>
           <button class="btn btn-primary" onclick="resetForm(); openModal('exam-modal')">+ Create Examination</button>
         </div>
@@ -97,7 +96,7 @@
         <input type="hidden" id="exam-id" />
         <div class="form-group">
           <label class="form-label" for="exam-name">Examination Name</label>
-          <input class="form-input" id="exam-name" placeholder="e.g. Mid Semester Examination" required />
+          <input class="form-input" id="exam-name" placeholder="e.g. CNDC / PA / DBMS" required />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -166,7 +165,9 @@
         <td>${formatTime(e.time)}</td>
         <td>${escapeHTML(e.duration || "-")}</td>
         <td style="text-align:right;">
-          <div class="flex-gap" style="justify-content:flex-end;">
+          <div class="flex-gap" style="justify-content:flex-end; flex-wrap:wrap;">
+            <a href="generate-seating.html?examId=${e.id}" class="btn btn-primary btn-sm">⚙ Generate Seating</a>
+            <a href="seating-plan.html?examId=${e.id}" class="btn btn-secondary btn-sm">🗺 View Seating</a>
             <button class="btn btn-outline btn-sm" onclick="editExam('${e.id}')">Edit</button>
             <button class="btn btn-danger btn-sm" onclick="deleteExam('${e.id}','${escapeHTML(e.name)}')">Delete</button>
           </div>
@@ -195,10 +196,10 @@
   }
 
   function deleteExam(id, name) {
-    confirmAction(`Delete examination "${name}"?`, () => {
+    confirmAction(`Deleting examination "${name}" will also remove its associated seating plans and student seat assignments. Are you sure you want to delete this examination?`, () => {
       Exams.remove(id);
       render();
-      showToast("Examination deleted successfully.", "success");
+      showToast("Examination and associated seating plans deleted successfully.", "success");
     });
   }
 

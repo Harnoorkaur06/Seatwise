@@ -1,5 +1,5 @@
 /* ==========================================================================
-   profile.js — SEATWISE Student Profile Manager (Focused Edition)
+   profile.js — SEATWISE Student Profile Manager
    ========================================================================== */
 
 const ProfileManager = {
@@ -12,14 +12,12 @@ const ProfileManager = {
   loadProfile() {
     const current = Auth.currentUser();
     if (!current) return;
-    const users = STORAGE.getUsers();
-    const record = users.find((u) => u.id === current.id) || current;
 
     // Form inputs
     const nameInput = document.getElementById("profile-name");
     const emailInput = document.getElementById("profile-email");
     const rollNoInput = document.getElementById("profile-rollno");
-    
+
     // Summary elements
     const summaryName = document.getElementById("summary-name");
     const summaryRollNo = document.getElementById("summary-rollno");
@@ -29,20 +27,20 @@ const ProfileManager = {
     const avatarFrame = document.getElementById("avatar-frame");
     const removeBtn = document.getElementById("btn-remove-photo");
 
-    if (nameInput) nameInput.value = record.name || "";
-    if (emailInput) emailInput.value = record.email || "";
-    if (rollNoInput) rollNoInput.value = record.rollNo || "";
+    if (nameInput) nameInput.value = current.name || "";
+    if (emailInput) emailInput.value = current.email || "";
+    if (rollNoInput) rollNoInput.value = current.rollNo || "";
 
-    if (summaryName) summaryName.textContent = record.name || "Student";
-    if (summaryRollNo) summaryRollNo.textContent = record.rollNo ? `Roll No: ${record.rollNo}` : "Roll No: Unlinked";
-    if (summaryEmail) summaryEmail.textContent = record.email || "";
+    if (summaryName) summaryName.textContent = current.name || "Student";
+    if (summaryRollNo) summaryRollNo.textContent = current.rollNo ? `Roll No: ${current.rollNo}` : "Roll No: Unlinked";
+    if (summaryEmail) summaryEmail.textContent = current.email || "";
 
     if (avatarFrame) {
-      if (record.avatar) {
-        avatarFrame.innerHTML = `<img src="${record.avatar}" alt="Avatar" />`;
+      if (current.avatar) {
+        avatarFrame.innerHTML = `<img src="${current.avatar}" alt="Avatar" />`;
         if (removeBtn) removeBtn.style.display = "inline-block";
       } else {
-        const initial = record.name ? record.name.charAt(0).toUpperCase() : "?";
+        const initial = current.name ? current.name.charAt(0).toUpperCase() : "?";
         avatarFrame.innerHTML = `<span id="avatar-initial">${initial}</span>`;
         if (removeBtn) removeBtn.style.display = "none";
       }
@@ -59,7 +57,7 @@ const ProfileManager = {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit for base64 storage
+    if (file.size > 2 * 1024 * 1024) {
       if (typeof showToast === "function") showToast("Image size must be under 2MB.", "error");
       return;
     }
@@ -67,8 +65,10 @@ const ProfileManager = {
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target.result;
-      const result = Users.update(current.id, { avatar: dataUrl });
+      const result = Students.update(current.id, { avatar: dataUrl });
       if (result.ok) {
+        const updatedUser = { ...current, avatar: dataUrl };
+        STORAGE.setCurrentUser(updatedUser);
         if (typeof showToast === "function") showToast("✓ Profile photo updated!", "success");
         this.loadProfile();
         if (window.App && typeof App._renderCurrentUserBadge === "function") {
@@ -86,8 +86,10 @@ const ProfileManager = {
     const current = Auth.currentUser();
     if (!current) return;
 
-    const result = Users.update(current.id, { avatar: "" });
+    const result = Students.update(current.id, { avatar: "" });
     if (result.ok) {
+      const updatedUser = { ...current, avatar: "" };
+      STORAGE.setCurrentUser(updatedUser);
       if (typeof showToast === "function") showToast("Profile photo removed.", "info");
       this.loadProfile();
       if (window.App && typeof App._renderCurrentUserBadge === "function") {
@@ -104,7 +106,6 @@ const ProfileManager = {
 
     const name = (document.getElementById("profile-name")?.value || "").trim();
     const email = (document.getElementById("profile-email")?.value || "").trim();
-    const rollNo = (document.getElementById("profile-rollno")?.value || "").trim();
 
     if (!name || !email) {
       if (typeof showToast === "function") showToast("Name and email are required.", "error");
@@ -116,8 +117,10 @@ const ProfileManager = {
       return;
     }
 
-    const result = Users.update(current.id, { name, email, rollNo });
+    const result = Students.update(current.id, { name, email });
     if (result.ok) {
+      const updatedUser = { ...current, name, email };
+      STORAGE.setCurrentUser(updatedUser);
       if (typeof showToast === "function") showToast("✓ Personal info saved successfully.", "success");
       this.loadProfile();
       if (window.App && typeof App._renderCurrentUserBadge === "function") {

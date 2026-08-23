@@ -1,110 +1,168 @@
 /* ==========================================================================
-   auth.js — SEATWISE Authentication
+   auth.js — SEATWISE University-Controlled Authentication
+   Supports Option A (Email + Password) or Option B (Roll Number + Password),
+   First-Time Password Setup, and Admin Authentication.
    ========================================================================== */
 
 const Auth = {
-  /** Sign up a new normal user. Returns {ok, message} */
-  signup({ name, email, password, confirmPassword }) {
-    if (!name || !email || !password || !confirmPassword) {
-      return { ok: false, message: "All fields are required." };
+  /**
+   * Public Student Signup is DISABLED in a University-Controlled System.
+   * Only administrators can create student accounts.
+   */
+  signup() {
+    return {
+      ok: false,
+      message: "Public student registration is disabled. Student accounts are created by the university administrator."
+    };
+  },
+
+  /**
+   * Student Login
+   * Accepts { email, rollNo, password }
+   * Enforces Option A (Email + Password) OR Option B (Roll Number + Password)
+   */
+  login({ email, rollNo, password }) {
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanRollNo = (rollNo || "").trim().toUpperCase();
+
+    if (!cleanEmail && !cleanRollNo) {
+      return { ok: false, message: "Please enter your email or roll number." };
     }
-    if (!isValidEmail(email)) {
-      return { ok: false, message: "Please enter a valid email address." };
+
+    if (!password) {
+      return { ok: false, message: "Please enter your password." };
     }
-    if (password.length < 6) {
-      return { ok: false, message: "Password must be at least 6 characters." };
+
+    const students = STORAGE.getStudents();
+    let student = null;
+
+    if (cleanEmail) {
+      student = students.find((s) => String(s.email).trim().toLowerCase() === cleanEmail);
+    } else if (cleanRollNo) {
+      student = students.find((s) => String(s.rollNo).trim().toUpperCase() === cleanRollNo);
     }
-    if (password !== confirmPassword) {
+
+    if (!student) {
+      return {
+        ok: false,
+        message: "Account not available. Please contact the administrator."
+      };
+    }
+
+    if (student.disabled === true) {
+      return {
+        ok: false,
+        message: "Your account is temporarily disabled. Please contact the administrator."
+      };
+    }
+
+    if (!student.password || student.passwordSet === false) {
+      return {
+        ok: false,
+        message: "Please set up your password first."
+      };
+    }
+
+    if (student.password !== password) {
+      return {
+        ok: false,
+        message: "Incorrect password."
+      };
+    }
+
+    const currentUser = {
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      rollNo: student.rollNo,
+      mobile: student.mobile || "",
+      course: student.course || "CSE",
+      semester: student.semester || "5th Semester",
+      subject: student.subject || "CS301",
+      avatar: student.avatar || "",
+      role: "student"
+    };
+
+    STORAGE.setCurrentUser(currentUser);
+    STORAGE.logActivity(`Student logged in: ${student.name} (${student.rollNo})`);
+
+    return {
+      ok: true,
+      message: "Login successful. Redirecting...",
+      user: currentUser
+    };
+  },
+
+  /**
+   * Set Up Password Flow for First-Time Students
+   * Accepts { identifier (email or rollNo), newPassword, confirmPassword }
+   */
+  setupPassword({ identifier, newPassword, confirmPassword }) {
+    const targetKey = (identifier || "").trim();
+
+    if (!targetKey) {
+      return { ok: false, message: "Please enter your email or roll number." };
+    }
+
+    if (!newPassword || !confirmPassword) {
+      return { ok: false, message: "Please enter and confirm your new password." };
+    }
+
+    if (newPassword !== confirmPassword) {
       return { ok: false, message: "Passwords do not match." };
     }
 
-    const users = STORAGE.getUsers();
-    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      return { ok: false, message: "An account with this email already exists." };
+    if (newPassword.length < 6) {
+      return { ok: false, message: "Password must contain at least 6 characters." };
     }
 
-    const newUser = {
-      id: generateId("user"),
-      name,
-      email,
-      password,
-      role: "user",
-      disabled: false,
-      rollNo: "",
-      mobile: "",
-      createdAt: new Date().toISOString()
+    const students = STORAGE.getStudents();
+    const normKey = targetKey.toLowerCase();
+    const idx = students.findIndex((s) =>
+      String(s.email).trim().toLowerCase() === normKey ||
+      String(s.rollNo).trim().toLowerCase() === normKey
+    );
+
+    if (idx === -1) {
+      return {
+        ok: false,
+        message: "Account not available. Please contact the administrator."
+      };
+    }
+
+    const student = students[idx];
+
+    if (student.disabled === true) {
+      return {
+        ok: false,
+        message: "Your account is temporarily disabled. Please contact the administrator."
+      };
+    }
+
+    student.password = newPassword;
+    student.passwordSet = true;
+    students[idx] = student;
+
+    STORAGE.setStudents(students);
+    STORAGE.logActivity(`Password set up successfully by student: ${student.name} (${student.rollNo})`);
+
+    return {
+      ok: true,
+      message: "Password set successfully. You can now sign in."
     };
-    users.push(newUser);
-    STORAGE.setUsers(users);
-    STORAGE.logActivity(`New user registered: ${name}`);
-    return { ok: true, message: "Account created successfully." };
   },
 
-  /** Log in a normal user. Returns {ok, message} */
-  login({ email, password, name, rollNo }) {
-    const users = STORAGE.getUsers();
-    let user = users.find((u) => u.email.toLowerCase() === (email || "").toLowerCase());
-    
-    if (!user) {
-      if (name && email && password) {
-        // Safe auto-creation if student credentials provided for new account
-        user = {
-          id: typeof generateId === "function" ? generateId("user") : "user_" + Date.now(),
-          name: name.trim(),
-          email: email.trim(),
-          password,
-          role: "user",
-          disabled: false,
-          rollNo: (rollNo || "").trim(),
-          mobile: "",
-          createdAt: new Date().toISOString()
-        };
-        users.push(user);
-        STORAGE.setUsers(users);
-      } else {
-        return { ok: false, message: "No account found with this email." };
-      }
-    } else {
-      if (user.disabled) return { ok: false, message: "This account has been disabled. Contact admin." };
-      if (user.password !== password) return { ok: false, message: "Incorrect password." };
-
-      // Update name and rollNo if provided during login
-      let updated = false;
-      if (name && name.trim() && user.name !== name.trim()) {
-        user.name = name.trim();
-        updated = true;
-      }
-      if (rollNo !== undefined && rollNo.trim() && user.rollNo !== rollNo.trim()) {
-        user.rollNo = rollNo.trim();
-        updated = true;
-      }
-      if (user.rollNo === undefined) { user.rollNo = ""; updated = true; }
-      if (user.mobile === undefined) { user.mobile = ""; updated = true; }
-
-      if (updated) {
-        STORAGE.setUsers(users);
-      }
-    }
-
-    STORAGE.setCurrentUser({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      rollNo: user.rollNo || "",
-      mobile: user.mobile || "",
-      avatar: user.avatar || "",
-      role: "user"
-    });
-    STORAGE.logActivity(`${user.name} logged in`);
-    return { ok: true, message: "Login successful." };
-  },
-
-  /** Log in as admin using the centralized demo credential */
+  /** Log in as administrator */
   adminLogin({ username, password }) {
     const validPassword = password === CONFIG.ADMIN_PASSWORD || password === CONFIG.ADMIN_ALT_PASSWORD || password === "admin123";
     if (username === CONFIG.ADMIN_USERNAME && validPassword) {
       STORAGE.setAdminSession(true);
-      STORAGE.setCurrentUser({ id: "admin", name: "Administrator", email: "admin@seatwise.local", role: "admin" });
+      STORAGE.setCurrentUser({
+        id: "admin",
+        name: "Administrator",
+        email: "admin@seatwise.local",
+        role: "admin"
+      });
       STORAGE.logActivity("Administrator logged in");
       return { ok: true, message: "Welcome back, Administrator." };
     }
@@ -120,9 +178,23 @@ const Auth = {
 
   currentUser() {
     const user = STORAGE.getCurrentUser();
-    if (user) {
-      if (user.rollNo === undefined) user.rollNo = "";
-      if (user.mobile === undefined) user.mobile = "";
+    if (user && user.role === "student") {
+      // Sync latest data from Students database in case Admin updated it
+      const latest = STORAGE.getStudents().find((s) => s.id === user.id || s.rollNo === user.rollNo);
+      if (latest) {
+        return {
+          id: latest.id,
+          name: latest.name,
+          email: latest.email,
+          rollNo: latest.rollNo,
+          mobile: latest.mobile || "",
+          course: latest.course || "CSE",
+          semester: latest.semester || "5th Semester",
+          subject: latest.subject || "CS301",
+          avatar: user.avatar || latest.avatar || "",
+          role: "student"
+        };
+      }
     }
     return user;
   },
@@ -136,25 +208,25 @@ const Auth = {
     return !!user && user.role === "admin" && STORAGE.isAdminSession();
   },
 
-  /** Call at the top of every user-only page */
+  /** Guard student-only pages */
   requireUser() {
     const user = STORAGE.getCurrentUser();
-    if (!user || user.role !== "user") {
+    if (!user || user.role !== "student") {
       window.location.href = "login.html";
     }
   },
 
-  /** Call at the top of every admin-only page */
+  /** Guard admin-only pages */
   requireAdmin() {
     if (!Auth.isAdmin()) {
       window.location.href = "admin-login.html";
     }
   },
 
-  /** Call on login/signup pages so already-logged-in visitors skip ahead */
+  /** Redirect logged in users away from login pages */
   redirectIfLoggedIn() {
     const user = STORAGE.getCurrentUser();
-    if (user && user.role === "user") window.location.href = "user-dashboard.html";
+    if (user && user.role === "student") window.location.href = "user-dashboard.html";
     if (user && user.role === "admin" && STORAGE.isAdminSession()) window.location.href = "admin-dashboard.html";
   }
 };

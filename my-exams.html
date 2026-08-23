@@ -45,21 +45,24 @@
       </div>
     </header>
 
-    <main class="page-content">
-      <div class="table-container" style="min-height:calc(100vh - 130px);">
+    <main class="page-content" style="max-width:960px; margin:0 auto;">
+      <div class="table-container mb-24">
         <div class="table-toolbar">
-          <div style="font-weight:800; font-size:15px; color:var(--ink);">All Scheduled Examination Sessions</div>
+          <div>
+            <div style="font-weight:800; font-size:16px; color:var(--ink);">My Scheduled Examinations & Seating Pass Status</div>
+            <div style="font-size:12px; color:var(--muted);">Inspect seating allocations across all your registered examination sessions</div>
+          </div>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Exam Name</th>
+                <th>Examination Name</th>
                 <th>Semester</th>
-                <th>Date</th>
-                <th>Time</th>
+                <th>Date & Time</th>
                 <th>Duration</th>
-                <th>Status</th>
+                <th>Assigned Seat Pass</th>
+                <th style="text-align:right;">Action</th>
               </tr>
             </thead>
             <tbody id="exam-rows"></tbody>
@@ -81,12 +84,14 @@
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/exams.js"></script>
-<script src="js/dashboard.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
 <script src="js/app.js"></script>
 <script>
   Auth.requireUser();
 
   function render() {
+    const user = Auth.currentUser();
     const exams = Exams.all();
     const tbody = document.getElementById("exam-rows");
     if (exams.length === 0) {
@@ -95,16 +100,41 @@
       return;
     }
     document.getElementById("empty-state").style.display = "none";
-    tbody.innerHTML = exams.map((e) => `
-      <tr>
-        <td style="font-weight:700; color:var(--ink);">${escapeHTML(e.name)}</td>
-        <td>${escapeHTML(e.semester || "-")}</td>
-        <td>${formatDate(e.date)}</td>
-        <td>${formatTime(e.time)}</td>
-        <td>${escapeHTML(e.duration || "-")}</td>
-        <td><span class="badge badge-success">✓ Scheduled</span></td>
-      </tr>
-    `).join("");
+    tbody.innerHTML = exams.map((e) => {
+      const seat = user && user.rollNo ? Seating.findByRollNo(user.rollNo, e.id) : null;
+      const plan = Seating.getCurrentPlan(e.id);
+      
+      let statusHTML = "";
+      let actionHTML = "";
+
+      if (seat) {
+        statusHTML = `<span class="badge badge-success" style="font-size:12px; padding:4px 10px;">✓ Room: <strong>${escapeHTML(seat.roomNumber)}</strong> · Seat: <strong>${escapeHTML(seat.seat)}</strong></span>`;
+        actionHTML = `<a href="my-seat.html?examId=${e.id}" class="btn btn-primary btn-sm">View Seat Pass →</a>`;
+      } else if (plan) {
+        statusHTML = `<span class="badge badge-warning" style="font-size:11.5px;">⏳ Candidate Not Seated</span>`;
+        actionHTML = `<a href="my-seat.html?examId=${e.id}" class="btn btn-outline btn-sm">View Details</a>`;
+      } else {
+        statusHTML = `<span class="badge badge-neutral" style="font-size:11.5px;">Seating Not Generated</span>`;
+        actionHTML = `<span class="text-dim text-sm" style="font-style:italic;">Waiting for Admin</span>`;
+      }
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:800; font-size:14.5px; color:var(--ink);">${escapeHTML(e.name)}</div>
+            <div style="font-size:11.5px; color:var(--muted);">ID: ${escapeHTML(e.id)}</div>
+          </td>
+          <td>${escapeHTML(e.semester || "-")}</td>
+          <td>
+            <div style="font-weight:700; color:var(--ink);">${formatDate(e.date)}</div>
+            <div style="font-size:11.5px; color:var(--muted);">${formatTime(e.time)}</div>
+          </td>
+          <td>${escapeHTML(e.duration || "-")}</td>
+          <td>${statusHTML}</td>
+          <td style="text-align:right;">${actionHTML}</td>
+        </tr>
+      `;
+    }).join("");
   }
 
   render();

@@ -17,6 +17,7 @@ const STORAGE_KEYS = Object.freeze({
   STUDENTS: "examseat_students",
   ROOMS: "examseat_rooms",
   SEATING_PLAN: "examseat_seating_plan",
+  SEATING_PLANS: "examseat_seating_plans",
   ACTIVITY: "examseat_activity",
   COMPLAINTS: "examseat_complaints",
   SEEDED: "examseat_seeded"
@@ -69,15 +70,97 @@ const STORAGE = {
   getExams() { return this.get(STORAGE_KEYS.EXAMS, []); },
   setExams(exams) { return this.set(STORAGE_KEYS.EXAMS, exams); },
 
-  getStudents() { return this.get(STORAGE_KEYS.STUDENTS, []); },
+  getStudents() {
+    const list = this.get(STORAGE_KEYS.STUDENTS, []);
+    return list.map((s, idx) => ({
+      ...s,
+      id: s.id || `student_${s.rollNo || idx}`,
+      rollNo: (s.rollNo || "").toString().trim().toUpperCase(),
+      email: (s.email || `${s.rollNo || idx}@student.com`).toString().trim(),
+      name: (s.name || "Student").toString().trim(),
+      password: s.password || "student123",
+      role: "student",
+      disabled: s.disabled === true
+    }));
+  },
   setStudents(students) { return this.set(STORAGE_KEYS.STUDENTS, students); },
 
   getRooms() { return this.get(STORAGE_KEYS.ROOMS, []); },
   setRooms(rooms) { return this.set(STORAGE_KEYS.ROOMS, rooms); },
 
-  getSeatingPlan() { return this.get(STORAGE_KEYS.SEATING_PLAN, null); },
-  setSeatingPlan(plan) { return this.set(STORAGE_KEYS.SEATING_PLAN, plan); },
-  clearSeatingPlan() { this.remove(STORAGE_KEYS.SEATING_PLAN); },
+  // ---- multi-exam seating plan storage ---------------------------------
+  getSeatingPlans() {
+    let plans = this.get(STORAGE_KEYS.SEATING_PLANS, null);
+    if (!plans) {
+      plans = [];
+      // Safe migration for legacy single plan
+      const oldPlan = this.get(STORAGE_KEYS.SEATING_PLAN, null);
+      if (oldPlan) {
+        const exams = this.getExams();
+        const exam = exams[0] || { id: "exam_default", name: "Examination" };
+        oldPlan.examId = oldPlan.examId || exam.id;
+        oldPlan.examName = oldPlan.examName || exam.name;
+        oldPlan.generation = oldPlan.generation || 1;
+        oldPlan.isActive = true;
+        plans.push(oldPlan);
+        this.set(STORAGE_KEYS.SEATING_PLANS, plans);
+      }
+    }
+    return plans;
+  },
+
+  setSeatingPlans(plans) {
+    return this.set(STORAGE_KEYS.SEATING_PLANS, plans);
+  },
+
+  getSeatingPlan(examId, generation) {
+    const plans = this.getSeatingPlans();
+    if (!examId) {
+      return plans.find((p) => p.isActive) || plans[0] || null;
+    }
+    const examPlans = plans.filter((p) => p.examId === examId);
+    if (examPlans.length === 0) return null;
+    if (generation !== undefined && generation !== null && generation !== "") {
+      return examPlans.find((p) => p.generation === Number(generation)) || null;
+    }
+    return examPlans.find((p) => p.isActive === true) || examPlans.sort((a, b) => b.generation - a.generation)[0] || null;
+  },
+
+  setSeatingPlan(plan) {
+    if (!plan || !plan.examId) return false;
+    const plans = this.getSeatingPlans();
+    
+    // Archive previous active plans for this examId
+    plans.forEach((p) => {
+      if (p.examId === plan.examId) {
+        p.isActive = false;
+      }
+    });
+
+    plan.isActive = true;
+    const existingIndex = plans.findIndex((p) => p.id === plan.id || (p.examId === plan.examId && p.generation === plan.generation));
+    if (existingIndex >= 0) {
+      plans[existingIndex] = plan;
+    } else {
+      plans.push(plan);
+    }
+
+    this.set(STORAGE_KEYS.SEATING_PLANS, plans);
+    this.set(STORAGE_KEYS.SEATING_PLAN, plan);
+    return true;
+  },
+
+  deleteSeatingPlansForExam(examId) {
+    if (!examId) return;
+    const plans = this.getSeatingPlans();
+    const filtered = plans.filter((p) => p.examId !== examId);
+    this.setSeatingPlans(filtered);
+  },
+
+  clearSeatingPlan() {
+    this.remove(STORAGE_KEYS.SEATING_PLAN);
+    this.remove(STORAGE_KEYS.SEATING_PLANS);
+  },
 
   getActivity() { return this.get(STORAGE_KEYS.ACTIVITY, []); },
   logActivity(message) {

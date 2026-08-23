@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Students — SEATWISE</title>
+<title>Manage Students — SEATWISE</title>
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/dashboard.css" />
 <link rel="stylesheet" href="css/responsive.css" />
@@ -25,7 +25,6 @@
     </div>
     <nav class="sidebar-nav">
       <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
-      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
       <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
       <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
       <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
@@ -42,7 +41,7 @@
 
   <div class="main-area">
     <header class="topbar">
-      <h1>Student Directory</h1>
+      <h1>Student Directory & Account Management</h1>
       <div class="topbar-right">
         <div class="user-chip">
           <div class="user-avatar" data-current-user-initial>?</div>
@@ -52,26 +51,30 @@
     </header>
 
     <main class="page-content">
-      <div class="stat-grid" style="grid-template-columns:repeat(5, 1fr); margin-bottom:20px;" id="subject-stats"></div>
+      <!-- Status Counters -->
+      <div class="stat-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:20px;" id="status-stats"></div>
 
       <div class="table-container" style="min-height:calc(100vh - 240px);">
         <div class="table-toolbar">
-          <div class="search-input-wrap">
+          <div class="search-input-wrap" style="min-width:320px;">
             <span class="search-icon">🔎</span>
-            <input class="form-input" id="search-input" placeholder="Search by roll number, student name or subject..." />
+            <input class="form-input" id="search-input" placeholder="Search by name, roll number, email, course..." />
           </div>
           <div class="flex-gap">
             <button class="btn btn-secondary btn-sm" onclick="openModal('upload-modal')">⬆ Upload JSON Roster</button>
-            <button class="btn btn-primary btn-sm" onclick="resetForm(); openModal('student-modal')">+ Add Student</button>
+            <button class="btn btn-primary" onclick="resetForm(); openModal('student-modal')">+ Add Student</button>
           </div>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Roll Number</th>
                 <th>Full Name</th>
-                <th>Subject Code</th>
+                <th>Roll Number</th>
+                <th>Email Address</th>
+                <th>Course / Branch</th>
+                <th>Semester</th>
+                <th>Status</th>
                 <th style="text-align:right;">Actions</th>
               </tr>
             </thead>
@@ -80,7 +83,7 @@
           <div id="empty-state" class="table-empty" style="display:none;">
             <div class="empty-icon">🎓</div>
             <div class="empty-title">No students found</div>
-            <div class="empty-desc">Add a student or upload a JSON roster to populate the list.</div>
+            <div class="empty-desc">Click "+ Add Student" or upload a JSON roster to populate the student database.</div>
           </div>
         </div>
       </div>
@@ -88,7 +91,7 @@
   </div>
 </div>
 
-<!-- Add/Edit Student Modal -->
+<!-- Add / Edit Student Modal -->
 <div class="modal-overlay" id="student-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -97,18 +100,47 @@
     </div>
     <div class="modal-body">
       <form id="student-form">
-        <input type="hidden" id="original-rollno" />
+        <input type="hidden" id="student-id" />
         <div class="form-group">
-          <label class="form-label" for="student-rollno">Roll Number</label>
-          <input class="form-input" id="student-rollno" placeholder="e.g. 23CSE101" required />
+          <label class="form-label" for="student-name">Full Name *</label>
+          <input class="form-input" id="student-name" placeholder="e.g. Rahul" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-email">Email Address *</label>
+            <input class="form-input" type="email" id="student-email" placeholder="e.g. rahul@student.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-rollno">University Roll Number *</label>
+            <input class="form-input" id="student-rollno" placeholder="e.g. 23CSE101" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-password">Password *</label>
+            <input class="form-input" type="password" id="student-password" placeholder="e.g. student123" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-mobile">Mobile Number</label>
+            <input class="form-input" id="student-mobile" placeholder="e.g. +91 9876543210" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-course">Course / Branch</label>
+            <input class="form-input" id="student-course" placeholder="e.g. CSE-AI / CSE" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-semester">Semester</label>
+            <input class="form-input" id="student-semester" placeholder="e.g. 5th Semester" />
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="student-name">Full Name</label>
-          <input class="form-input" id="student-name" placeholder="e.g. Rahul Sharma" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="student-subject">Subject Code</label>
-          <input class="form-input" id="student-subject" placeholder="e.g. CS301" required />
+          <label class="form-label" for="student-disabled">Account Status</label>
+          <select class="form-select" id="student-disabled">
+            <option value="false">Active</option>
+            <option value="true">Disabled</option>
+          </select>
         </div>
       </form>
     </div>
@@ -119,18 +151,18 @@
   </div>
 </div>
 
-<!-- Upload JSON Modal -->
+<!-- Upload JSON Roster Modal -->
 <div class="modal-overlay" id="upload-modal">
   <div class="modal-box modal-wide">
     <div class="modal-header">
-      <h3>Upload Students (JSON)</h3>
+      <h3>Upload Students (JSON Roster)</h3>
       <button class="modal-close" onclick="closeModal('upload-modal')">✕</button>
     </div>
     <div class="modal-body">
-      <p class="text-sm text-dim mb-14">Upload a JSON file or paste a JSON array of students. Expected format:</p>
+      <p class="text-sm text-dim mb-14">Upload a JSON file or paste a JSON array of student objects. Expected format:</p>
       <pre style="background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.14); padding:12px 14px; border-radius:8px; font-size:12px; overflow-x:auto; margin-bottom:14px; color:var(--ink);">[
-  { "rollNo": "23CSE101", "name": "Rahul", "subject": "CS301" },
-  { "rollNo": "23CSE102", "name": "Aman", "subject": "MA201" }
+  { "name": "Rahul", "rollNo": "23CSE101", "email": "rahul@student.com", "password": "student123", "course": "CSE-AI", "semester": "5th" },
+  { "name": "Aman", "rollNo": "23CSE102", "email": "aman@student.com", "password": "student123", "course": "CSE", "semester": "5th" }
 ]</pre>
       <input type="file" id="json-file-input" accept=".json" class="form-input mb-14" />
       <textarea id="json-text-input" class="form-textarea" rows="7" placeholder="Or paste JSON array content here..."></textarea>
@@ -141,7 +173,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('upload-modal')">Cancel</button>
-      <button class="btn btn-primary" id="upload-confirm-btn">Import Students</button>
+      <button class="btn btn-primary" id="upload-confirm-btn">Import Roster</button>
     </div>
   </div>
 </div>
@@ -177,84 +209,138 @@
     const students = Students.all();
     const filtered = currentFilter ? Students.search(currentFilter) : students;
 
-    // Subject breakdown stat cards
-    const subjects = [...new Set(students.map((s) => s.subject))];
-    document.getElementById("subject-stats").innerHTML = `
+    const totalStudents = students.length;
+    const activeStudents = students.filter((s) => !s.disabled).length;
+    const disabledStudents = students.filter((s) => s.disabled).length;
+
+    document.getElementById("status-stats").innerHTML = `
       <div class="stat-card tint-1">
-        <div class="stat-card-header"><span class="stat-label">Total Roster</span><div class="stat-icon-wrap">🎓</div></div>
-        <div class="stat-value">${students.length}</div>
+        <div class="stat-card-header"><span class="stat-label">Total Student Accounts</span><div class="stat-icon-wrap">🎓</div></div>
+        <div class="stat-value">${totalStudents}</div>
       </div>
-      ${subjects.slice(0, 4).map((sub, i) => `
-        <div class="stat-card tint-${i + 2}">
-          <div class="stat-card-header"><span class="stat-label">${escapeHTML(sub)}</span><div class="stat-icon-wrap" style="background:${subjectColor(sub)}22; color:${subjectColor(sub)};">📘</div></div>
-          <div class="stat-value">${students.filter((s) => s.subject === sub).length}</div>
-        </div>
-      `).join("")}
+      <div class="stat-card tint-2">
+        <div class="stat-card-header"><span class="stat-label">Active Accounts</span><div class="stat-icon-wrap" style="color:#10b981;">✓</div></div>
+        <div class="stat-value" style="color:#10b981;">${activeStudents}</div>
+      </div>
+      <div class="stat-card tint-3">
+        <div class="stat-card-header"><span class="stat-label">Disabled Accounts</span><div class="stat-icon-wrap" style="color:#ef4444;">🚫</div></div>
+        <div class="stat-value" style="color:#ef4444;">${disabledStudents}</div>
+      </div>
     `;
 
     document.getElementById("empty-state").style.display = filtered.length ? "none" : "block";
-    document.getElementById("student-rows").innerHTML = filtered.map((s) => `
-      <tr>
-        <td style="font-weight:700; color:var(--ink);">${escapeHTML(s.rollNo)}</td>
-        <td>${escapeHTML(s.name)}</td>
-        <td><span class="badge badge-primary" style="border-left: 4px solid ${subjectColor(s.subject)};">${escapeHTML(s.subject)}</span></td>
-        <td style="text-align:right;">
-          <div class="flex-gap" style="justify-content:flex-end;">
-            <button class="btn btn-outline btn-sm" onclick="editStudent('${escapeHTML(s.rollNo)}')">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteStudent('${escapeHTML(s.rollNo)}')">Delete</button>
-          </div>
-        </td>
-      </tr>
-    `).join("");
+    document.getElementById("student-rows").innerHTML = filtered.map((s) => {
+      const isDisabled = s.disabled === true;
+      return `
+        <tr>
+          <td style="font-weight:700; color:var(--ink);">${escapeHTML(s.name)}</td>
+          <td style="font-weight:700; color:var(--purple-4);">${escapeHTML(s.rollNo)}</td>
+          <td>${escapeHTML(s.email)}</td>
+          <td>${escapeHTML(s.course || "CSE")}</td>
+          <td>${escapeHTML(s.semester || "5th")}</td>
+          <td>
+            <span class="badge ${isDisabled ? 'badge-error' : 'badge-success'}" style="font-size:11.5px; padding:4px 10px;">
+              ${isDisabled ? 'Disabled' : 'Active'}
+            </span>
+          </td>
+          <td style="text-align:right;">
+            <div class="flex-gap" style="justify-content:flex-end; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" onclick="editStudent('${escapeHTML(s.rollNo)}')">Edit</button>
+              ${isDisabled
+                ? `<button class="btn btn-secondary btn-sm" onclick="toggleDisable('${escapeHTML(s.rollNo)}', false)">Enable</button>`
+                : `<button class="btn btn-outline btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="toggleDisable('${escapeHTML(s.rollNo)}', true)">Disable</button>`
+              }
+              <button class="btn btn-danger btn-sm" onclick="deleteStudent('${escapeHTML(s.rollNo)}', '${escapeHTML(s.name)}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
   }
 
   function resetForm() {
     document.getElementById("student-modal-title").textContent = "Add Student";
     document.getElementById("student-form").reset();
-    document.getElementById("original-rollno").value = "";
+    document.getElementById("student-id").value = "";
+    document.getElementById("student-disabled").value = "false";
   }
 
-  function editStudent(rollNo) {
-    const student = Students.all().find((s) => s.rollNo === rollNo);
+  function editStudent(id) {
+    const student = Students.findById(id);
     if (!student) return;
     document.getElementById("student-modal-title").textContent = "Edit Student";
-    document.getElementById("original-rollno").value = rollNo;
-    document.getElementById("student-rollno").value = student.rollNo;
+    document.getElementById("student-id").value = student.id;
     document.getElementById("student-name").value = student.name;
-    document.getElementById("student-subject").value = student.subject;
+    document.getElementById("student-email").value = student.email;
+    document.getElementById("student-rollno").value = student.rollNo;
+    document.getElementById("student-password").value = student.password || "";
+    document.getElementById("student-mobile").value = student.mobile || "";
+    document.getElementById("student-course").value = student.course || "";
+    document.getElementById("student-semester").value = student.semester || "";
+    document.getElementById("student-disabled").value = student.disabled ? "true" : "false";
     openModal("student-modal");
   }
 
-  function deleteStudent(rollNo) {
-    confirmAction(`Delete student with roll number ${rollNo}?`, () => {
-      Students.remove(rollNo);
-      render();
-      showToast("Student deleted successfully.", "success");
+  function toggleDisable(id, disableState) {
+    const student = Students.findById(id);
+    if (!student) return;
+
+    const actionName = disableState ? "disable" : "enable";
+    confirmAction(`Are you sure you want to ${actionName} this student account (${student.name} - ${student.rollNo})?`, () => {
+      const res = Students.setDisabled(id, disableState);
+      if (res.ok) {
+        showToast(res.message, "success");
+        render();
+      } else {
+        showToast(res.message, "error");
+      }
+    });
+  }
+
+  function deleteStudent(id, name) {
+    confirmAction(`Delete student "${name}" permanently?`, () => {
+      const res = Students.remove(id);
+      if (res.ok) {
+        showToast(res.message, "success");
+        render();
+      } else {
+        showToast(res.message, "error");
+      }
     });
   }
 
   document.getElementById("save-student-btn").addEventListener("click", () => {
-    const rollNo = document.getElementById("student-rollno").value.trim();
+    const id = document.getElementById("student-id").value;
     const name = document.getElementById("student-name").value.trim();
-    const subject = document.getElementById("student-subject").value.trim();
-    const original = document.getElementById("original-rollno").value;
+    const email = document.getElementById("student-email").value.trim();
+    const rollNo = document.getElementById("student-rollno").value.trim();
+    const password = document.getElementById("student-password").value.trim();
+    const mobile = document.getElementById("student-mobile").value.trim();
+    const course = document.getElementById("student-course").value.trim();
+    const semester = document.getElementById("student-semester").value.trim();
+    const disabled = document.getElementById("student-disabled").value === "true";
 
-    if (!rollNo || !name || !subject) {
-      showToast("Please fill all required fields.", "error");
+    if (!name || !email || !rollNo) {
+      showToast("Full Name, Email, and Roll Number are required.", "error");
       return;
     }
 
-    if (original) {
-      Students.update(original, { rollNo, name, subject });
-      showToast("Student updated successfully.", "success");
-    } else {
-      const result = Students.add({ rollNo, name, subject });
+    if (id) {
+      const result = Students.update(id, { name, email, rollNo, password, mobile, course, semester, disabled });
       if (!result.ok) {
         showToast(result.message, "error");
         return;
       }
-      showToast("Student added successfully.", "success");
+      showToast(result.message, "success");
+    } else {
+      const result = Students.add({ name, email, rollNo, password, mobile, course, semester, disabled });
+      if (!result.ok) {
+        showToast(result.message, "error");
+        return;
+      }
+      showToast(result.message, "success");
     }
+
     closeModal("student-modal");
     render();
   });
@@ -290,7 +376,7 @@
       return;
     }
 
-    showToast(`Successfully imported ${result.count} students.`, "success");
+    showToast(`Successfully imported ${result.count} students into database.`, "success");
     closeModal("upload-modal");
     document.getElementById("json-text-input").value = "";
     document.getElementById("json-file-input").value = "";

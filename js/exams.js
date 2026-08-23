@@ -22,6 +22,18 @@ const Exams = {
     if (idx === -1) return { ok: false, message: "Exam not found." };
     exams[idx] = { ...exams[idx], ...updates };
     STORAGE.setExams(exams);
+
+    // Update examName in seating plans tied to this examId
+    const plans = STORAGE.getSeatingPlans();
+    let updatedPlans = false;
+    plans.forEach((p) => {
+      if (p.examId === id && updates.name) {
+        p.examName = updates.name;
+        updatedPlans = true;
+      }
+    });
+    if (updatedPlans) STORAGE.setSeatingPlans(plans);
+
     STORAGE.logActivity(`Exam updated: ${exams[idx].name}`);
     return { ok: true };
   },
@@ -30,6 +42,7 @@ const Exams = {
     const exams = STORAGE.getExams();
     const exam = exams.find((e) => e.id === id);
     STORAGE.setExams(exams.filter((e) => e.id !== id));
+    STORAGE.deleteSeatingPlansForExam(id);
     if (exam) STORAGE.logActivity(`Exam removed: ${exam.name}`);
     return { ok: true };
   },

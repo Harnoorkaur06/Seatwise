@@ -51,26 +51,67 @@
         <div>
           <div class="hero-eyebrow"><span class="pulse-dot"></span> Verified Candidate Portal</div>
           <h2 class="hero-title" id="greeting-title">Welcome back, <span data-current-user-name>Student</span> 👋</h2>
-          <p class="hero-subtitle">Your allocated examination desk, venue directions, and timetable verification are synchronized below.</p>
+          <p class="hero-subtitle">Your allocated examination desks, venue directions, and multi-exam timetable verification are synchronized below.</p>
         </div>
         <div class="hero-actions">
-          <a href="my-seat.html" class="btn btn-primary">🎫 Full Seat Pass →</a>
+          <a href="my-seat.html" class="btn btn-primary">🎫 View All Passes →</a>
         </div>
       </section>
 
+      <!-- STUDENT STATS GRID: UPCOMING EXAMS, SEATS ALLOCATED, SEATING PENDING -->
+      <div class="stat-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:24px;">
+        <div class="stat-card tint-1">
+          <div class="stat-top">
+            <div class="stat-icon-badge">📘</div>
+            <span class="stat-chip">TIMETABLE</span>
+          </div>
+          <div class="stat-value" id="stat-upcoming-exams">0</div>
+          <div class="stat-label">Upcoming Exams</div>
+        </div>
+
+        <div class="stat-card tint-2">
+          <div class="stat-top">
+            <div class="stat-icon-badge">🎫</div>
+            <span class="stat-chip">ASSIGNED</span>
+          </div>
+          <div class="stat-value" id="stat-seats-allocated" style="color:var(--purple-4);">0</div>
+          <div class="stat-label">Seats Allocated</div>
+        </div>
+
+        <div class="stat-card tint-3">
+          <div class="stat-top">
+            <div class="stat-icon-badge">⏳</div>
+            <span class="stat-chip">PENDING</span>
+          </div>
+          <div class="stat-value" id="stat-seating-pending">0</div>
+          <div class="stat-label">Seating Pending</div>
+        </div>
+      </div>
+
       <!-- Live Exam Countdown HUD -->
-      <section class="exam-countdown-hud" id="countdown-section">
+      <section class="exam-countdown-hud mb-24" id="countdown-section">
         <div class="countdown-inner">
           <div class="countdown-copy">
-            <small><span class="pulse-dot"></span> Upcoming Paper Countdown</small>
-            <h3 id="countdown-exam-name">Mid Semester Examination</h3>
-            <p id="countdown-exam-meta">25 August 2026 · Morning Session (10:00 AM)</p>
+            <small><span class="pulse-dot"></span> Next Paper Countdown</small>
+            <h3 id="countdown-exam-name">Examination Session</h3>
+            <p id="countdown-exam-meta">Select an exam to view session details</p>
           </div>
-          <div class="countdown-timer-wrap" id="countdown-timer-hud">
-            <!-- Rendered by JS -->
-          </div>
+          <div class="countdown-timer-wrap" id="countdown-timer-hud"></div>
         </div>
       </section>
+
+      <!-- EXAMINATION SELECTOR BAR -->
+      <div class="card mb-20">
+        <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;">Target Examination Preview</div>
+            <div class="card-subtitle" style="margin-bottom:0;">Switch between scheduled exams to view candidate boarding pass and classroom radar</div>
+          </div>
+          <div style="min-width:240px;">
+            <select class="form-select" id="dash-exam-select" style="font-weight:700; font-size:14px; padding:9px 14px; border-color:var(--accent-border);"></select>
+          </div>
+        </div>
+      </div>
 
       <!-- Two-Column Interactive Hub -->
       <div class="two-col mb-24">
@@ -80,38 +121,38 @@
           <div class="ticket-header-row">
             <div>
               <div class="ticket-brand">SEATWISE OFFICIAL PASS</div>
-              <div class="ticket-pass-title" id="ticket-exam-title">Mid Semester Exam</div>
+              <div class="ticket-pass-title" id="ticket-exam-title">Examination Pass</div>
             </div>
             <div class="ticket-seat-spotlight">
               <small>SEAT</small>
-              <strong id="ticket-seat-badge">A1</strong>
+              <strong id="ticket-seat-badge">--</strong>
             </div>
           </div>
 
           <div class="ticket-details-matrix">
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Candidate</span>
-              <span class="ticket-matrix-val" data-current-user-name>Rahul</span>
+              <span class="ticket-matrix-val" data-current-user-name>Student</span>
             </div>
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Roll Number</span>
-              <span class="ticket-matrix-val" id="ticket-rollno">23CSE101</span>
+              <span class="ticket-matrix-val" id="ticket-rollno">Unlinked</span>
             </div>
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Subject Code</span>
-              <span class="ticket-matrix-val" id="ticket-subject" style="color:var(--purple-4);">CS301</span>
+              <span class="ticket-matrix-val" id="ticket-subject" style="color:var(--purple-4);">General</span>
             </div>
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Assigned Hall</span>
-              <span class="ticket-matrix-val" id="ticket-hall">LH-101</span>
+              <span class="ticket-matrix-val" id="ticket-hall">Pending</span>
             </div>
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Desk Row/Col</span>
-              <span class="ticket-matrix-val" id="ticket-rowcol">Row A · Desk 1</span>
+              <span class="ticket-matrix-val" id="ticket-rowcol">Not Allocated</span>
             </div>
             <div class="ticket-matrix-item">
               <span class="ticket-matrix-label">Reporting</span>
-              <span class="ticket-matrix-val" style="color:#10b981;">09:45 AM</span>
+              <span class="ticket-matrix-val" style="color:#10b981;" id="ticket-reporting">15 Mins Prior</span>
             </div>
           </div>
 
@@ -127,12 +168,8 @@
               <span class="barcode-bar" style="width:3px;"></span>
               <span class="barcode-bar" style="width:1px;"></span>
               <span class="barcode-bar" style="width:4px;"></span>
-              <span class="barcode-bar" style="width:2px;"></span>
-              <span class="barcode-bar" style="width:3px;"></span>
-              <span class="barcode-bar" style="width:1px;"></span>
-              <span class="barcode-bar" style="width:5px;"></span>
             </div>
-            <a href="my-seat.html" class="btn btn-outline btn-sm">🖨 Print Official Pass</a>
+            <a href="my-seat.html" class="btn btn-outline btn-sm" id="ticket-print-link">🖨 Print Official Pass</a>
           </div>
         </div>
 
@@ -141,14 +178,12 @@
           <div class="radar-header">
             <div>
               <span class="hero-eyebrow" style="margin-bottom:2px;"><span class="pulse-dot"></span> Live Classroom Radar</span>
-              <h3 style="font-size:16px; font-weight:800; margin:0; color:var(--ink);">Your Desk In Exam Hall</h3>
+              <h3 style="font-size:16px; font-weight:800; margin:0; color:var(--ink);" id="radar-title">Your Desk In Exam Hall</h3>
             </div>
             <span class="badge badge-success" style="font-size:11px;">✓ Zero Conflicts</span>
           </div>
 
-          <div id="classroom-radar-mount">
-            <!-- Rendered by JS -->
-          </div>
+          <div id="classroom-radar-mount"></div>
         </div>
       </div>
 
@@ -192,19 +227,59 @@
 <script>
   Auth.requireUser();
 
+  const dashExamSelect = document.getElementById("dash-exam-select");
+
   function renderStudentDashboard() {
     const user = Auth.currentUser();
-    const exam = Exams.activeExam();
-    const seat = Dashboard.seatForUser(user);
+    const exams = Exams.all();
 
-    // Personalized greeting
+    // Greeting
     const greeting = Dashboard.getGreeting();
     document.getElementById("greeting-title").innerHTML = `${greeting}, <span data-current-user-name>${escapeHTML(user ? user.name : "Student")}</span> 👋`;
+
+    // Multi-Exam Candidate Stats
+    const totalExams = exams.length;
+    let seatsAllocated = 0;
+    let seatingPending = 0;
+
+    exams.forEach((e) => {
+      const seat = user && user.rollNo ? Seating.findByRollNo(user.rollNo, e.id) : null;
+      if (seat) {
+        seatsAllocated++;
+      } else {
+        seatingPending++;
+      }
+    });
+
+    document.getElementById("stat-upcoming-exams").textContent = totalExams;
+    document.getElementById("stat-seats-allocated").textContent = seatsAllocated;
+    document.getElementById("stat-seating-pending").textContent = seatingPending;
+
+    // Exam Dropdown Setup
+    if (exams.length === 0) {
+      dashExamSelect.innerHTML = `<option value="">No exams scheduled</option>`;
+      return;
+    }
+
+    dashExamSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    dashExamSelect.onchange = () => updateSelectedExamDisplay();
+
+    updateSelectedExamDisplay();
+    Dashboard.init3DTilt();
+  }
+
+  function updateSelectedExamDisplay() {
+    const user = Auth.currentUser();
+    const selectedExamId = dashExamSelect.value;
+    const exams = Exams.all();
+    const exam = exams.find((e) => e.id === selectedExamId);
+    const seat = user && user.rollNo ? Seating.findByRollNo(user.rollNo, selectedExamId) : null;
 
     if (exam) {
       document.getElementById("countdown-exam-name").textContent = exam.name;
       document.getElementById("countdown-exam-meta").textContent = `${formatDate(exam.date)} · ${formatTime(exam.time)} (${exam.duration || "2 Hours"})`;
       document.getElementById("ticket-exam-title").textContent = exam.name;
+      document.getElementById("ticket-print-link").href = `my-seat.html?examId=${exam.id}`;
 
       Dashboard.startCountdown(exam.date, exam.time, document.getElementById("countdown-timer-hud"));
     }
@@ -222,7 +297,7 @@
       Dashboard.renderClassroomRadar(seat, document.getElementById("classroom-radar-mount"));
     } else {
       document.getElementById("ticket-seat-badge").textContent = "--";
-      document.getElementById("ticket-rollno").textContent = user.rollNo || "Unlinked";
+      document.getElementById("ticket-rollno").textContent = (user && user.rollNo) ? user.rollNo : "Unlinked";
       document.getElementById("ticket-subject").textContent = "General";
       document.getElementById("ticket-hall").textContent = "Pending";
       document.getElementById("ticket-rowcol").textContent = "Not Allocated";
@@ -230,14 +305,11 @@
       document.getElementById("classroom-radar-mount").innerHTML = `
         <div class="empty-state" style="padding:20px;">
           <div class="empty-icon">🎫</div>
-          <div class="empty-title" style="font-size:14px;">Seating arrangement not generated yet</div>
-          <div class="empty-desc" style="font-size:12px;">The administrator is preparing room allocations. Check back soon.</div>
+          <div class="empty-title" style="font-size:14px;">Seating not generated for this exam</div>
+          <div class="empty-desc" style="font-size:12px;">The examination department is preparing room allocations for ${escapeHTML(exam ? exam.name : "this exam")}.</div>
         </div>
       `;
     }
-
-    // Initialize 3D tilt effects
-    Dashboard.init3DTilt();
   }
 
   renderStudentDashboard();

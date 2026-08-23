@@ -183,7 +183,7 @@ const App = {
     { roomNumber: "LH-110", rows: 5, cols: 10, capacity: 50 }
   ]);  
 
-    // ---- students ------------------------------------------------------
+    // ---- admin-controlled student roster seeding ------------------------
     const subjects = ["CS301", "MA201", "PH201", "EC201"];
     const firstNames = ["Rahul", "Aman", "Priya", "Sneha", "Vikram", "Anjali", "Karan", "Neha",
       "Rohit", "Isha", "Aditya", "Pooja", "Manish", "Kavya", "Arjun", "Simran", "Yash", "Riya",
@@ -191,37 +191,88 @@ const App = {
       "Divya", "Sameer", "Nisha"];
     const students = [];
     let rollCounter = 101;
+
     for (let i = 0; i < 500; i++) {
-      const name = firstNames[i % firstNames.length] + (i >= firstNames.length ? ` ${Math.floor(i / firstNames.length) + 1}` : "");
+      const firstName = firstNames[i % firstNames.length];
+      const name = firstName + (i >= firstNames.length ? ` ${Math.floor(i / firstNames.length) + 1}` : "");
       const subject = subjects[i % subjects.length];
-      students.push({ rollNo: `23CSE${rollCounter}`, name, subject });
+      const rollNo = `23CSE${rollCounter}`;
+      
+      // Dedicated emails for key demo students, generated emails for remaining
+      let email = "";
+      if (i === 0) email = "rahul@student.com";
+      else if (i === 1) email = "aman@student.com";
+      else if (i === 2) email = "priya@student.com";
+      else if (i === 3) email = "disabled@student.com";
+      else email = `${firstName.toLowerCase()}${rollCounter}@student.com`;
+
+      students.push({
+        id: `student_${rollCounter}`,
+        name,
+        email,
+        rollNo,
+        password: "student123",
+        passwordSet: true,
+        mobile: "9876543210",
+        course: i % 2 === 0 ? "CSE-AI" : "CSE",
+        semester: "5th Semester",
+        subject,
+        role: "student",
+        disabled: i === 3, // Student #4 (disabled@student.com / 23CSE104) disabled by default for testing
+        createdAt: new Date().toISOString()
+      });
+
       rollCounter++;
     }
+
+    // Add a first-time setup demo student without a set password
+    students.push({
+      id: "student_first_login",
+      name: "First Login Test Student",
+      email: "newstudent@student.com",
+      rollNo: "23CSE999",
+      password: "",
+      passwordSet: false,
+      mobile: "9876543210",
+      course: "CSE",
+      semester: "5th Semester",
+      subject: "CS301",
+      role: "student",
+      disabled: false,
+      createdAt: new Date().toISOString()
+    });
+
     STORAGE.setStudents(students);
 
-    // ---- one sample exam -------------------------------------------------
-    STORAGE.setExams([{
-      id: generateId("exam"),
-      name: "Mid Semester Examination",
-      date: "2026-08-25",
-      time: "10:00",
-      semester: "5th Semester",
-      duration: "2 Hours"
-    }]);
+    // ---- demo exams ------------------------------------------------------
+    STORAGE.setExams([
+      {
+        id: "exam_cndc",
+        name: "CNDC",
+        date: "2026-08-26",
+        time: "15:03",
+        semester: "5th Semester",
+        duration: "2 Hours"
+      },
+      {
+        id: "exam_pa",
+        name: "PA",
+        date: "2026-08-29",
+        time: "10:08",
+        semester: "5th Semester",
+        duration: "2 Hours"
+      },
+      {
+        id: "exam_dbms",
+        name: "DBMS",
+        date: "2026-09-02",
+        time: "10:00",
+        semester: "5th Semester",
+        duration: "2 Hours"
+      }
+    ]);
 
-    // ---- one demo normal user so evaluators can log in immediately -------
-    STORAGE.setUsers([{
-      id: generateId("user"),
-      name: "Rahul",
-      email: "rahul@student.com",
-      password: "student123",
-      role: "user",
-      disabled: false,
-      rollNo: "23CSE101",
-      createdAt: new Date().toISOString()
-    }]);
-
-    STORAGE.logActivity("Demo data seeded (rooms, students, exam, demo user)");
+    STORAGE.logActivity("Demo data seeded (rooms, 500 admin-created students, 3 exams)");
     STORAGE.set(STORAGE_KEYS.SEEDED, true);
   }
 };

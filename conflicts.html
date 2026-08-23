@@ -26,7 +26,6 @@
     </div>
     <nav class="sidebar-nav">
       <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
-      <a href="manage-users.html"><span class="nav-icon">👥</span><span class="nav-label">Users</span></a>
       <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
       <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
       <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
@@ -53,6 +52,20 @@
     </header>
 
     <main class="page-content">
+      
+      <!-- EXAMINATION SELECTOR CARD -->
+      <div class="card mb-20">
+        <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;">Select Examination for Conflict Analysis</div>
+            <div class="card-subtitle" style="margin-bottom:0;">Choose an examination to inspect its active seating conflicts</div>
+          </div>
+          <div style="min-width:240px;">
+            <select class="form-select" id="exam-select" style="font-weight:700; font-size:14px; padding:9px 14px; border-color:var(--accent-border);"></select>
+          </div>
+        </div>
+      </div>
+
       <div class="stat-grid" id="stat-grid" style="grid-template-columns: repeat(4, 1fr);"></div>
       <div id="conflict-list"></div>
     </main>
@@ -64,6 +77,7 @@
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/exams.js"></script>
 <script src="js/seatingAlgorithm.js"></script>
 <script src="js/seating.js"></script>
 <script src="js/conflicts.js"></script>
@@ -72,16 +86,47 @@
 <script>
   Auth.requireAdmin();
 
+  const examSelect = document.getElementById("exam-select");
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedExamId = urlParams.get("examId");
+
+  function init() {
+    const exams = Exams.all();
+    if (exams.length === 0) {
+      examSelect.innerHTML = `<option value="">No exams scheduled</option>`;
+      document.getElementById("stat-grid").innerHTML = "";
+      document.getElementById("conflict-list").innerHTML = `
+        <div class="empty-state card">
+          <div class="empty-icon">🗺</div>
+          <div class="empty-title">No examinations created yet</div>
+          <div class="empty-desc">Create an examination first to generate seating and inspect conflict detection.</div>
+          <a href="manage-exams.html" class="btn btn-primary mt-14" style="display:inline-flex;">Manage Exams</a>
+        </div>`;
+      return;
+    }
+
+    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
+      examSelect.value = requestedExamId;
+    }
+
+    examSelect.addEventListener("change", () => render());
+    render();
+  }
+
   function render() {
-    const plan = Seating.getCurrentPlan();
+    const selectedExamId = examSelect.value;
+    const plan = Seating.getCurrentPlan(selectedExamId);
+    const exam = Exams.all().find((e) => e.id === selectedExamId);
+
     if (!plan) {
       document.getElementById("stat-grid").innerHTML = "";
       document.getElementById("conflict-list").innerHTML = `
         <div class="empty-state card">
           <div class="empty-icon">🗺</div>
-          <div class="empty-title">No seating plan generated yet</div>
+          <div class="empty-title">No seating plan generated for ${escapeHTML(exam ? exam.name : "this exam")}</div>
           <div class="empty-desc">Generate an examination seating plan first to view automatic conflict detection.</div>
-          <a href="generate-seating.html" class="btn btn-primary mt-14" style="display:inline-flex;">Go to Generate Seating</a>
+          <a href="generate-seating.html?examId=${selectedExamId}" class="btn btn-primary mt-14" style="display:inline-flex;">Go to Generate Seating</a>
         </div>`;
       return;
     }
@@ -111,9 +156,9 @@
       listBox.innerHTML = `
         <div class="card" style="text-align:center; padding:48px 24px; background:linear-gradient(135deg, rgba(22,163,74,0.06) 0%, rgba(22,163,74,0.02) 100%); border:1px solid var(--color-success-border);">
           <div style="width:54px; height:54px; border-radius:50%; background:var(--color-success-soft); color:var(--color-success); font-size:24px; font-weight:900; display:grid; place-items:center; margin:0 auto 14px;">✓</div>
-          <div class="card-title" style="justify-content:center; color:var(--color-success); font-size:18px; margin-bottom:6px;">All Seating Constraints Satisfied</div>
+          <div class="card-title" style="justify-content:center; color:var(--color-success); font-size:18px; margin-bottom:6px;">All Seating Constraints Satisfied for ${escapeHTML(plan.examName)}</div>
           <p class="text-dim text-sm" style="max-width:440px; margin:0 auto 18px;">Every student is seated without any same-subject horizontal or vertical adjacency violation across all examination rooms.</p>
-          <a href="seating-plan.html" class="btn btn-secondary btn-sm" style="display:inline-flex;">View Seating Plan →</a>
+          <a href="seating-plan.html?examId=${selectedExamId}" class="btn btn-secondary btn-sm" style="display:inline-flex;">View Seating Plan →</a>
         </div>`;
       return;
     }
@@ -141,15 +186,21 @@
   }
 
   function applyDirectSuggestion(rollNo, roomNumber, row, col) {
-    Seating.applySuggestion(rollNo, { roomNumber, row, col });
-    showToast("Student moved to suggested seat.", "success");
-    render();
+    const selectedExamId = examSelect.value;
+    const plan = Seating.getCurrentPlan(selectedExamId);
+    if (plan) {
+      Seating.applySuggestion(rollNo, { roomNumber, row, col }, plan.examId, plan.generation);
+      showToast("Student moved to suggested seat.", "success");
+      render();
+    }
   }
 
   function resolveConflict(index) {
-    const plan = Seating.getCurrentPlan();
+    const selectedExamId = examSelect.value;
+    const plan = Seating.getCurrentPlan(selectedExamId);
+    if (!plan) return;
     const conflict = plan.conflicts[index];
-    const result = Conflicts.resolve(conflict);
+    const result = Conflicts.resolve(conflict, plan.examId, plan.generation);
     if (result.ok) {
       showToast("Conflict resolved successfully.", "success");
     } else {
@@ -158,7 +209,7 @@
     render();
   }
 
-  render();
+  init();
 </script>
 </body>
 </html>
