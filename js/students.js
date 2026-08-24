@@ -54,6 +54,7 @@ const Students = {
     }
 
     const hasPassword = Boolean(password && password.trim());
+    const isDisabled = disabled === true;
 
     const newStudent = {
       id: typeof generateId === "function" ? generateId("student") : "student_" + Date.now(),
@@ -67,7 +68,8 @@ const Students = {
       semester: (semester || "5th Semester").trim(),
       subject: (subject || "CS301").trim().toUpperCase(),
       role: "student",
-      disabled: disabled === true,
+      status: isDisabled ? "disabled" : "active",
+      disabled: isDisabled,
       createdAt: new Date().toISOString()
     };
 
@@ -107,6 +109,12 @@ const Students = {
     delete updates.role;
     delete updates.fatherName;
 
+    if (updates.disabled !== undefined || updates.status !== undefined) {
+      const isDis = updates.disabled === true || updates.status === "disabled";
+      updates.disabled = isDis;
+      updates.status = isDis ? "disabled" : "active";
+    }
+
     if (updates.password !== undefined && updates.password.trim() !== "") {
       updates.passwordSet = true;
     }
@@ -132,10 +140,12 @@ const Students = {
 
     if (idx === -1) return { ok: false, message: "Student record not found." };
 
-    students[idx].disabled = disabledState === true;
+    const isDis = disabledState === true;
+    students[idx].disabled = isDis;
+    students[idx].status = isDis ? "disabled" : "active";
     STORAGE.setStudents(students);
 
-    const actionText = disabledState ? "disabled" : "enabled";
+    const actionText = isDis ? "disabled" : "enabled";
     STORAGE.logActivity(`Student account ${actionText}: ${students[idx].name} (${students[idx].rollNo})`);
 
     return {
@@ -216,6 +226,8 @@ const Students = {
       existingRolls.add(rollNo.toLowerCase());
       existingEmails.add(email);
 
+      const isDisabled = item.disabled === true || item.status === "disabled";
+
       validStudents.push({
         id: typeof generateId === "function" ? generateId("student") : "student_" + Math.random().toString(36).substr(2, 9),
         rollNo,
@@ -228,7 +240,8 @@ const Students = {
         semester: (item.semester || "5th Semester").toString().trim(),
         subject,
         role: "student",
-        disabled: item.disabled === true,
+        status: isDisabled ? "disabled" : "active",
+        disabled: isDisabled,
         createdAt: new Date().toISOString()
       });
     });

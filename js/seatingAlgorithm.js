@@ -397,9 +397,9 @@ const SeatingAlgorithm = {
     const validityPercentage =
       totalAssigned > 0
         ? Math.max(
-            0,
-            100 - (conflicts.length * 2 / totalAssigned) * 100
-          )
+          0,
+          100 - (conflicts.length * 2 / totalAssigned) * 100
+        )
         : 100;
 
     const seatUtilization =

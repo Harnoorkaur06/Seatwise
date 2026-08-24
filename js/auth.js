@@ -1,12 +1,16 @@
 /* ==========================================================================
-   auth.js — SEATWISE University-Controlled Authentication
-   Supports Option A (Email + Password) or Option B (Roll Number + Password),
-   First-Time Password Setup, and Admin Authentication.
+   auth.js — Centralized SEATWISE Authentication & Access Control (Phase 2)
+   Single source of truth for:
+   - Admin Authentication & Password Management
+   - Student Authentication (Email OR Roll Number)
+   - First-time Password Setup (Existing Admin-created students only)
+   - Student Password Update
+   - Role-based Route Protection & Session Management
    ========================================================================== */
 
 const Auth = {
   /**
-   * Public Student Signup is DISABLED in a University-Controlled System.
+   * Public Student Signup is strictly DISABLED in a University-Controlled System.
    * Only administrators can create student accounts.
    */
   signup() {
@@ -19,69 +23,50 @@ const Auth = {
   /**
    * Student Login
    * Accepts { email, rollNo, password }
-   * Enforces Option A (Email + Password) OR Option B (Roll Number + Password)
+   * Enforces: Email OR Roll Number + Password
    */
-  login({ email, rollNo, password }) {
+  loginStudent({ email, rollNo, password }) {
     const rawEmail = (email || "").toString().trim();
     const rawRollNo = (rollNo || "").toString().trim();
     const cleanEmail = rawEmail.toLowerCase();
     const cleanRollNo = rawRollNo.toUpperCase();
-    const inputIdent = (rawEmail || rawRollNo).trim();
 
-    if (!cleanEmail && !cleanRollNo && !inputIdent) {
+    if (!cleanEmail && !cleanRollNo) {
       return { ok: false, message: "Please enter your email or roll number." };
-    }
-
-    if (!password) {
-      return { ok: false, message: "Please enter your password." };
     }
 
     const students = STORAGE.getStudents();
     let student = null;
 
-    // Search flexibly across email and rollNo
-    student = students.find((s) => {
-      const sEmail = String(s.email || "").trim().toLowerCase();
-      const sRoll = String(s.rollNo || "").trim().toUpperCase();
-      return (
-        (cleanEmail && (sEmail === cleanEmail || sRoll === cleanEmail.toUpperCase())) ||
-        (cleanRollNo && (sRoll === cleanRollNo || sEmail === cleanRollNo.toLowerCase())) ||
-        (inputIdent && (sEmail === inputIdent.toLowerCase() || sRoll === inputIdent.toUpperCase()))
-      );
-    });
+    if (cleanEmail && cleanRollNo) {
+      // Both provided: verify both belong to the SAME student
+      const studentByEmail = students.find((s) => String(s.email || "").trim().toLowerCase() === cleanEmail);
+      const studentByRoll = students.find((s) => String(s.rollNo || "").trim().toUpperCase() === cleanRollNo);
 
-    if (!student) {
-      // Fallback for demo candidate Harnoor Kaur
-      if (cleanEmail.includes("harnoor") || cleanRollNo.includes("2410992925") || inputIdent.toLowerCase().includes("harnoor") || inputIdent.includes("2410992925")) {
-        student = {
-          id: "student_harnoor",
-          name: "HARNOOR KAUR",
-          email: "harnoor@student.com",
-          rollNo: "2410992925",
-          classBranch: "2024-BE-CSE-AI-4 SEM",
-          department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
-          coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
-          password: "student123",
-          passwordSet: true,
-          mobile: "9876543210",
-          course: "CSE-AI",
-          semester: "4th Semester",
-          subject: "24CAI0201",
-          role: "student",
-          disabled: false
-        };
-        const currentList = STORAGE.getStudents();
-        currentList.unshift(student);
-        STORAGE.setStudents(currentList);
-      } else {
-        return {
-          ok: false,
-          message: "Account not found for this email or roll number. Click 'Set Up Password' below to create your credentials."
-        };
+      if (!studentByEmail && !studentByRoll) {
+        return { ok: false, message: "Account not available. Please contact the administrator." };
       }
+
+      if (!studentByEmail || !studentByRoll || studentByEmail.id !== studentByRoll.id) {
+        return { ok: false, message: "Email and roll number do not match." };
+      }
+
+      student = studentByEmail;
+    } else if (cleanEmail) {
+      student = students.find((s) => String(s.email || "").trim().toLowerCase() === cleanEmail);
+    } else {
+      student = students.find((s) => String(s.rollNo || "").trim().toUpperCase() === cleanRollNo);
     }
 
-    if (student.disabled === true) {
+    if (!student) {
+      return {
+        ok: false,
+        message: "Account not available. Please contact the administrator."
+      };
+    }
+
+    const isDisabled = student.status === "disabled" || student.disabled === true;
+    if (isDisabled) {
       return {
         ok: false,
         message: "Your account is temporarily disabled. Please contact the administrator."
@@ -91,114 +76,92 @@ const Auth = {
     if (!student.password || student.passwordSet === false) {
       return {
         ok: false,
-        message: "Please set up your password first using the link below."
+        message: "Please set up your password first."
       };
+    }
+
+    if (!password) {
+      return { ok: false, message: "Please enter your password." };
     }
 
     if (student.password !== password) {
       return {
         ok: false,
-        message: "Incorrect password. Please try again."
+        message: "Incorrect password."
       };
     }
 
-    const currentUser = {
-      id: student.id,
-      name: student.name,
-      email: student.email,
-      rollNo: student.rollNo,
-      classBranch: student.classBranch || (student.course ? `2024-BE-${student.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
-      coursesList: student.coursesList || ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
-      department: student.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
-      mobile: student.mobile || "",
-      course: student.course || "CSE-AI",
-      semester: student.semester || "4th Semester",
-      subject: student.subject || "24CAI0201",
-      avatar: student.avatar || "",
+    // Create session
+    const session = {
+      userId: student.id,
       role: "student"
     };
 
-    STORAGE.setCurrentUser(currentUser);
+    STORAGE.setCurrentUser(session);
+    STORAGE.clearAdminSession();
     STORAGE.logActivity(`Student logged in: ${student.name} (${student.rollNo})`);
 
     return {
       ok: true,
       message: "Login successful. Redirecting...",
-      user: currentUser
+      user: session
     };
+  },
+
+  /** Alias for loginStudent to support existing callers */
+  login(credentials) {
+    return this.loginStudent(credentials);
   },
 
   /**
    * Set Up Password Flow for First-Time Students
    * Accepts { identifier (email or rollNo), newPassword, confirmPassword }
+   * MUST NOT create new students. Only updates existing Admin-created accounts.
    */
   setupPassword({ identifier, newPassword, confirmPassword }) {
-    const targetKey = (identifier || "").trim();
+    const targetKey = (identifier || "").toString().trim();
 
     if (!targetKey) {
       return { ok: false, message: "Please enter your email or roll number." };
+    }
+
+    const students = STORAGE.getStudents();
+    const normKey = targetKey.toLowerCase();
+    const upperKey = targetKey.toUpperCase();
+
+    const idx = students.findIndex((s) =>
+      String(s.email || "").trim().toLowerCase() === normKey ||
+      String(s.rollNo || "").trim().toUpperCase() === upperKey ||
+      String(s.rollNo || "").trim().toLowerCase() === normKey
+    );
+
+    if (idx === -1) {
+      return {
+        ok: false,
+        message: "Account not available. Please contact the administrator."
+      };
+    }
+
+    const student = students[idx];
+
+    const isDisabled = student.status === "disabled" || student.disabled === true;
+    if (isDisabled) {
+      return {
+        ok: false,
+        message: "Your account is temporarily disabled. Please contact the administrator."
+      };
     }
 
     if (!newPassword || !confirmPassword) {
       return { ok: false, message: "Please enter and confirm your new password." };
     }
 
-    if (newPassword !== confirmPassword) {
-      return { ok: false, message: "Passwords do not match." };
-    }
-
     if (newPassword.length < 6) {
       return { ok: false, message: "Password must contain at least 6 characters." };
     }
 
-    let students = STORAGE.getStudents();
-    const normKey = targetKey.toLowerCase();
-    let idx = students.findIndex((s) =>
-      String(s.email || "").trim().toLowerCase() === normKey ||
-      String(s.rollNo || "").trim().toLowerCase() === normKey ||
-      String(s.rollNo || "").trim().toUpperCase() === targetKey.toUpperCase()
-    );
-
-    // If not found in current roster, automatically register candidate account!
-    if (idx === -1) {
-      const isEmail = targetKey.includes("@");
-      const newRoll = isEmail ? targetKey.split("@")[0].toUpperCase() : targetKey.toUpperCase();
-      const newEmail = isEmail ? targetKey.toLowerCase() : `${targetKey.toLowerCase()}@student.com`;
-      const isHarnoor = newEmail.includes("harnoor") || newRoll.includes("2410992925");
-      const newStudent = {
-        id: `student_${Date.now()}`,
-        name: isHarnoor ? "HARNOOR KAUR" : (isEmail ? targetKey.split("@")[0].toUpperCase() : `Student ${targetKey}`),
-        email: newEmail,
-        rollNo: newRoll,
-        classBranch: "2024-BE-CSE-AI-4 SEM",
-        department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
-        coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
-        password: newPassword,
-        passwordSet: true,
-        mobile: "9876543210",
-        course: "CSE-AI",
-        semester: "4th Semester",
-        subject: "24CAI0201",
-        role: "student",
-        disabled: false,
-        createdAt: new Date().toISOString()
-      };
-      students.unshift(newStudent);
-      STORAGE.setStudents(students);
-      STORAGE.logActivity(`New student account provisioned & password set: ${newStudent.name} (${newStudent.rollNo})`);
-      return {
-        ok: true,
-        message: "Password set successfully. You can now sign in."
-      };
-    }
-
-    const student = students[idx];
-
-    if (student.disabled === true) {
-      return {
-        ok: false,
-        message: "Your account is temporarily disabled. Please contact the administrator."
-      };
+    if (newPassword !== confirmPassword) {
+      return { ok: false, message: "Passwords do not match." };
     }
 
     student.password = newPassword;
@@ -214,78 +177,235 @@ const Auth = {
     };
   },
 
-  /** Log in as administrator */
-  adminLogin({ username, password }) {
-    const validPassword = password === CONFIG.ADMIN_PASSWORD || password === CONFIG.ADMIN_ALT_PASSWORD || password === "admin123";
-    if (username === CONFIG.ADMIN_USERNAME && validPassword) {
-      STORAGE.setAdminSession(true);
-      STORAGE.setCurrentUser({
-        id: "admin",
-        name: "Administrator",
-        email: "admin@seatwise.local",
-        role: "admin"
-      });
-      STORAGE.logActivity("Administrator logged in");
-      return { ok: true, message: "Welcome back, Administrator." };
+  /**
+   * Student Password Update (from Profile)
+   */
+  updateStudentPassword({ currentPassword, newPassword, confirmPassword }) {
+    const user = this.getCurrentUser();
+    if (!user || user.role !== "student") {
+      return { ok: false, message: "Unauthorized." };
     }
-    return { ok: false, message: "Invalid admin credentials." };
+
+    const students = STORAGE.getStudents();
+    const idx = students.findIndex((s) => s.id === user.id || s.id === user.userId || s.rollNo === user.rollNo);
+
+    if (idx === -1) {
+      return { ok: false, message: "Student record not found." };
+    }
+
+    const student = students[idx];
+
+    if (student.password !== currentPassword) {
+      return { ok: false, message: "Current password is incorrect." };
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return { ok: false, message: "New password must be at least 6 characters." };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { ok: false, message: "New passwords do not match." };
+    }
+
+    student.password = newPassword;
+    student.passwordSet = true;
+    students[idx] = student;
+
+    STORAGE.setStudents(students);
+    STORAGE.logActivity(`Password updated by student: ${student.name} (${student.rollNo})`);
+
+    return {
+      ok: true,
+      message: "Password updated successfully."
+    };
   },
 
+  /** Log in as administrator */
+  loginAdmin({ username, password }) {
+    const creds = STORAGE.getAdminCredentials();
+    const inputUser = (username || "").toString().trim();
+    const inputPass = (password || "").toString();
+
+    if (!inputUser || !inputPass) {
+      return { ok: false, message: "Please enter your username and password." };
+    }
+
+    if (inputUser !== creds.username || inputPass !== creds.password) {
+      return { ok: false, message: "Invalid admin credentials." };
+    }
+
+    const session = {
+      userId: "ADMIN",
+      role: "admin"
+    };
+
+    STORAGE.setCurrentUser(session);
+    STORAGE.setAdminSession(true);
+    STORAGE.logActivity("Administrator logged in");
+
+    return {
+      ok: true,
+      message: "Welcome back, Administrator.",
+      user: session
+    };
+  },
+
+  /** Alias for loginAdmin to support existing callers */
+  adminLogin(credentials) {
+    return this.loginAdmin(credentials);
+  },
+
+  /** Get authoritative admin credentials */
+  getAdminCredentials() {
+    return STORAGE.getAdminCredentials();
+  },
+
+  /** Update admin password with verification */
+  updateAdminPassword(arg1, arg2, arg3) {
+    let currentPassword, newPassword, confirmPassword;
+    if (typeof arg1 === "object" && arg1 !== null) {
+      currentPassword = arg1.currentPassword || arg1.current;
+      newPassword = arg1.newPassword || arg1.new;
+      confirmPassword = arg1.confirmPassword || arg1.confirm;
+    } else {
+      currentPassword = arg1;
+      newPassword = arg2;
+      confirmPassword = arg3;
+    }
+
+    currentPassword = (currentPassword || "").toString();
+    newPassword = (newPassword || "").toString();
+    confirmPassword = (confirmPassword || "").toString();
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return { ok: false, message: "Please fill all password fields." };
+    }
+
+    const creds = STORAGE.getAdminCredentials();
+    if (currentPassword !== creds.password) {
+      return { ok: false, message: "Current password is incorrect." };
+    }
+
+    if (newPassword.length < 6) {
+      return { ok: false, message: "New password must be at least 6 characters." };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { ok: false, message: "Passwords do not match." };
+    }
+
+    STORAGE.setAdminPassword(newPassword);
+    STORAGE.logActivity("Administrator password updated");
+
+    return {
+      ok: true,
+      message: "Password updated successfully."
+    };
+  },
+
+  /** Log out current session */
   logout() {
-    const current = STORAGE.getCurrentUser();
-    if (current) STORAGE.logActivity(`${current.name} logged out`);
+    const current = this.getCurrentUser();
+    if (current) {
+      STORAGE.logActivity(`${current.name || "User"} logged out`);
+    }
     STORAGE.clearCurrentUser();
     STORAGE.clearAdminSession();
   },
 
-  currentUser() {
-    const user = STORAGE.getCurrentUser();
-    if (user && user.role === "student") {
-      // Sync latest data from Students database in case Admin or Profile updated it
-      const latest = STORAGE.getStudents().find((s) => s.id === user.id || s.rollNo === user.rollNo || s.email === user.email);
-      if (latest) {
-        return {
-          ...user,
-          ...latest,
-          classBranch: latest.classBranch || user.classBranch || (latest.course ? `2024-BE-${latest.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
-          department: latest.department || user.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
-          coursesList: latest.coursesList || user.coursesList || ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
-          avatar: latest.avatar || user.avatar || "",
-          role: "student"
-        };
-      }
+  /** Resolves the fresh user object from authoritative storage using active session */
+  getCurrentUser() {
+    const session = STORAGE.getCurrentUser();
+    if (!session) return null;
+
+    if (session.role === "admin" && STORAGE.isAdminSession()) {
+      return {
+        id: "admin",
+        userId: "ADMIN",
+        name: "Administrator",
+        email: "admin@seatwise.local",
+        role: "admin"
+      };
     }
-    return user;
+
+    if (session.role === "student" || (!session.role && (session.userId || session.id || session.rollNo))) {
+      const targetId = session.userId || session.id;
+      const targetRoll = session.rollNo;
+      const targetEmail = session.email;
+
+      const students = STORAGE.getStudents();
+      const student = students.find((s) =>
+        (targetId && s.id === targetId) ||
+        (targetRoll && String(s.rollNo).toUpperCase() === String(targetRoll).toUpperCase()) ||
+        (targetEmail && String(s.email).toLowerCase() === String(targetEmail).toLowerCase())
+      );
+
+      if (!student) {
+        return null;
+      }
+
+      const isDisabled = student.status === "disabled" || student.disabled === true;
+      if (isDisabled) {
+        return null;
+      }
+
+      return {
+        ...student,
+        userId: student.id,
+        role: "student"
+      };
+    }
+
+    return null;
+  },
+
+  /** Alias for getCurrentUser */
+  currentUser() {
+    return this.getCurrentUser();
+  },
+
+  isAuthenticated() {
+    return Boolean(this.getCurrentUser());
   },
 
   isLoggedIn() {
-    return !!STORAGE.getCurrentUser();
+    return this.isAuthenticated();
   },
 
   isAdmin() {
-    const user = STORAGE.getCurrentUser();
-    return !!user && user.role === "admin" && STORAGE.isAdminSession();
+    const session = STORAGE.getCurrentUser();
+    return Boolean(session && session.role === "admin" && STORAGE.isAdminSession());
+  },
+
+  isStudent() {
+    const user = this.getCurrentUser();
+    return Boolean(user && user.role === "student");
   },
 
   /** Guard student-only pages */
   requireUser() {
-    const user = STORAGE.getCurrentUser();
-    if (!user || user.role !== "student") {
+    if (!this.isStudent()) {
       window.location.href = "login.html";
     }
   },
 
+  requireStudent() {
+    this.requireUser();
+  },
+
   /** Guard admin-only pages */
   requireAdmin() {
-    if (!Auth.isAdmin()) {
+    if (!this.isAdmin()) {
       window.location.href = "admin-login.html";
     }
   },
 
-  /** Redirect logged in users away from login pages */
+  /** Redirect logged-in users away from login pages */
   redirectIfLoggedIn() {
-    const user = STORAGE.getCurrentUser();
-    if (user && user.role === "student") window.location.href = "user-dashboard.html";
-    if (user && user.role === "admin" && STORAGE.isAdminSession()) window.location.href = "admin-dashboard.html";
+    if (this.isStudent()) {
+      window.location.href = "user-dashboard.html";
+    } else if (this.isAdmin()) {
+      window.location.href = "admin-dashboard.html";
+    }
   }
 };

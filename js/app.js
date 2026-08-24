@@ -219,15 +219,28 @@ const App = {
       const firstName = firstNames[i % firstNames.length];
       const name = firstName + (i >= firstNames.length ? ` ${Math.floor(i / firstNames.length) + 1}` : "");
       const subject = subjects[i % subjects.length];
-      const rollNo = `2410992${rollCounter}`;
       
-      // Dedicated emails for key demo students, generated emails for remaining
+      let rollNo = "";
       let email = "";
-      if (i === 0) email = "rahul@student.com";
-      else if (i === 1) email = "aman@student.com";
-      else if (i === 2) email = "priya@student.com";
-      else if (i === 3) email = "disabled@student.com";
-      else email = `${firstName.toLowerCase()}${rollCounter}@student.com`;
+      let isDis = false;
+
+      if (i === 0) {
+        email = "rahul@student.com";
+        rollNo = "23CSE101";
+      } else if (i === 1) {
+        email = "aman@student.com";
+        rollNo = "23CSE102";
+      } else if (i === 2) {
+        email = "priya@student.com";
+        rollNo = "23CSE103";
+      } else if (i === 3) {
+        email = "disabled@student.com";
+        rollNo = "23CSE104";
+        isDis = true;
+      } else {
+        email = `${firstName.toLowerCase()}${rollCounter}@student.com`;
+        rollNo = `2410992${rollCounter}`;
+      }
 
       students.push({
         id: `student_${rollCounter}`,
@@ -244,7 +257,8 @@ const App = {
         semester: "4th Semester",
         subject,
         role: "student",
-        disabled: i === 3, // Student #4 (disabled@student.com / 23CSE104) disabled by default for testing
+        status: isDis ? "disabled" : "active",
+        disabled: isDis,
         createdAt: new Date().toISOString()
       });
 
@@ -267,6 +281,7 @@ const App = {
       semester: "4th Semester",
       subject: "CS301",
       role: "student",
+      status: "active",
       disabled: false,
       createdAt: new Date().toISOString()
     });

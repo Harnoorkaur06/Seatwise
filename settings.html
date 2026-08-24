@@ -1076,16 +1076,27 @@
     const curr = document.getElementById("s-current-pwd").value;
     const newP = document.getElementById("s-new-pwd").value;
     const conf = document.getElementById("s-confirm-pwd").value;
-    if (!curr || !newP || !conf) return showToast("Please fill all password fields.", "warning");
-    if (newP.length < 8) return showToast("New password must be at least 8 characters.", "warning");
-    if (newP !== conf) return showToast("Passwords do not match.", "error");
-    // In demo: just show success
+
+    const res = Auth.updateAdminPassword({
+      currentPassword: curr,
+      newPassword: newP,
+      confirmPassword: conf
+    });
+
+    if (!res.ok) {
+      return showToast(res.message, "error");
+    }
+
     document.getElementById("s-current-pwd").value = "";
     document.getElementById("s-new-pwd").value = "";
     document.getElementById("s-confirm-pwd").value = "";
-    document.getElementById("pwd-strength-bar").style.width = "0%";
-    document.getElementById("pwd-strength-label").textContent = "Type to check";
-    document.getElementById("pwd-strength-label").style.color = "var(--muted)";
+    if (document.getElementById("pwd-strength-bar")) {
+      document.getElementById("pwd-strength-bar").style.width = "0%";
+    }
+    if (document.getElementById("pwd-strength-label")) {
+      document.getElementById("pwd-strength-label").textContent = "Type to check";
+      document.getElementById("pwd-strength-label").style.color = "var(--muted)";
+    }
     showToast("Password updated successfully.", "success");
   }
 

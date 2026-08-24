@@ -1,6 +1,5 @@
 /* ==========================================================================
-   update-password.js — Update Password Controller
-   Updates student.password in the Students database.
+   update-password.js — Student Password Update Controller
    ========================================================================== */
 
 const UpdatePasswordManager = {
@@ -11,46 +10,28 @@ const UpdatePasswordManager = {
   /** Handle Password Change */
   changePassword(e) {
     if (e) e.preventDefault();
-    const current = Auth.currentUser();
-    if (!current) return;
 
     const currentPwdInput = document.getElementById("pwd-current");
     const newPwdInput = document.getElementById("pwd-new");
     const confirmPwdInput = document.getElementById("pwd-confirm");
 
-    const currentPwd = currentPwdInput?.value || "";
-    const newPwd = newPwdInput?.value || "";
-    const confirmPwd = confirmPwdInput?.value || "";
+    const currentPassword = currentPwdInput?.value || "";
+    const newPassword = newPwdInput?.value || "";
+    const confirmPassword = confirmPwdInput?.value || "";
 
-    const student = Students.findById(current.id || current.rollNo);
-    if (!student) {
-      if (typeof showToast === "function") showToast("Student record not found.", "error");
-      return;
-    }
+    const result = Auth.updateStudentPassword({
+      currentPassword,
+      newPassword,
+      confirmPassword
+    });
 
-    if (student.password !== currentPwd) {
-      if (typeof showToast === "function") showToast("⚠ Current password is incorrect.", "error");
-      return;
-    }
-
-    if (!newPwd || newPwd.length < 6) {
-      if (typeof showToast === "function") showToast("⚠ New password must be at least 6 characters.", "error");
-      return;
-    }
-
-    if (newPwd !== confirmPwd) {
-      if (typeof showToast === "function") showToast("⚠ New passwords do not match.", "error");
-      return;
-    }
-
-    const result = Students.update(student.id || student.rollNo, { password: newPwd, passwordSet: true });
     if (result.ok) {
-      if (typeof showToast === "function") showToast("✓ Password updated successfully.", "success");
+      if (typeof showToast === "function") showToast("✓ " + result.message, "success");
       if (currentPwdInput) currentPwdInput.value = "";
       if (newPwdInput) newPwdInput.value = "";
       if (confirmPwdInput) confirmPwdInput.value = "";
     } else {
-      if (typeof showToast === "function") showToast(result.message || "Failed to update password.", "error");
+      if (typeof showToast === "function") showToast("⚠ " + result.message, "error");
     }
   },
 

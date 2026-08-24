@@ -13,6 +13,7 @@ const STORAGE_KEYS = Object.freeze({
   USERS: "examseat_users",
   CURRENT_USER: "examseat_current_user",
   ADMIN_SESSION: "examseat_admin_session",
+  ADMIN_PASSWORD: "examseat_admin_password",
   EXAMS: "examseat_exams",
   STUDENTS: "examseat_students",
   ROOMS: "examseat_rooms",
@@ -67,6 +68,23 @@ const STORAGE = {
   setAdminSession(val) { return this.set(STORAGE_KEYS.ADMIN_SESSION, val); },
   clearAdminSession() { this.remove(STORAGE_KEYS.ADMIN_SESSION); },
 
+  getAdminPassword() {
+    const custom = this.get(STORAGE_KEYS.ADMIN_PASSWORD, null);
+    if (custom && typeof custom === "string" && custom.trim().length > 0) {
+      return custom;
+    }
+    return (typeof CONFIG !== "undefined" && CONFIG.ADMIN_PASSWORD) ? CONFIG.ADMIN_PASSWORD : "seatwise@admin123";
+  },
+  setAdminPassword(newPassword) {
+    return this.set(STORAGE_KEYS.ADMIN_PASSWORD, newPassword);
+  },
+  getAdminCredentials() {
+    return {
+      username: (typeof CONFIG !== "undefined" && CONFIG.ADMIN_USERNAME) ? CONFIG.ADMIN_USERNAME : "admin",
+      password: this.getAdminPassword()
+    };
+  },
+
   getExams() { return this.get(STORAGE_KEYS.EXAMS, []); },
   setExams(exams) { return this.set(STORAGE_KEYS.EXAMS, exams); },
 
@@ -74,6 +92,8 @@ const STORAGE = {
     let roll = (student?.rollNo || "").toString().trim().toUpperCase();
     const sName = (student?.name || "").toString().trim().toUpperCase();
     if (sName.includes("HARNOOR") || roll === "2410992925") return "2410992925";
+    if (sName === "RAHUL" || roll === "23CSE101" || roll === "2410992101") return "23CSE101";
+    if (sName === "AMAN" || roll === "23CSE102" || roll === "2410992102") return "23CSE102";
     if (!roll || roll === sName || roll === "STUDENT" || roll === "UNLINKED") {
       return String(2410992100 + (idx || 1));
     }
@@ -201,13 +221,14 @@ const STORAGE = {
           semester: "4th Semester",
           subject: "24CAI0201",
           role: "student",
+          status: "active",
           disabled: false
         },
         {
           id: "student_101",
           name: "Rahul",
           email: "rahul@student.com",
-          rollNo: "2410992101",
+          rollNo: "23CSE101",
           classBranch: "2024-BE-CSE-AI-4 SEM",
           department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
           coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -218,13 +239,14 @@ const STORAGE = {
           semester: "4th Semester",
           subject: "24CAI0201",
           role: "student",
+          status: "active",
           disabled: false
         },
         {
           id: "student_102",
           name: "Aman",
           email: "aman@student.com",
-          rollNo: "2410992102",
+          rollNo: "23CSE102",
           classBranch: "2024-BE-CSE-4 SEM",
           department: "Department of Computer Science & Engineering",
           coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "Curriculum"],
@@ -235,6 +257,7 @@ const STORAGE = {
           semester: "4th Semester",
           subject: "CS301",
           role: "student",
+          status: "active",
           disabled: false
         }
       ];
@@ -258,6 +281,7 @@ const STORAGE = {
         semester: "4th Semester",
         subject: "24CAI0201",
         role: "student",
+        status: "active",
         disabled: false
       });
       this.set(STORAGE_KEYS.STUDENTS, list);
@@ -271,21 +295,24 @@ const STORAGE = {
       }
       const studentName = (s.name || "Student").toString().trim();
       const studentRoll = this._getUniversityId(s, idx + 1);
+      const isDisabled = s.status === "disabled" || s.disabled === true;
 
       return {
         ...s,
         id: s.id || `student_${studentRoll || idx}`,
         rollNo: studentRoll,
-        email: (s.email || `${studentRoll}@student.com`).toString().trim(),
+        email: (s.email || `${studentRoll.toLowerCase()}@student.com`).toString().trim(),
         name: studentName,
         classBranch: s.classBranch || (s.course ? `2024-BE-${s.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
         coursesList: s.coursesList && Array.isArray(s.coursesList) && s.coursesList.length > 0
           ? s.coursesList
           : ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
         department: s.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
-        password: s.password || "student123",
+        password: s.password || "",
+        passwordSet: Boolean(s.password && s.password.trim() !== ""),
         role: "student",
-        disabled: s.disabled === true
+        status: isDisabled ? "disabled" : "active",
+        disabled: isDisabled
       };
     });
 
@@ -341,7 +368,7 @@ const STORAGE = {
   setSeatingPlan(plan) {
     if (!plan || !plan.examId) return false;
     const plans = this.getSeatingPlans();
-    
+
     // Archive previous active plans for this examId
     plans.forEach((p) => {
       if (p.examId === plan.examId) {
@@ -413,7 +440,7 @@ const STORAGE = {
   getUnreadRepliesCountForStudent(studentIdOrUser) {
     if (!studentIdOrUser) return 0;
     const complaints = this.getComplaints();
-    
+
     let targetId = typeof studentIdOrUser === "string" ? studentIdOrUser : studentIdOrUser.id;
     let targetEmail = typeof studentIdOrUser === "object" ? (studentIdOrUser.email || "").toLowerCase() : "";
     let targetRoll = typeof studentIdOrUser === "object" ? (studentIdOrUser.rollNo || "").toUpperCase() : (typeof studentIdOrUser === "string" ? studentIdOrUser.toUpperCase() : "");
@@ -423,7 +450,7 @@ const STORAGE = {
         c.studentId === targetId ||
         (targetEmail && c.userEmail && c.userEmail.toLowerCase() === targetEmail) ||
         (targetRoll && c.rollNo && String(c.rollNo).toUpperCase() === targetRoll);
-      
+
       return match && Boolean(c.adminReply && c.adminReply.trim() !== "") && c.unreadReply === true;
     }).length;
   },
