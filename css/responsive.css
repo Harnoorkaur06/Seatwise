@@ -99,3 +99,36 @@
     border-radius: var(--radius-lg);
   }
 }
+
+
+@media (max-width: 900px) {
+  .stat-card:hover {
+    transform: translateY(-4px); /* drop the rotateX/rotateY tilt on tablets */
+  }
+  .admin-sim-card::before {
+    display: none; /* ambient glow blob off on small screens to avoid overflow scroll */
+  }
+  .dashboard-bg::after {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .quick-action-card:hover::before {
+    animation: none; /* skip sweep animation on touch devices, hover state is transient anyway */
+  }
+  .dashboard-hero::after {
+    animation: none;
+  }
+}
+
+@media (hover: none) {
+  /* Touch devices: hover glows can get "stuck" after tap — keep effects static/off */
+  .stat-card:hover,
+  .quick-action-card:hover,
+  .admin-sim-card:hover,
+  .seating-status-card:hover,
+  .content-grid .card:hover {
+    transform: none;
+  }
+}
