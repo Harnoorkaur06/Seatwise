@@ -185,6 +185,37 @@
   .profile-action-card:hover .profile-action-link {
     color: var(--purple-5);
   }
+
+  /* ── Dark Mode for Profile Action Cards ── */
+  html[data-theme="dark"] .profile-action-card,
+  body.dark-theme .profile-action-card {
+    background: #171224 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .profile-action-title,
+  body.dark-theme .profile-action-title {
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .profile-action-desc,
+  body.dark-theme .profile-action-desc {
+    color: #c4b8d1 !important;
+  }
+
+  html[data-theme="dark"] .profile-action-icon,
+  body.dark-theme .profile-action-icon {
+    background: rgba(154, 59, 185, 0.15) !important;
+    border-color: rgba(216, 165, 232, 0.25) !important;
+  }
+
+  html[data-theme="dark"] .profile-action-card:hover,
+  body.dark-theme .profile-action-card:hover {
+    background: #1e1733 !important;
+    border-color: rgba(216, 165, 232, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
 </style>
 </head>
 <body>

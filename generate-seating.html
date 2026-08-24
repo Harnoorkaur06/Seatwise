@@ -323,12 +323,12 @@
         </div>
       </div>
 
-      <div style="background:#ffffff; border:1px solid var(--line); border-radius:var(--radius-md); padding:18px;">
-        <div class="card-title" style="margin-bottom:10px;">Room Occupancy Breakdown for ${escapeHTML(plan.examName || "Exam")}</div>
+      <div style="background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius-md); padding:18px;">
+        <div class="card-title" style="margin-bottom:10px; color:var(--ink);">Room Occupancy Breakdown for ${escapeHTML(plan.examName || "Exam")}</div>
         <div class="flex-gap" style="flex-wrap:wrap;">
           ${plan.rooms.map((r) => `
-            <div style="padding:10px 14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:13px; font-weight:700; color:var(--ink);">
-              <span style="color:var(--purple-4);">${escapeHTML(r.roomNumber)}</span>: ${r.occupied} / ${r.capacity} occupied (${Math.round((r.occupied / r.capacity) * 100)}%)
+            <div style="padding:10px 14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.08); border:1px solid rgba(154,59,185,0.18); font-size:13px; font-weight:700; color:var(--ink);">
+              <span style="color:var(--purple-4); font-weight:900;">${escapeHTML(r.roomNumber)}</span>: ${r.occupied} / ${r.capacity} occupied (${Math.round((r.occupied / r.capacity) * 100)}%)
             </div>
           `).join("")}
         </div>

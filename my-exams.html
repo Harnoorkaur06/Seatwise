@@ -108,7 +108,11 @@
       let actionHTML = "";
 
       if (seat) {
-        statusHTML = `<span class="badge badge-success" style="font-size:12px; padding:4px 10px;">✓ Room: <strong>${escapeHTML(seat.roomNumber)}</strong> · Seat: <strong>${escapeHTML(seat.seat)}</strong></span>`;
+        statusHTML = `
+          <div style="display:inline-flex; flex-direction:column; gap:3px; align-items:flex-start;">
+            <span class="badge badge-success" style="font-size:11.5px; padding:3px 9px; white-space:nowrap;">✓ Room: <strong>${escapeHTML(seat.roomNumber)}</strong></span>
+            <span class="badge badge-success" style="font-size:11.5px; padding:3px 9px; white-space:nowrap;">Seat: <strong>${escapeHTML(seat.seat)}</strong></span>
+          </div>`;
         actionHTML = `<a href="my-seat.html?examId=${e.id}" class="btn btn-primary btn-sm">Download Admit Card →</a>`;
       } else if (plan) {
         statusHTML = `<span class="badge badge-warning" style="font-size:11.5px;">⏳ Candidate Not Seated</span>`;

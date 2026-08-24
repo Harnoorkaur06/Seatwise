@@ -1469,3 +1469,274 @@ html[data-theme="dark"] .settings-tab-divider,
 body.dark-theme .settings-tab-divider {
   background: rgba(255, 255, 255, 0.09) !important;
 }
+
+/* ==========================================================================
+   COMPREHENSIVE DARK MODE OVERRIDES — all pages
+   Fixes hardcoded #ffffff / light backgrounds making text invisible in dark mode
+   ========================================================================== */
+
+/* --- Page background & body text --- */
+html[data-theme="dark"] body,
+body.dark-theme {
+  background-color: #0d0918 !important;
+  color: #f5f0fb !important;
+}
+
+/* --- Main content area --- */
+html[data-theme="dark"] .page-content,
+body.dark-theme .page-content {
+  background: transparent !important;
+  color: #f5f0fb !important;
+}
+
+/* --- All generic cards --- */
+html[data-theme="dark"] .card,
+body.dark-theme .card {
+  background: #171224 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .card-title,
+html[data-theme="dark"] .card-subtitle,
+body.dark-theme .card-title,
+body.dark-theme .card-subtitle {
+  color: #f5f0fb !important;
+}
+
+/* --- Modals --- */
+html[data-theme="dark"] .modal-box,
+body.dark-theme .modal-box {
+  background: #171224 !important;
+  border-color: rgba(216, 165, 232, 0.2) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .modal-header,
+body.dark-theme .modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .modal-header h3,
+body.dark-theme .modal-header h3 {
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .modal-footer,
+body.dark-theme .modal-footer {
+  background: #141020 !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .modal-body,
+body.dark-theme .modal-body {
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .modal-body label,
+html[data-theme="dark"] .modal-body p,
+html[data-theme="dark"] .modal-body span,
+body.dark-theme .modal-body label,
+body.dark-theme .modal-body p,
+body.dark-theme .modal-body span {
+  color: #f5f0fb !important;
+}
+
+/* --- Tables --- */
+html[data-theme="dark"] .table-container,
+body.dark-theme .table-container {
+  background: #171224 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .table-toolbar,
+body.dark-theme .table-toolbar {
+  background: #171224 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .table-toolbar h2,
+html[data-theme="dark"] .table-toolbar h3,
+html[data-theme="dark"] .table-toolbar span,
+html[data-theme="dark"] .table-toolbar p,
+body.dark-theme .table-toolbar h2,
+body.dark-theme .table-toolbar h3,
+body.dark-theme .table-toolbar span,
+body.dark-theme .table-toolbar p {
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] tbody tr,
+body.dark-theme tbody tr {
+  background: #171224 !important;
+}
+
+html[data-theme="dark"] tbody tr:hover,
+body.dark-theme tbody tr:hover {
+  background: rgba(216, 165, 232, 0.05) !important;
+}
+
+html[data-theme="dark"] tbody td,
+body.dark-theme tbody td {
+  color: #f5f0fb !important;
+  border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* --- All form inputs everywhere (not just in settings) --- */
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+body.dark-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+body.dark-theme select,
+body.dark-theme textarea {
+  background: #110d1c !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder,
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: #7a6e88 !important;
+}
+
+html[data-theme="dark"] label,
+body.dark-theme label {
+  color: #d8d0e4 !important;
+}
+
+/* --- Buttons with white background --- */
+html[data-theme="dark"] .btn-secondary,
+body.dark-theme .btn-secondary {
+  background: #1f1930 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--purple-1) !important;
+}
+
+html[data-theme="dark"] .btn-outline,
+body.dark-theme .btn-outline {
+  background: transparent !important;
+  border-color: rgba(216, 165, 232, 0.3) !important;
+  color: var(--purple-1) !important;
+}
+
+/* --- Seat hero fields & utility backgrounds --- */
+html[data-theme="dark"] .seat-hero-field,
+body.dark-theme .seat-hero-field {
+  background: #1a1427 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .seat-hero-field .field-value,
+body.dark-theme .seat-hero-field .field-value {
+  color: #f5f0fb !important;
+}
+
+/* --- Headings and paragraphs globally --- */
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6 {
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] p,
+body.dark-theme p {
+  color: #d8d0e4 !important;
+}
+
+/* --- Topbar text --- */
+html[data-theme="dark"] .topbar,
+body.dark-theme .topbar {
+  background: rgba(13, 9, 24, 0.9) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .topbar h1,
+body.dark-theme .topbar h1 {
+  color: #f5f0fb !important;
+}
+
+/* --- User dropdown --- */
+html[data-theme="dark"] .user-dropdown-menu,
+body.dark-theme .user-dropdown-menu {
+  background: #1a1427 !important;
+  border-color: rgba(216, 165, 232, 0.15) !important;
+}
+
+html[data-theme="dark"] .user-dropdown-name,
+body.dark-theme .user-dropdown-name {
+  color: #f5f0fb !important;
+}
+
+html[data-theme="dark"] .user-dropdown-item,
+body.dark-theme .user-dropdown-item {
+  color: #d4c8df !important;
+}
+
+html[data-theme="dark"] .user-dropdown-header,
+body.dark-theme .user-dropdown-header {
+  border-bottom-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* --- Form sections/groups text --- */
+html[data-theme="dark"] .form-hint,
+body.dark-theme .form-hint {
+  color: #9a8eaa !important;
+}
+
+html[data-theme="dark"] .form-label,
+body.dark-theme .form-label {
+  color: #d8d0e4 !important;
+}
+
+/* --- Empty state --- */
+html[data-theme="dark"] .empty-state .empty-title,
+body.dark-theme .empty-state .empty-title {
+  color: #f5f0fb !important;
+}
+
+/* --- Section headers --- */
+html[data-theme="dark"] .section-header-compact h2,
+body.dark-theme .section-header-compact h2 {
+  color: #f5f0fb !important;
+}
+
+/* --- Conflict banners in dark --- */
+html[data-theme="dark"] .conflict-status-banner.success,
+body.dark-theme .conflict-status-banner.success {
+  background: rgba(22, 163, 74, 0.12) !important;
+  border-color: rgba(22, 163, 74, 0.3) !important;
+  color: #6ee7a2 !important;
+}
+
+html[data-theme="dark"] .conflict-status-banner.warning,
+body.dark-theme .conflict-status-banner.warning {
+  background: rgba(225, 29, 72, 0.12) !important;
+  border-color: rgba(225, 29, 72, 0.3) !important;
+  color: #fca5a5 !important;
+}
+
+/* --- Profile subnav tabs (also in dashboard.css but adding belt+suspenders) --- */
+html[data-theme="dark"] .subnav-item,
+body.dark-theme .subnav-item {
+  background: #231c33 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #c4b8d1 !important;
+}
+
+/* --- Search input wrap --- */
+html[data-theme="dark"] .search-input-wrap .search-icon,
+body.dark-theme .search-input-wrap .search-icon {
+  color: #7a6e88 !important;
+}
