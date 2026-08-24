@@ -14,7 +14,7 @@
   --line: rgba(66, 30, 79, .13);
   --shadow: 0 24px 70px rgba(54, 24, 69, .14);
   --radius: 24px;
-  --max: 1500px;
+  --max: 1450px;
   --ease: cubic-bezier(.2,.75,.2,1);
 }
 
