@@ -70,48 +70,6 @@ const STORAGE = {
   getExams() { return this.get(STORAGE_KEYS.EXAMS, []); },
   setExams(exams) { return this.set(STORAGE_KEYS.EXAMS, exams); },
 
-  _getFatherName(student, idx = 0) {
-    if (student && student.fatherName && student.fatherName !== "Mr. SATINDER SINGH" && student.fatherName !== "Mr. Satinder Singh") {
-      return student.fatherName;
-    }
-    const sName = (student?.name || "").toString().trim().toUpperCase();
-    const sRoll = (student?.rollNo || "").toString().trim().toUpperCase();
-    if (sName.includes("HARNOOR") || sRoll === "2410992925") {
-      return "Mr. SATINDER SINGH";
-    }
-    if (sName.includes("RAHUL") || sRoll.includes("101")) {
-      return "Mr. RAJESH SHARMA";
-    }
-    if (sName.includes("AMAN") || sRoll.includes("102")) {
-      return "Mr. HARPREET SINGH";
-    }
-    if (sName.includes("PRIYA") || sRoll.includes("103")) {
-      return "Mr. ANIL KUMAR";
-    }
-    if (sName.includes("SNEHA") || sRoll.includes("104")) {
-      return "Mr. RAMESH VERMA";
-    }
-    if (sName.includes("VIKRAM") || sRoll.includes("105")) {
-      return "Mr. SANJAY GUPTA";
-    }
-    
-    const fatherFirst = [
-      "Rajesh", "Harpreet", "Anil", "Ramesh", "Sanjay", "Manoj", "Davinder", "Vikram",
-      "Naresh", "Surinder", "Praveen", "Ashok", "Kuldeep", "Jaswant", "Rakesh", "Suresh",
-      "Balwinder", "Gurdeep", "Vinod", "Subhash", "Ajay", "Sunil", "Dharmendra", "Bhupinder",
-      "Kamal", "Rajendra", "Ravinder", "Manmohan", "Devendra", "Jagjit", "Tarun", "Deepak", "Vijay", "Mukesh"
-    ];
-    const lastNames = [
-      "Sharma", "Singh", "Verma", "Gupta", "Malhotra", "Kapoor", "Joshi",
-      "Bhatia", "Chopra", "Mehta", "Bansal", "Arora", "Soni", "Aggarwal",
-      "Kumar", "Chawla", "Gill", "Sandhu", "Dhillon", "Rawat", "Saxena"
-    ];
-    const hash = (sRoll + sName + idx).split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const f = fatherFirst[hash % fatherFirst.length];
-    const l = lastNames[(hash * 5 + 7) % lastNames.length];
-    return `Mr. ${f.toUpperCase()} ${l.toUpperCase()}`;
-  },
-
   _getUniversityId(student, idx = 0) {
     let roll = (student?.rollNo || "").toString().trim().toUpperCase();
     const sName = (student?.name || "").toString().trim().toUpperCase();
@@ -122,7 +80,109 @@ const STORAGE = {
     return roll;
   },
 
+  /** Automatically remove fatherName from all existing LocalStorage records */
+  _migrateRemoveFatherName() {
+    try {
+      // 1. Clean Students list
+      const rawStudents = localStorage.getItem(STORAGE_KEYS.STUDENTS);
+      if (rawStudents) {
+        const students = JSON.parse(rawStudents);
+        if (Array.isArray(students)) {
+          let modified = false;
+          students.forEach((s) => {
+            if (s && "fatherName" in s) {
+              delete s.fatherName;
+              modified = true;
+            }
+          });
+          if (modified) {
+            localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+          }
+        }
+      }
+
+      // 2. Clean Current User session
+      const rawUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      if (rawUser) {
+        const user = JSON.parse(rawUser);
+        if (user && "fatherName" in user) {
+          delete user.fatherName;
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+        }
+      }
+
+      // 3. Clean Users list
+      const rawUsers = localStorage.getItem(STORAGE_KEYS.USERS);
+      if (rawUsers) {
+        const users = JSON.parse(rawUsers);
+        if (Array.isArray(users)) {
+          let modified = false;
+          users.forEach((u) => {
+            if (u && "fatherName" in u) {
+              delete u.fatherName;
+              modified = true;
+            }
+          });
+          if (modified) {
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+          }
+        }
+      }
+
+      // 4. Clean Seating Plans (if student records were embedded)
+      const rawPlans = localStorage.getItem(STORAGE_KEYS.SEATING_PLANS);
+      if (rawPlans) {
+        const plans = JSON.parse(rawPlans);
+        if (Array.isArray(plans)) {
+          let modified = false;
+          plans.forEach((plan) => {
+            if (plan && Array.isArray(plan.rooms)) {
+              plan.rooms.forEach((room) => {
+                if (room && Array.isArray(room.grid)) {
+                  room.grid.forEach((seat) => {
+                    if (seat && seat.student && "fatherName" in seat.student) {
+                      delete seat.student.fatherName;
+                      modified = true;
+                    }
+                  });
+                }
+              });
+            }
+          });
+          if (modified) {
+            localStorage.setItem(STORAGE_KEYS.SEATING_PLANS, JSON.stringify(plans));
+          }
+        }
+      }
+
+      // 5. Clean legacy single seating plan
+      const rawSinglePlan = localStorage.getItem(STORAGE_KEYS.SEATING_PLAN);
+      if (rawSinglePlan) {
+        const plan = JSON.parse(rawSinglePlan);
+        if (plan && Array.isArray(plan.rooms)) {
+          let modified = false;
+          plan.rooms.forEach((room) => {
+            if (room && Array.isArray(room.grid)) {
+              room.grid.forEach((seat) => {
+                if (seat && seat.student && "fatherName" in seat.student) {
+                  delete seat.student.fatherName;
+                  modified = true;
+                }
+              });
+            }
+          });
+          if (modified) {
+            localStorage.setItem(STORAGE_KEYS.SEATING_PLAN, JSON.stringify(plan));
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Migration error removing fatherName:", e);
+    }
+  },
+
   getStudents() {
+    this._migrateRemoveFatherName();
     let list = this.get(STORAGE_KEYS.STUDENTS, null);
     if (!list || !Array.isArray(list) || list.length === 0) {
       list = [
@@ -131,7 +191,6 @@ const STORAGE = {
           name: "HARNOOR KAUR",
           email: "harnoor@student.com",
           rollNo: "2410992925",
-          fatherName: "Mr. SATINDER SINGH",
           classBranch: "2024-BE-CSE-AI-4 SEM",
           department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
           coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -149,7 +208,6 @@ const STORAGE = {
           name: "Rahul",
           email: "rahul@student.com",
           rollNo: "2410992101",
-          fatherName: "Mr. RAJESH SHARMA",
           classBranch: "2024-BE-CSE-AI-4 SEM",
           department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
           coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -167,7 +225,6 @@ const STORAGE = {
           name: "Aman",
           email: "aman@student.com",
           rollNo: "2410992102",
-          fatherName: "Mr. HARPREET SINGH",
           classBranch: "2024-BE-CSE-4 SEM",
           department: "Department of Computer Science & Engineering",
           coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "Curriculum"],
@@ -191,7 +248,6 @@ const STORAGE = {
         name: "HARNOOR KAUR",
         email: "harnoor@student.com",
         rollNo: "2410992925",
-        fatherName: "Mr. SATINDER SINGH",
         classBranch: "2024-BE-CSE-AI-4 SEM",
         department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
         coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -207,10 +263,14 @@ const STORAGE = {
       this.set(STORAGE_KEYS.STUDENTS, list);
     }
 
-    return list.map((s, idx) => {
+    let modified = false;
+    const cleaned = list.map((s, idx) => {
+      if (s && "fatherName" in s) {
+        delete s.fatherName;
+        modified = true;
+      }
       const studentName = (s.name || "Student").toString().trim();
       const studentRoll = this._getUniversityId(s, idx + 1);
-      const studentFather = this._getFatherName(s, idx + 1);
 
       return {
         ...s,
@@ -218,7 +278,6 @@ const STORAGE = {
         rollNo: studentRoll,
         email: (s.email || `${studentRoll}@student.com`).toString().trim(),
         name: studentName,
-        fatherName: studentFather,
         classBranch: s.classBranch || (s.course ? `2024-BE-${s.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
         coursesList: s.coursesList && Array.isArray(s.coursesList) && s.coursesList.length > 0
           ? s.coursesList
@@ -229,6 +288,12 @@ const STORAGE = {
         disabled: s.disabled === true
       };
     });
+
+    if (modified) {
+      this.set(STORAGE_KEYS.STUDENTS, cleaned);
+    }
+
+    return cleaned;
   },
   setStudents(students) { return this.set(STORAGE_KEYS.STUDENTS, students); },
 

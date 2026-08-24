@@ -105,6 +105,7 @@ const Students = {
 
     // Role is strictly immutable
     delete updates.role;
+    delete updates.fatherName;
 
     if (updates.password !== undefined && updates.password.trim() !== "") {
       updates.passwordSet = true;

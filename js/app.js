@@ -7,6 +7,9 @@
 
 const App = {
   init() {
+    if (typeof STORAGE !== "undefined" && typeof STORAGE._migrateRemoveFatherName === "function") {
+      STORAGE._migrateRemoveFatherName();
+    }
     this._seedDemoDataIfNeeded();
     this._highlightActiveNav();
     this._wireLogoutButtons();
@@ -198,7 +201,6 @@ const App = {
       name: "HARNOOR KAUR",
       email: "harnoor@student.com",
       rollNo: "2410992925",
-      fatherName: "Mr. SATINDER SINGH",
       classBranch: "2024-BE-CSE-AI-4 SEM",
       department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
       coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -227,15 +229,11 @@ const App = {
       else if (i === 3) email = "disabled@student.com";
       else email = `${firstName.toLowerCase()}${rollCounter}@student.com`;
 
-      const tempStudent = { name, rollNo };
-      const fatherName = STORAGE._getFatherName ? STORAGE._getFatherName(tempStudent, i + 1) : "Mr. RAJESH SHARMA";
-
       students.push({
         id: `student_${rollCounter}`,
         name,
         email,
         rollNo,
-        fatherName,
         classBranch: i % 2 === 0 ? "2024-BE-CSE-AI-4 SEM" : "2024-BE-CSE-4 SEM",
         department: "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
         coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
@@ -259,7 +257,6 @@ const App = {
       name: "First Login Test Student",
       email: "newstudent@student.com",
       rollNo: "23CSE999",
-      fatherName: "Mr. RAJESH SHARMA",
       classBranch: "2024-BE-CSE-4 SEM",
       department: "Department of Computer Science & Engineering",
       coursesList: ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "Curriculum"],

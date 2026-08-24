@@ -188,7 +188,7 @@ When an administrator drags or swaps students in the interactive seating plan:
 |---|---|
 | **🏛️ Admin Command Center** | Statistical cards, live hall occupancy, active exam distribution overview, quick navigation. |
 | **📘 Exam Management** | Full CRUD for university examinations, dates, session slots, course codes, and semesters. |
-| **🎓 Student Registry** | Auto-provisions 500+ demo candidates with distinct Father Names, Class/Branch, and Unique University IDs (`241099xxxx`). |
+| **🎓 Student Registry** | Auto-provisions 500+ demo candidates with Class/Branch, Subject, and Unique University IDs (`241099xxxx`). |
 | **🏫 Room Configuration** | Custom row $\times$ column matrix builder (e.g., $5 \times 10 = 50$ seats), hall name assignment, and capacity calculators. |
 | **⚙️ Seating Plan Generator** | 5-step animated console stepper, live progress logs, multi-generation versioning (`Gen #1`, `Gen #2`). |
 | **🗺️ Seating Plan Matrix** | Color-coded subject nodes, candidate roll search, seat inspector panel, manual student swapping, and CSV export. |
