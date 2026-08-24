@@ -84,7 +84,8 @@
   const requestedExamId = urlParams.get("examId");
 
   function init() {
-    const exams = Exams.all();
+    const user = Auth.currentUser();
+    const exams = Exams.getExamsForStudent(user);
     const printBtn = document.getElementById("btn-print-admit");
     if (exams.length === 0) {
       if (printBtn) printBtn.style.display = "none";
@@ -111,7 +112,7 @@
   function renderAdmitCard() {
     const selectedExamId = examSelect.value;
     const user = Auth.currentUser();
-    const exams = Exams.all();
+    const exams = Exams.getExamsForStudent(user);
     const exam = exams.find((e) => e.id === selectedExamId);
     const plan = Seating.getCurrentPlan(selectedExamId);
     const container = document.getElementById("seat-content");

@@ -92,7 +92,7 @@
 
   function render() {
     const user = Auth.currentUser();
-    const exams = Exams.all();
+    const exams = Exams.getExamsForStudent(user);
     const tbody = document.getElementById("exam-rows");
     if (exams.length === 0) {
       document.getElementById("empty-state").style.display = "block";

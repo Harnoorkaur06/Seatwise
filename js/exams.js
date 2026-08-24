@@ -198,5 +198,76 @@ const Exams = {
     const sorted = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
     const now = new Date();
     return sorted.find((e) => new Date(e.date) >= now) || sorted[0];
+  },
+
+  getExamsForStudent(user) {
+    if (!user) return [];
+    const allExams = this.all();
+    const students = STORAGE.getStudents().filter((s) => s.status !== "disabled" && !s.disabled);
+    
+    const studentDept = String(user.course || user.stream || user.department || "").trim().toUpperCase();
+    
+    return allExams.filter((exam) => {
+      // 1. Check if semester matches using robust digit overlap check
+      let semMatch = false;
+      if (typeof Seating !== "undefined" && typeof Seating._semestersMatch === "function") {
+        semMatch = Seating._semestersMatch(exam.semester, user.semester);
+      } else {
+        const extractNums = (raw) => {
+          if (raw === null || raw === undefined || raw === "") return [];
+          const matches = String(raw).trim().match(/\d+/g);
+          return matches ? matches.map((m) => parseInt(m, 10)) : [];
+        };
+        const filterNums = extractNums(exam.semester);
+        const studentNums = extractNums(user.semester);
+        semMatch = filterNums.length === 0 || studentNums.length === 0 || filterNums.some((n) => studentNums.includes(n));
+      }
+
+      if (!semMatch) return false;
+
+      // 2. Check if student's rollNo is directly assigned a seat in this exam's plan
+      let hasSeat = false;
+      let planMatchesDept = false;
+      if (typeof Seating !== "undefined" && typeof Seating.getCurrentPlan === "function") {
+        const plan = Seating.getCurrentPlan(exam.id);
+        if (plan) {
+          hasSeat = plan.rooms.some(r => r.grid.some(row => row.some(seat => seat && seat.rollNo === user.rollNo)));
+          planMatchesDept = plan.rooms.some(r => r.grid.some(row => row.some(seat => seat && !seat.isReserved && String(seat.course || "").trim().toUpperCase() === studentDept)));
+        }
+      }
+      if (hasSeat) return true;
+
+      // 3. Check if any student of the same Dept + Semester has this subject/exam name
+      const hasStudentWithSubject = students.some((s) => {
+        const sDept = String(s.course || s.stream || s.department || "").trim().toUpperCase();
+        let sSemMatch = false;
+        if (typeof Seating !== "undefined" && typeof Seating._semestersMatch === "function") {
+          sSemMatch = Seating._semestersMatch(exam.semester, s.semester);
+        } else {
+          const extractNums = (raw) => {
+            if (raw === null || raw === undefined || raw === "") return [];
+            const matches = String(raw).trim().match(/\d+/g);
+            return matches ? matches.map((m) => parseInt(m, 10)) : [];
+          };
+          const filterNums = extractNums(exam.semester);
+          const studentNums = extractNums(s.semester);
+          sSemMatch = filterNums.length === 0 || studentNums.length === 0 || filterNums.some((n) => studentNums.includes(n));
+        }
+
+        const sSubMatch = String(s.subject || "").trim().toUpperCase() === String(exam.name || "").trim().toUpperCase();
+        return sDept === studentDept && sSemMatch && sSubMatch;
+      });
+
+      if (hasStudentWithSubject || planMatchesDept) return true;
+
+      // 4. Fallback: If no students have subjects set, show exams of their semester if no other dept matches
+      const otherDeptsHaveSubject = students.some((s) => {
+        const sDept = String(s.course || s.stream || s.department || "").trim().toUpperCase();
+        const sSubMatch = String(s.subject || "").trim().toUpperCase() === String(exam.name || "").trim().toUpperCase();
+        return sDept !== studentDept && sSubMatch;
+      });
+
+      return !otherDeptsHaveSubject;
+    });
   }
 };

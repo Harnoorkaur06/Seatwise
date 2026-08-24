@@ -236,7 +236,7 @@
 
   function renderStudentDashboard() {
     const user = Auth.currentUser();
-    const exams = Exams.all();
+    const exams = Exams.getExamsForStudent(user);
 
     // Greeting
     const greeting = Dashboard.getGreeting();
@@ -276,7 +276,7 @@
   function updateSelectedExamDisplay() {
     const user = Auth.currentUser();
     const selectedExamId = dashExamSelect.value;
-    const exams = Exams.all();
+    const exams = Exams.getExamsForStudent(user);
     const exam = exams.find((e) => e.id === selectedExamId);
     const seat = user && user.rollNo ? Seating.findByRollNo(user.rollNo, selectedExamId) : null;
 

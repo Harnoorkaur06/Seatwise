@@ -37,3 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   PreferencesManager.init();
 });
+
+
+(function () {
+  try {
+    var t = localStorage.getItem("seatwise_theme");
+
+    if (t === "dark") {
+      document.documentElement.setAttribute("dark-theme", "dark");
+      document.documentElement.classList.add("dark-theme-preload");
+    }
+  } catch (e) {
+    // Ignore localStorage errors
+  }
+})();
