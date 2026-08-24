@@ -105,11 +105,37 @@ const Dashboard = {
 
   /** Live Exam Countdown Timer */
   startCountdown(targetDateStr, targetTimeStr, containerEl) {
-    if (!containerEl) return;
-    const target = new Date(`${targetDateStr}T${targetTimeStr || "10:00:00"}`).getTime();
+    // Clear any existing active timer to prevent multiple interval race conditions & flickering
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
 
-    function tick() {
-      const now = new Date().getTime();
+    if (!containerEl) return;
+    if (!targetDateStr) {
+      containerEl.innerHTML = "";
+      return;
+    }
+
+    let datePart = String(targetDateStr).trim();
+    if (datePart.includes("T")) {
+      datePart = datePart.split("T")[0];
+    }
+    let timePart = targetTimeStr ? String(targetTimeStr).trim() : "10:00:00";
+    if (timePart.length === 5) {
+      timePart += ":00";
+    }
+
+    const targetDate = new Date(`${datePart}T${timePart}`);
+    const target = targetDate.getTime();
+
+    if (isNaN(target)) {
+      containerEl.innerHTML = "";
+      return;
+    }
+
+    const tick = () => {
+      const now = Date.now();
       let diff = target - now;
 
       if (diff <= 0) {
@@ -118,6 +144,10 @@ const Dashboard = {
             <div class="countdown-digit" style="color:#42d392; font-size:18px;">EXAMINATION IN SESSION</div>
           </div>
         `;
+        if (this._countdownTimer) {
+          clearInterval(this._countdownTimer);
+          this._countdownTimer = null;
+        }
         return;
       }
 
@@ -147,10 +177,17 @@ const Dashboard = {
           <div class="countdown-unit">Secs</div>
         </div>
       `;
-    }
+    };
 
     tick();
-    setInterval(tick, 1000);
+    this._countdownTimer = setInterval(tick, 1000);
+  },
+
+  stopCountdown() {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
   },
 
   /** Renders the interactive classroom seating radar for students */

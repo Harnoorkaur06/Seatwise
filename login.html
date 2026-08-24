@@ -48,19 +48,8 @@
 
       <form id="login-form">
         <div class="form-group">
-          <label class="form-label" for="email">Email Address</label>
-          <input class="form-input" type="email" id="email" placeholder="e.g. rahul@student.com" />
-        </div>
-
-        <div style="display:flex; align-items:center; gap:12px; margin: 8px 0; font-size:11.5px; font-weight:800; color:var(--muted);">
-          <div style="flex:1; height:1px; background:var(--line);"></div>
-          <span>OR</span>
-          <div style="flex:1; height:1px; background:var(--line);"></div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="rollNo">University Roll Number</label>
-          <input class="form-input" id="rollNo" placeholder="e.g. 23CSE101" />
+          <label class="form-label" for="identifier">Email / Roll No</label>
+          <input class="form-input" id="identifier" placeholder="e.g. rahul@student.com or 23CSE101" required />
         </div>
 
         <div class="form-group" style="margin-top:12px;">
@@ -139,20 +128,19 @@
   // Login Form Submission
   document.getElementById("login-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const rollNo = document.getElementById("rollNo").value.trim();
+    const identifier = document.getElementById("identifier").value.trim();
     const password = document.getElementById("password").value;
 
     const alertBox = document.getElementById("alert-box");
     alertBox.className = "auth-alert error";
 
-    if (!email && !rollNo) {
+    if (!identifier) {
       alertBox.textContent = "Please enter your email or roll number.";
       alertBox.className = "auth-alert error show";
       return;
     }
 
-    const result = Auth.login({ email, rollNo, password });
+    const result = Auth.login({ identifier, password });
     if (!result.ok) {
       alertBox.textContent = result.message;
       alertBox.className = "auth-alert error show";
@@ -199,12 +187,9 @@
       mainAlert.textContent = "Password set successfully. You can now sign in.";
       mainAlert.className = "auth-alert success show";
       // Pre-fill setup identifier for convenience
-      if (identifier.includes("@")) {
-        document.getElementById("email").value = identifier;
-        document.getElementById("rollNo").value = "";
-      } else {
-        document.getElementById("rollNo").value = identifier;
-        document.getElementById("email").value = "";
+      const identifierInput = document.getElementById("identifier");
+      if (identifierInput) {
+        identifierInput.value = identifier;
       }
       document.getElementById("password").focus();
     }, 900);

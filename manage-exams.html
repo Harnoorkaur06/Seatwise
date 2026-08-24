@@ -25,7 +25,7 @@
     </div>
     <nav class="sidebar-nav">
       <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
-      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="manage-exams.html" class="active"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
       <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
       <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
       <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
@@ -111,14 +111,17 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="exam-semester">Semester</label>
-            <input class="form-input" id="exam-semester" placeholder="e.g. 5th Semester" />
+            <input class="form-input" id="exam-semester" placeholder="e.g. 5 sem, 5, or 5th Semester" />
           </div>
           <div class="form-group">
             <label class="form-label" for="exam-duration">Duration</label>
-            <input class="form-input" id="exam-duration" placeholder="e.g. 2 Hours" />
+            <input class="form-input" id="exam-duration" placeholder="e.g. 2, 2 hrs, 2:30, or 3 hours" />
           </div>
         </div>
       </form>
+
+      <!-- Beautiful Red Error Alert Box -->
+      <div id="exam-alert-box" style="display:none; margin-top:14px; padding:12px 14px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); border-radius:var(--radius-sm); color:#ef4444; font-size:13px; font-weight:700; line-height:1.4;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('exam-modal')">Cancel</button>
@@ -180,12 +183,30 @@
     editingId = null;
     document.getElementById("exam-modal-title").textContent = "Create Examination";
     document.getElementById("exam-form").reset();
+    hideExamAlert();
+  }
+
+  function hideExamAlert() {
+    const alertBox = document.getElementById("exam-alert-box");
+    if (alertBox) {
+      alertBox.style.display = "none";
+      alertBox.textContent = "";
+    }
+  }
+
+  function showExamAlert(msg) {
+    const alertBox = document.getElementById("exam-alert-box");
+    if (alertBox) {
+      alertBox.textContent = msg;
+      alertBox.style.display = "block";
+    }
   }
 
   function editExam(id) {
     const exam = Exams.all().find((e) => e.id === id);
     if (!exam) return;
     editingId = id;
+    hideExamAlert();
     document.getElementById("exam-modal-title").textContent = "Edit Examination";
     document.getElementById("exam-name").value = exam.name;
     document.getElementById("exam-date").value = exam.date;
@@ -204,25 +225,40 @@
   }
 
   document.getElementById("save-exam-btn").addEventListener("click", () => {
-    const payload = {
-      name: document.getElementById("exam-name").value.trim(),
-      date: document.getElementById("exam-date").value,
-      time: document.getElementById("exam-time").value,
-      semester: document.getElementById("exam-semester").value.trim(),
-      duration: document.getElementById("exam-duration").value.trim()
-    };
-    if (!payload.name || !payload.date || !payload.time) {
-      showToast("Please fill exam name, date and time.", "error");
+    hideExamAlert();
+
+    const name = document.getElementById("exam-name").value.trim();
+    const date = document.getElementById("exam-date").value;
+    const time = document.getElementById("exam-time").value;
+    const rawSemester = document.getElementById("exam-semester").value.trim();
+    const duration = document.getElementById("exam-duration").value.trim();
+
+    if (!name || !date || !time) {
+      showExamAlert("Please fill in examination name, date, and time.");
       return;
     }
 
+    const payload = {
+      name,
+      date,
+      time,
+      semester: rawSemester,
+      duration
+    };
+
+    let result;
     if (editingId) {
-      Exams.update(editingId, payload);
-      showToast("Examination updated successfully.", "success");
+      result = Exams.update(editingId, payload);
     } else {
-      Exams.add(payload);
-      showToast("Examination created successfully.", "success");
+      result = Exams.add(payload);
     }
+
+    if (!result.ok) {
+      showExamAlert(result.message);
+      return;
+    }
+
+    showToast(editingId ? "Examination updated successfully." : "Examination created successfully.", "success");
     closeModal("exam-modal");
     render();
   });

@@ -25,37 +25,61 @@ const Auth = {
    * Accepts { email, rollNo, password }
    * Enforces: Email OR Roll Number + Password
    */
-  loginStudent({ email, rollNo, password }) {
-    const rawEmail = (email || "").toString().trim();
-    const rawRollNo = (rollNo || "").toString().trim();
-    const cleanEmail = rawEmail.toLowerCase();
-    const cleanRollNo = rawRollNo.toUpperCase();
+  loginStudent(credentials) {
+    let rawIdentifier = "";
+    let rawEmail = "";
+    let rawRollNo = "";
+    let password = "";
 
-    if (!cleanEmail && !cleanRollNo) {
-      return { ok: false, message: "Please enter your email or roll number." };
+    if (typeof credentials === "object" && credentials !== null) {
+      rawIdentifier = (credentials.identifier || credentials.username || "").toString().trim();
+      rawEmail = (credentials.email || "").toString().trim();
+      rawRollNo = (credentials.rollNo || "").toString().trim();
+      password = (credentials.password || "").toString();
     }
 
     const students = STORAGE.getStudents();
     let student = null;
 
-    if (cleanEmail && cleanRollNo) {
-      // Both provided: verify both belong to the SAME student
+    if (rawEmail && rawRollNo) {
+      const cleanEmail = rawEmail.toLowerCase();
+      const cleanRollNo = rawRollNo.toUpperCase();
       const studentByEmail = students.find((s) => String(s.email || "").trim().toLowerCase() === cleanEmail);
       const studentByRoll = students.find((s) => String(s.rollNo || "").trim().toUpperCase() === cleanRollNo);
 
       if (!studentByEmail && !studentByRoll) {
         return { ok: false, message: "Account not available. Please contact the administrator." };
       }
-
       if (!studentByEmail || !studentByRoll || studentByEmail.id !== studentByRoll.id) {
         return { ok: false, message: "Email and roll number do not match." };
       }
-
       student = studentByEmail;
-    } else if (cleanEmail) {
-      student = students.find((s) => String(s.email || "").trim().toLowerCase() === cleanEmail);
     } else {
-      student = students.find((s) => String(s.rollNo || "").trim().toUpperCase() === cleanRollNo);
+      const targetStr = rawIdentifier || rawEmail || rawRollNo;
+      if (!targetStr) {
+        return { ok: false, message: "Please enter your email or roll number." };
+      }
+
+      const cleanInput = targetStr.toLowerCase();
+      const upperInput = targetStr.toUpperCase();
+      const isEmail = targetStr.includes("@");
+
+      if (isEmail) {
+        student = students.find((s) => String(s.email || "").trim().toLowerCase() === cleanInput);
+      } else {
+        student = students.find((s) =>
+          String(s.rollNo || "").trim().toUpperCase() === upperInput ||
+          String(s.rollNo || "").trim().toLowerCase() === cleanInput
+        );
+      }
+
+      if (!student) {
+        student = students.find((s) =>
+          String(s.email || "").trim().toLowerCase() === cleanInput ||
+          String(s.rollNo || "").trim().toUpperCase() === upperInput ||
+          String(s.rollNo || "").trim().toLowerCase() === cleanInput
+        );
+      }
     }
 
     if (!student) {

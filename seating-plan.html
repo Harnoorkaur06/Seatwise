@@ -407,18 +407,30 @@
     for (let r = 0; r < room.rows; r++) {
       for (let c = 0; c < room.cols; c++) {
         const seat = room.grid[r][c];
-        const isConflict = seat && conflictSeatKeys.has(seat.seat);
+        const isConflict = seat && !seat.isReserved && conflictSeatKeys.has(seat.seat);
         const isSelected = selectedSeat && selectedSeat.roomNumber === roomNumber && selectedSeat.row === r && selectedSeat.col === c;
-        const color = seat ? subjectColor(seat.subject) : "";
 
-        html += `
-          <div class="seat-tile ${seat ? "" : "empty"} ${isConflict ? "conflict-seat" : ""} ${isSelected ? "selected-seat" : ""}"
-               data-row="${r}" data-col="${c}" data-room="${roomNumber}">
-            <div class="seat-num">${seatLabel(r, c)}</div>
-            ${seat ? `<div class="seat-subject" style="background:${color};">${escapeHTML(seat.subject)}</div>` : `<div class="seat-subject" style="color:var(--muted-light);">Empty</div>`}
-            ${seat ? `<div class="seat-roll">${escapeHTML(seat.rollNo)}</div>` : ""}
-          </div>
-        `;
+        if (seat && (seat.isReserved || seat.rollNo === "RESERVED")) {
+          html += `
+            <div class="seat-tile reserved-seat ${isSelected ? "selected-seat" : ""}"
+                 style="background:rgba(107,114,128,0.12); border:1px dashed #6b7280; opacity:0.85;"
+                 data-row="${r}" data-col="${c}" data-room="${roomNumber}">
+              <div class="seat-num">${seatLabel(r, c)}</div>
+              <div class="seat-subject" style="background:#4b5563; color:#fff; font-size:10px; font-weight:800;">RESERVED</div>
+              <div class="seat-roll" style="color:#6b7280; font-size:11px; font-weight:700;">RESERVED</div>
+            </div>
+          `;
+        } else {
+          const color = seat ? subjectColor(seat.subject) : "";
+          html += `
+            <div class="seat-tile ${seat ? "" : "empty"} ${isConflict ? "conflict-seat" : ""} ${isSelected ? "selected-seat" : ""}"
+                 data-row="${r}" data-col="${c}" data-room="${roomNumber}">
+              <div class="seat-num">${seatLabel(r, c)}</div>
+              ${seat ? `<div class="seat-subject" style="background:${color};">${escapeHTML(seat.subject)}</div>` : `<div class="seat-subject" style="color:var(--muted-light);">Empty</div>`}
+              ${seat ? `<div class="seat-roll">${escapeHTML(seat.rollNo)}</div>` : ""}
+            </div>
+          `;
+        }
       }
     }
     holder.innerHTML = html;

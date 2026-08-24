@@ -336,6 +336,12 @@
     }
   }
 
+  window.addEventListener("beforeunload", () => {
+    if (typeof Dashboard !== "undefined" && typeof Dashboard.stopCountdown === "function") {
+      Dashboard.stopCountdown();
+    }
+  });
+
   renderStudentDashboard();
 </script>
 </body>

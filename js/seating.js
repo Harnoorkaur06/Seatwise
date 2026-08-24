@@ -3,78 +3,193 @@
    Orchestration layer between the UI, STORAGE and SeatingAlgorithm.
    Handles per-exam plan generation, multi-generation tracking,
    manual override, and per-exam student seat lookups.
+
+   STUDENT FILTERING RULE:
+   Students are filtered by DEPARTMENT + SEMESTER only.
+   The Exam/Subject selection identifies the paper, NOT the student filter.
    ========================================================================== */
 
 const Seating = {
-  /** Run the algorithm fresh (Generation #1) for a specific exam and persist the result */
-  generateNew(examId) {
+
+  /**
+   * Extracts all digit numbers from a raw semester string.
+   * "5"           -> [5]
+   * "5/6"         -> [5, 6]
+   * "SEMESTER 5"  -> [5]
+   * "4th Semester" -> [4]
+   */
+  _extractSemesterNumbers(raw) {
+    if (raw === null || raw === undefined || raw === "") return [];
+    const str = String(raw).trim();
+    const matches = str.match(/\d+/g);
+    return matches ? matches.map((m) => parseInt(m, 10)) : [];
+  },
+
+  /**
+   * Returns true if filterSem and studentSem share at least one digit.
+   * "SEMESTER 5" matches "5", "5/6", "5th", "SEMESTER 5"
+   */
+  _semestersMatch(filterSem, studentSem) {
+    if (!filterSem) return true;
+    if (!studentSem && studentSem !== 0) return true;
+
+    const filterNums = this._extractSemesterNumbers(filterSem);
+    const studentNums = this._extractSemesterNumbers(studentSem);
+
+    if (filterNums.length === 0 || studentNums.length === 0) return true;
+
+    return filterNums.some((fNum) => studentNums.includes(fNum));
+  },
+
+  _getEligibleStudents() {
+    const allStudents = STORAGE.getStudents();
+    return allStudents
+      .filter((s) => s.status !== "disabled" && !s.disabled)
+      .map((s) => ({
+        ...s,
+        course: String(s.course || s.stream || s.department || "").trim().toUpperCase(),
+        semester: s.semester
+      }));
+  },
+
+  /**
+   * Filter students by DEPARTMENT + SEMESTER only.
+   * The 'subject' field in combos is NOT used for student filtering —
+   * it is only metadata to label the seating plan.
+   */
+  _filterByDeptAndSemester(students, combos) {
+    const activeCombos = (combos || []).filter((c) =>
+      (c.dept && c.dept.trim()) || (c.semester && c.semester.trim())
+    );
+
+    if (activeCombos.length === 0) return students;
+
+    const seen = new Set();
+    const result = [];
+
+    for (const student of students) {
+      if (seen.has(student.id)) continue;
+
+      const studentDept = String(student.course || student.stream || student.department || "").trim().toUpperCase();
+
+      const matchesAny = activeCombos.some((combo) => {
+        const comboDept = String(combo.dept || combo.stream || combo.course || "").trim().toUpperCase();
+        const comboSem = combo.semester;
+
+        const deptMatch = !comboDept || studentDept === comboDept;
+        const semMatch = this._semestersMatch(comboSem, student.semester);
+
+        return deptMatch && semMatch;
+      });
+
+      if (matchesAny) {
+        result.push(student);
+        seen.add(student.id);
+      }
+    }
+
+    return result;
+  },
+
+  // Keep old name as alias for backward compat with generate-seating.html
+  _filterBySubjectStreamCombos(students, combos, targetExam) {
+    return this._filterByDeptAndSemester(students, combos);
+  },
+
+  _validateCapacity(students, rooms) {
+    const totalCapacity = rooms.reduce(
+      (sum, r) => sum + Number(r.rows) * Number(r.cols), 0
+    );
+    const reserved = SeatingAlgorithm.RESERVED_SEATS || 2;
+    const usable = totalCapacity - reserved;
+
+    if (students.length === 0) {
+      return { ok: false, message: "No eligible active students match the selected Department + Semester criteria." };
+    }
+    if (totalCapacity === 0) {
+      return { ok: false, message: "No classrooms configured/selected. Please select at least one classroom." };
+    }
+    if (students.length > usable) {
+      return {
+        ok: false,
+        insufficient: true,
+        message: `Not enough seats.\n\nStudents selected: ${students.length}\nAvailable seats after ${reserved} reserved seats: ${usable}\n\nPlease allocate more classrooms or refine the selection.`
+      };
+    }
+    return { ok: true };
+  },
+
+  generateNew(examId, filterCombos = [], selectedRoomNumbers = []) {
+    return this._generate(examId, filterCombos, selectedRoomNumbers, 1);
+  },
+
+  regenerate(examId, filterCombos = [], selectedRoomNumbers = []) {
+    const allPlans = STORAGE.getSeatingPlans();
+    const examPlans = allPlans.filter((p) => p.examId === examId);
+    const maxGen = examPlans.reduce((max, p) => Math.max(max, p.generation || 1), 0);
+    const nextGen = maxGen + 1;
+    return this._generate(examId, filterCombos, selectedRoomNumbers, nextGen);
+  },
+
+  _generate(examId, combos, selectedRoomNumbers, generation) {
     const exams = STORAGE.getExams();
     const exam = exams.find((e) => e.id === examId) || (typeof Exams !== "undefined" ? Exams.activeExam() : exams[0]);
+
     if (!exam) {
       throw new Error("Cannot generate seating: No valid examination selected.");
     }
 
-    const students = STORAGE.getStudents();
-    const rooms = STORAGE.getRooms();
-
-    const plan = SeatingAlgorithm.generate(
-      students,
-      rooms,
-      { generation: 1, examId: exam.id, examName: exam.name }
-    );
-
-    plan.id = typeof generateId === "function" ? generateId("plan") : "plan_" + Date.now();
-    plan.examId = exam.id;
-    plan.examName = exam.name;
-    plan.generation = 1;
-    plan.isActive = true;
-
-    // Attach examId and seatingPlanId to each student assignment node
-    this._stampAssignments(plan);
-
-    STORAGE.setSeatingPlan(plan);
-    STORAGE.logActivity(`Seating generated for ${exam.name} (Generation 1) — ${plan.stats.totalConflicts} conflicts`);
-
-    return plan;
-  },
-
-  /** Re-run the algorithm with a new generation seed for a specific exam */
-  regenerate(examId) {
-    const exams = STORAGE.getExams();
-    const exam = exams.find((e) => e.id === examId) || (typeof Exams !== "undefined" ? Exams.activeExam() : exams[0]);
-    if (!exam) {
-      throw new Error("Cannot regenerate seating: No valid examination selected.");
+    let rooms = STORAGE.getRooms();
+    if (selectedRoomNumbers && selectedRoomNumbers.length > 0) {
+      rooms = rooms.filter((r) => selectedRoomNumbers.includes(r.roomNumber));
     }
 
-    const allPlans = STORAGE.getSeatingPlans();
-    const examPlans = allPlans.filter((p) => p.examId === exam.id);
-    const maxGen = examPlans.reduce((max, p) => Math.max(max, p.generation || 1), 0);
-    const nextGen = maxGen + 1;
+    if (rooms.length === 0) {
+      throw new Error("Cannot generate seating: No classrooms selected. Please select at least one classroom.");
+    }
 
-    const students = STORAGE.getStudents();
-    const rooms = STORAGE.getRooms();
+    let students = this._getEligibleStudents();
+    students = this._filterByDeptAndSemester(students, combos);
+
+    // Stamp the exam subject onto all filtered students so the algorithm can use it
+    const examSubject = String(exam.name || "").trim().toUpperCase();
+    students = students.map((s) => ({
+      ...s,
+      subject: examSubject || String(s.subject || s.course || "").trim().toUpperCase()
+    }));
+
+    const capacityCheck = this._validateCapacity(students, rooms);
+    if (!capacityCheck.ok) {
+      throw new Error(capacityCheck.message);
+    }
 
     const plan = SeatingAlgorithm.generate(
       students,
       rooms,
-      { generation: nextGen, examId: exam.id, examName: exam.name }
+      { generation, examId: exam.id, examName: exam.name }
     );
 
     plan.id = typeof generateId === "function" ? generateId("plan") : "plan_" + Date.now();
     plan.examId = exam.id;
     plan.examName = exam.name;
-    plan.generation = nextGen;
+    plan.generation = generation;
     plan.isActive = true;
+
+    if (combos && combos.length > 0) {
+      plan.filterCombos = combos;
+    }
+    if (selectedRoomNumbers && selectedRoomNumbers.length > 0) {
+      plan.allocatedRooms = selectedRoomNumbers;
+    }
 
     this._stampAssignments(plan);
 
     STORAGE.setSeatingPlan(plan);
-    STORAGE.logActivity(`Seating regenerated for ${exam.name} (Generation ${nextGen}) — ${plan.stats.totalConflicts} conflicts`);
+    STORAGE.logActivity(`Seating generated for ${exam.name} (Gen ${generation}) in ${rooms.length} classroom(s) — ${plan.stats.totalStudents} students, ${plan.stats.totalConflicts} conflicts, ${SeatingAlgorithm.RESERVED_SEATS} seats reserved`);
 
     return plan;
   },
 
-  /** Stamp primary examId and seatingPlanId on every student assignment node */
   _stampAssignments(plan) {
     if (!plan || !Array.isArray(plan.rooms)) return;
     for (const room of plan.rooms) {
@@ -90,19 +205,16 @@ const Seating = {
     }
   },
 
-  /** Get active plan or specific generation plan for an exam */
   getCurrentPlan(examId, generation) {
     return STORAGE.getSeatingPlan(examId, generation);
   },
 
-  /** Get all generations list for an exam (sorted newest first) */
   getGenerationsForExam(examId) {
     if (!examId) return [];
     const plans = STORAGE.getSeatingPlans();
     return plans.filter((p) => p.examId === examId).sort((a, b) => (b.generation || 0) - (a.generation || 0));
   },
 
-  /** Recompute stats + conflicts against the CURRENT grid (after an override) */
   _recalculate(plan) {
     const conflicts = SeatingAlgorithm._detectConflicts(plan.rooms);
     const totalAssigned = plan.stats.totalAssigned;
@@ -118,7 +230,6 @@ const Seating = {
     return plan;
   },
 
-  /** Attempt to move `rollNo` into (roomNumber, row, col) for a specific plan */
   overrideSeat(roomNumber, row, col, rollNo, examId, generation) {
     const plan = STORAGE.getSeatingPlan(examId, generation);
     if (!plan) return { ok: false, message: "No seating plan exists for this examination." };
@@ -139,7 +250,6 @@ const Seating = {
       return { ok: false, message: "Selected seat does not exist in this room." };
     }
 
-    // Locate student's position in this specific plan
     let source = null;
     let student = null;
 
@@ -162,9 +272,9 @@ const Seating = {
       return { ok: false, message: "Student not found in this seating plan." };
     }
 
-    const conflictsExist = SeatingAlgorithm.wouldConflict(plan, roomNumber, numericRow, numericCol, student.subject, rollNo);
+    const conflictsExist = SeatingAlgorithm.wouldConflict(plan, roomNumber, numericRow, numericCol, student.subject, rollNo, student.course || "");
     if (conflictsExist) {
-      const suggestions = SeatingAlgorithm.suggestSeats(plan, student.subject, rollNo, 3);
+      const suggestions = SeatingAlgorithm.suggestSeats(plan, student.subject, rollNo, 3, student.course || "");
       return {
         ok: false,
         conflict: true,
@@ -205,7 +315,6 @@ const Seating = {
     return { ok: true, message: "Seat updated successfully.", plan };
   },
 
-  /** Force-apply an override even if it conflicts */
   forceOverrideSeat(roomNumber, row, col, rollNo, examId, generation) {
     const plan = STORAGE.getSeatingPlan(examId, generation);
     if (!plan) return { ok: false, message: "No seating plan exists." };
@@ -268,7 +377,6 @@ const Seating = {
     return this.overrideSeat(suggestion.roomNumber, suggestion.row, suggestion.col, rollNo, examId, generation);
   },
 
-  /** Find seat for a student for a SPECIFIC exam */
   findByRollNo(rollNo, examId) {
     if (!rollNo) return null;
     const plan = STORAGE.getSeatingPlan(examId);
@@ -295,7 +403,6 @@ const Seating = {
     return null;
   },
 
-  /** Find ALL seat assignments across ALL active exam plans for a student */
   allSeatsForStudent(rollNo) {
     if (!rollNo) return [];
     const plans = STORAGE.getSeatingPlans().filter((p) => p.isActive === true);

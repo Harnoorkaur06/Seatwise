@@ -29,7 +29,7 @@
       <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
       <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
       <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
-      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="generate-seating.html" class="active"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
       <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
       <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
       <a href="complaints.html"><span class="nav-icon">📩</span><span class="nav-label">Complaints</span></a>
@@ -67,14 +67,53 @@
         <div class="seat-hero-grid" style="grid-template-columns:repeat(4, 1fr); margin-top:14px;" id="overview-box"></div>
       </div>
 
+      <!-- SELECTION-BASED STREAM, SEMESTER & SUBJECT FILTER CARD -->
+      <div class="card mb-20">
+        <div class="card-title" style="margin-bottom:2px;">Filter & Select Student Groups (Optional)</div>
+        <div class="card-subtitle mb-14">Select Department/Stream and Semester to filter which students receive seats. Leave as "-- All --" to include all active students.</div>
+
+        <div id="filter-groups-wrap" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Dynamic Filter Group Rows -->
+        </div>
+
+        <div class="flex-between mt-14" style="flex-wrap:wrap; gap:12px;">
+          <button type="button" class="btn btn-outline btn-sm" id="add-group-btn">＋ Add Another Student Group Filter</button>
+          <div id="group-filter-summary" style="font-size:13px; font-weight:800; color:var(--purple-4);">
+            Matching Students: <span id="selected-student-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASSROOM ALLOCATION CARD -->
+      <div class="card mb-20">
+        <div class="flex-between mb-14" style="flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;">Allocate Classrooms / Lecture Halls</div>
+            <div class="card-subtitle" style="margin-bottom:0;">Select which classrooms are assigned to this exam (e.g., Classrooms 1–10 vs Classrooms 11–20)</div>
+          </div>
+          <div class="flex-gap">
+            <button type="button" class="btn btn-outline btn-sm" id="select-all-rooms-btn">Select All</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="clear-rooms-btn">Clear All</button>
+          </div>
+        </div>
+
+        <div id="room-checkboxes-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-top:10px;">
+          <!-- Dynamic Room Checkboxes -->
+        </div>
+
+        <div class="mt-14" id="room-selection-summary" style="font-size:13px; font-weight:800; color:var(--purple-4);">
+          Selected Classrooms: <span id="selected-room-count">0</span> rooms (<span id="selected-room-capacity">0</span> usable seats after 2 reserved)
+        </div>
+      </div>
+
       <div class="two-col mb-20">
         <div class="card">
           <div class="card-title">Enforced Seating Constraints</div>
           <div style="display:flex; flex-direction:column; gap:10px;">
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Same subject students never seated adjacent</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Same subject & stream students never seated adjacent</div>
             <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Adjacency check across Left, Right, Front and Back</div>
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Automated overflow balancing across lecture halls</div>
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Real-time collision detection & smart fallback swap</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Exactly 2 seats marked as RESERVED in every plan</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--color-success); font-weight:900;">✓</span> Multi-attempt greedy placer minimizes same-stream conflicts</div>
           </div>
         </div>
 
@@ -82,9 +121,9 @@
           <div class="card-title">Engine Safety & Multi-Plan Support</div>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Independent plan storage per examination</div>
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Generating CNDC does NOT overwrite PA or DBMS</div>
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Versioned generation history (Gen #1, Gen #2)</div>
-            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Primary linkage via unique examId key</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Flexible digit semester matching (supports 5, 5/6, SEMESTER 5)</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Explicit Classroom allocation per examination session</div>
+            <div class="flex-gap" style="font-size:13px; color:var(--ink);"><span style="color:var(--purple-4); font-weight:900;">●</span> Reads fresh student roster — deleted students excluded</div>
           </div>
         </div>
       </div>
@@ -140,6 +179,8 @@
   const urlParams = new URLSearchParams(window.location.search);
   const requestedExamId = urlParams.get("examId");
 
+  let filterGroupCount = 0;
+
   function initExamDropdown() {
     const exams = Exams.all();
     if (exams.length === 0) {
@@ -148,24 +189,192 @@
       return;
     }
 
-    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.semester || 'All Semesters')}) — ${formatDate(e.date)}</option>`).join("");
     
     if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
       examSelect.value = requestedExamId;
     }
 
     examSelect.addEventListener("change", () => {
-      renderExamState();
+      onExamSelectionChange();
     });
 
-    renderExamState();
+    // Render Room Allocation Checkboxes
+    renderRoomCheckboxes();
+
+    // Initialize first filter group row
+    addGroupRow();
+    onExamSelectionChange();
   }
+
+  function renderRoomCheckboxes() {
+    const allRooms = Rooms.all();
+    const container = document.getElementById("room-checkboxes-grid");
+
+    if (allRooms.length === 0) {
+      container.innerHTML = `<div class="text-dim text-sm" style="grid-column:1/-1;">No rooms configured. Please add rooms in Rooms page.</div>`;
+      return;
+    }
+
+    container.innerHTML = allRooms.map((r) => `
+      <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.14); cursor:pointer; font-size:13px; font-weight:700; color:var(--ink);">
+        <input type="checkbox" class="room-alloc-checkbox" value="${escapeHTML(r.roomNumber)}" checked style="width:16px; height:16px; accent-color:var(--purple-primary); cursor:pointer;" />
+        <span>Room ${escapeHTML(r.roomNumber)} (${r.capacity} seats)</span>
+      </label>
+    `).join("");
+
+    container.querySelectorAll(".room-alloc-checkbox").forEach((cb) => {
+      cb.addEventListener("change", updateRoomStats);
+    });
+
+    document.getElementById("select-all-rooms-btn").onclick = () => {
+      container.querySelectorAll(".room-alloc-checkbox").forEach((cb) => (cb.checked = true));
+      updateRoomStats();
+    };
+
+    document.getElementById("clear-rooms-btn").onclick = () => {
+      container.querySelectorAll(".room-alloc-checkbox").forEach((cb) => (cb.checked = false));
+      updateRoomStats();
+    };
+
+    updateRoomStats();
+  }
+
+  function getSelectedRoomNumbers() {
+    const checked = document.querySelectorAll(".room-alloc-checkbox:checked");
+    return Array.from(checked).map((cb) => cb.value);
+  }
+
+  function updateRoomStats() {
+    const selectedRooms = getSelectedRoomNumbers();
+    const allRooms = Rooms.all();
+    const allocated = allRooms.filter((r) => selectedRooms.includes(r.roomNumber));
+    const totalCapacity = allocated.reduce((sum, r) => sum + r.capacity, 0);
+    const usableCapacity = Math.max(0, totalCapacity - 2);
+
+    document.getElementById("selected-room-count").textContent = allocated.length;
+    document.getElementById("selected-room-capacity").textContent = usableCapacity;
+  }
+
+  function addGroupRow(initialDept = "", initialSemester = "") {
+    filterGroupCount++;
+    const container = document.getElementById("filter-groups-wrap");
+    const rowId = `group-row-${filterGroupCount}`;
+
+    const allStudents = STORAGE.getStudents().filter((s) => s.status !== "disabled" && !s.disabled);
+
+    const depts = [...new Set(allStudents.map((s) => (s.course || s.stream || s.department || "").toString().trim()).filter(Boolean))].sort();
+    
+    // Extract unique NUMERIC semester values from all student records
+    // "5", "5/6", "SEMESTER 5", "5th" all yield digit 5
+    const semNumSet = new Set();
+    allStudents.forEach((s) => {
+      const nums = Seating._extractSemesterNumbers(s.semester);
+      nums.forEach((n) => semNumSet.add(n));
+    });
+    const semesterOptions = [...semNumSet].sort((a, b) => a - b);
+
+    const row = document.createElement("div");
+    row.className = "group-filter-row";
+    row.id = rowId;
+    row.style.cssText = "display:flex; gap:10px; align-items:flex-end; background:rgba(154,59,185,0.04); padding:12px 14px; border-radius:var(--radius-sm); border:1px solid rgba(154,59,185,0.12); flex-wrap:wrap;";
+
+    row.innerHTML = `
+      <div style="flex:1; min-width:200px;">
+        <label class="form-label" style="font-size:12px; font-weight:800; margin-bottom:4px;">Department / Stream</label>
+        <select class="form-select group-dept-select" style="font-weight:700;">
+          <option value="">-- All Departments --</option>
+          ${depts.map((d) => `<option value="${escapeHTML(d)}" ${d === initialDept ? 'selected' : ''}>${escapeHTML(d)}</option>`).join("")}
+        </select>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <label class="form-label" style="font-size:12px; font-weight:800; margin-bottom:4px;">Semester</label>
+        <select class="form-select group-semester-select" style="font-weight:700;">
+          <option value="">-- All Semesters --</option>
+          ${semesterOptions.map((n) => `<option value="${n}" ${String(n) === initialSemester ? 'selected' : ''}>Semester ${n}</option>`).join("")}
+        </select>
+      </div>
+      <button type="button" class="btn btn-secondary remove-group-btn" style="padding:8px 12px;" title="Remove Group">✕</button>
+    `;
+
+    container.appendChild(row);
+
+    row.querySelector(".group-dept-select").addEventListener("change", updateFilterStats);
+    row.querySelector(".group-semester-select").addEventListener("change", updateFilterStats);
+
+    const removeBtn = row.querySelector(".remove-group-btn");
+    removeBtn.addEventListener("click", () => {
+      row.remove();
+      updateFilterStats();
+      updateRemoveButtons();
+    });
+
+    updateFilterStats();
+    updateRemoveButtons();
+  }
+
+  function updateRemoveButtons() {
+    const rows = document.querySelectorAll(".group-filter-row");
+    rows.forEach((r) => {
+      const removeBtn = r.querySelector(".remove-group-btn");
+      if (removeBtn) {
+        removeBtn.style.display = rows.length > 1 ? "inline-flex" : "none";
+      }
+    });
+  }
+
+  function getSelectedCombos() {
+    const combos = [];
+    document.querySelectorAll(".group-filter-row").forEach((row) => {
+      const dept = row.querySelector(".group-dept-select").value.trim();
+      const semester = row.querySelector(".group-semester-select").value.trim();
+      if (dept || semester) {
+        combos.push({ dept, semester });
+      }
+    });
+    return combos;
+  }
+
+  function onExamSelectionChange() {
+    renderExamState();
+    updateFilterStats();
+  }
+
+  function updateFilterStats() {
+    const selectedExamId = examSelect.value;
+    const exams = Exams.all();
+    const exam = exams.find((e) => e.id === selectedExamId);
+
+    const combos = getSelectedCombos();
+    const allStudents = STORAGE.getStudents().filter((s) => s.status !== "disabled" && !s.disabled);
+    const filtered = Seating._filterByDeptAndSemester(allStudents, combos);
+
+    const countEl = document.getElementById("selected-student-count");
+    if (countEl) countEl.textContent = filtered.length;
+
+    const selectedRooms = getSelectedRoomNumbers();
+    const allocatedRooms = Rooms.all().filter((r) => selectedRooms.includes(r.roomNumber));
+    const totalCapacity = allocatedRooms.reduce((sum, r) => sum + r.capacity, 0);
+    const usableSeats = Math.max(0, totalCapacity - 2);
+
+    const summaryEl = document.getElementById("group-filter-summary");
+    if (summaryEl) {
+      const comboDesc = combos.length > 0
+        ? combos.map(c => `${c.dept || 'All Depts'} / Sem ${c.semester || 'All'}`).join(" + ")
+        : "All Active Students";
+      summaryEl.textContent = `${comboDesc}: ${filtered.length} Students | Available Usable Seats: ${usableSeats} (2 Reserved)`;
+    }
+  }
+
+  document.getElementById("add-group-btn").addEventListener("click", () => {
+    addGroupRow();
+  });
 
   function renderExamState() {
     const selectedExamId = examSelect.value;
     const exams = Exams.all();
     const exam = exams.find((e) => e.id === selectedExamId);
-    const students = Students.all();
+    const students = STORAGE.getStudents();
     const rooms = Rooms.all();
     const capacity = Rooms.totalCapacity();
 
@@ -177,8 +386,8 @@
     document.getElementById("overview-box").innerHTML = `
       <div class="seat-hero-field"><div class="field-label">Target Examination</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(exam.name)}</div></div>
       <div class="seat-hero-field"><div class="field-label">Schedule Date & Time</div><div class="field-value">${formatDate(exam.date)} · ${formatTime(exam.time)}</div></div>
-      <div class="seat-hero-field"><div class="field-label">Total Candidates</div><div class="field-value">${students.length} students</div></div>
-      <div class="seat-hero-field"><div class="field-label">Available Capacity</div><div class="field-value">${capacity} seats (${rooms.length} rooms)</div></div>
+      <div class="seat-hero-field"><div class="field-label">Target Semester</div><div class="field-value">${escapeHTML(exam.semester || 'All Semesters')}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Total Roster Students</div><div class="field-value">${students.length} students</div></div>
     `;
 
     const plan = Seating.getCurrentPlan(selectedExamId);
@@ -250,72 +459,98 @@
       return;
     }
 
-    const students = Students.all();
-    const rooms = Rooms.all();
-    const capacity = Rooms.totalCapacity();
-
-    if (students.length === 0) {
-      showToast("Please add students before generating seating.", "warning");
-      return;
-    }
-    if (rooms.length === 0) {
-      showToast("Please add at least one room before generating seating.", "warning");
+    const selectedRooms = getSelectedRoomNumbers();
+    if (selectedRooms.length === 0) {
+      showToast("Please select at least one classroom for this examination session.", "warning");
+      alert("Please select at least one classroom for this examination session.");
       return;
     }
 
-    // Capacity validation check
-    if (capacity < students.length) {
-      showToast(`Warning: Insufficient room capacity (${capacity} seats for ${students.length} students). Unassigned candidates will be flagged.`, "warning");
+    const combos = getSelectedCombos();
+    const allStudents = STORAGE.getStudents().filter((s) => s.status !== "disabled" && !s.disabled);
+    const filteredStudents = Seating._filterBySubjectStreamCombos(allStudents, combos, exam);
+
+    const allocatedRooms = Rooms.all().filter((r) => selectedRooms.includes(r.roomNumber));
+    const totalCapacity = allocatedRooms.reduce((sum, r) => sum + r.capacity, 0);
+    const usableCapacity = Math.max(0, totalCapacity - 2);
+
+    if (filteredStudents.length === 0) {
+      showToast("No eligible active students match the selected criteria.", "warning");
+      alert("No eligible active students match the selected criteria.");
+      return;
+    }
+
+    // STRICT CAPACITY CHECK WITH 2 RESERVED SEATS
+    if (filteredStudents.length > usableCapacity) {
+      const errMsg = `Not enough seats.\n\nStudents selected: ${filteredStudents.length}\nAvailable seats after 2 reserved seats: ${usableCapacity}\n\nPlease allocate more classrooms or change the selection.`;
+      showToast(`Not enough seats! Selected: ${filteredStudents.length}, Available: ${usableCapacity} (after 2 reserved).`, "error");
+      alert(errMsg);
+      return;
     }
 
     document.getElementById("generate-btn").disabled = true;
     document.getElementById("regenerate-btn").disabled = true;
     document.getElementById("result-box").innerHTML = "";
 
+    const filterText = combos.length > 0
+      ? combos.map(c => `[Dept: ${c.dept || 'ALL'}, Semester: ${c.semester || 'ALL'}]`).join(", ")
+      : "All Active Students";
+
     const lines = [
       { text: `Target Exam: ${exam.name} (${exam.id})`, step: 1 },
-      { text: `Analyzing ${students.length} candidates across ${new Set(students.map(s => s.subject)).size} course subject codes...`, step: 1 },
-      { text: "Inspecting examination hall capacities...", step: 2 },
-      { text: `${rooms.length} room(s) available with total capacity of ${capacity} seats.`, step: 2 },
-      { text: "Executing constraint-based adjacency verification...", step: 3 },
-      { text: "Verifying left / right / front / back neighbor rules.", step: 3 },
+      { text: `Selected Filter Criteria: ${filterText}`, step: 1 },
+      { text: `Filtered ${filteredStudents.length} matching candidates from database...`, step: 1 },
+      { text: `Allocating ${selectedRooms.length} classrooms: Rooms ${selectedRooms.join(", ")} (${totalCapacity} seats, 2 reserved)...`, step: 2 },
+      { text: `Usable seating capacity verified: ${usableCapacity} seats.`, step: 2 },
+      { text: "Executing constraint-based same-stream adjacency verification...", step: 3 },
+      { text: "Verifying left / right / front / back neighbor rules across streams.", step: 3 },
       { text: `Generating seating arrangement for ${exam.name}...`, step: 4 },
       { text: "Validating seating plan integrity & zero-conflict checks...", step: 5 }
     ];
 
     typeConsoleLines(lines, () => {
-      const plan = isRegenerate ? Seating.regenerate(selectedExamId) : Seating.generateNew(selectedExamId);
-      setStep(5, "completed");
+      try {
+        const plan = isRegenerate ? Seating.regenerate(selectedExamId, combos, selectedRooms) : Seating.generateNew(selectedExamId, combos, selectedRooms);
+        setStep(5, "completed");
 
-      const resultLine = document.createElement("div");
-      resultLine.className = "console-line result-line";
-      resultLine.textContent = plan.stats.totalConflicts === 0
-        ? `✓ Seating for ${exam.name} (Generation #${plan.generation}) successfully generated with zero conflicts.`
-        : `✓ Seating generated for ${exam.name} — ${plan.stats.totalConflicts} conflict(s) detected.`;
-      document.getElementById("console").appendChild(resultLine);
+        const resultLine = document.createElement("div");
+        resultLine.className = "console-line result-line";
+        resultLine.textContent = plan.stats.totalConflicts === 0
+          ? `✓ Seating for ${exam.name} (Generation #${plan.generation}) successfully generated in ${selectedRooms.length} classroom(s) with zero conflicts.`
+          : `✓ Seating generated for ${exam.name} — ${plan.stats.totalConflicts} conflict(s) detected.`;
+        document.getElementById("console").appendChild(resultLine);
 
-      renderResult(plan);
-      renderExamState();
-      document.getElementById("generate-btn").disabled = false;
-      document.getElementById("regenerate-btn").disabled = false;
-      showToast(`Seating generation complete for ${exam.name}.`, "success");
+        renderResult(plan);
+        renderExamState();
+        showToast(`Seating generation complete for ${exam.name}.`, "success");
+      } catch (err) {
+        showToast(err.message || "Failed to generate seating plan.", "error");
+        alert(err.message);
+      } finally {
+        document.getElementById("generate-btn").disabled = false;
+        document.getElementById("regenerate-btn").disabled = false;
+      }
     });
   }
 
   function renderResult(plan) {
     document.getElementById("result-box").innerHTML = `
-      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:20px;">
+      <div class="stat-grid" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
+        <div class="stat-card accent-primary">
+          <div class="stat-card-header"><span class="stat-label">Eligible Students</span><div class="stat-icon-wrap">🎓</div></div>
+          <div class="stat-value">${plan.stats.totalStudents}</div>
+        </div>
+        <div class="stat-card tint-2">
+          <div class="stat-card-header"><span class="stat-label">Students Seated</span><div class="stat-icon-wrap">🎫</div></div>
+          <div class="stat-value">${plan.stats.totalAssigned}</div>
+        </div>
+        <div class="stat-card tint-1">
+          <div class="stat-card-header"><span class="stat-label">Reserved Seats</span><div class="stat-icon-wrap">🔒</div></div>
+          <div class="stat-value">2</div>
+        </div>
         <div class="stat-card ${plan.stats.totalConflicts === 0 ? 'accent-success' : 'accent-error'}">
           <div class="stat-card-header"><span class="stat-label">Conflicts</span><div class="stat-icon-wrap">${plan.stats.totalConflicts === 0 ? '✓' : '⚠'}</div></div>
           <div class="stat-value">${plan.stats.totalConflicts}</div>
-        </div>
-        <div class="stat-card ${plan.stats.unassignedCount === 0 ? 'accent-success' : 'accent-warning'}">
-          <div class="stat-card-header"><span class="stat-label">Unassigned</span><div class="stat-icon-wrap">🎓</div></div>
-          <div class="stat-value">${plan.stats.unassignedCount}</div>
-        </div>
-        <div class="stat-card tint-3">
-          <div class="stat-card-header"><span class="stat-label">Rooms Used</span><div class="stat-icon-wrap">🏫</div></div>
-          <div class="stat-value">${plan.stats.roomsUsed}</div>
         </div>
         <div class="stat-card accent-primary">
           <div class="stat-card-header"><span class="stat-label">Plan Validity</span><div class="stat-icon-wrap">📈</div></div>
@@ -324,11 +559,11 @@
       </div>
 
       <div style="background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius-md); padding:18px;">
-        <div class="card-title" style="margin-bottom:10px; color:var(--ink);">Room Occupancy Breakdown for ${escapeHTML(plan.examName || "Exam")}</div>
+        <div class="card-title" style="margin-bottom:10px; color:var(--ink);">Classroom Occupancy Breakdown for ${escapeHTML(plan.examName || "Exam")}</div>
         <div class="flex-gap" style="flex-wrap:wrap;">
           ${plan.rooms.map((r) => `
             <div style="padding:10px 14px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.08); border:1px solid rgba(154,59,185,0.18); font-size:13px; font-weight:700; color:var(--ink);">
-              <span style="color:var(--purple-4); font-weight:900;">${escapeHTML(r.roomNumber)}</span>: ${r.occupied} / ${r.capacity} occupied (${Math.round((r.occupied / r.capacity) * 100)}%)
+              <span style="color:var(--purple-4); font-weight:900;">Room ${escapeHTML(r.roomNumber)}</span>: ${r.occupied} / ${r.capacity} occupied (${Math.round((r.occupied / r.capacity) * 100)}%)
             </div>
           `).join("")}
         </div>
