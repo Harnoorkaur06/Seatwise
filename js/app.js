@@ -97,7 +97,7 @@ const App = {
         </div>
         ${isStudent ? `
           <a class="user-dropdown-item" href="user-dashboard.html"><span>🏠</span> Dashboard</a>
-          <a class="user-dropdown-item" href="my-seat.html"><span>🎫</span> My Seat Pass</a>
+          <a class="user-dropdown-item" href="my-seat.html"><span>🎫</span> Admit Card</a>
           <a class="user-dropdown-item" href="profile.html"><span>👤</span> Profile Settings</a>
         ` : `
           <a class="user-dropdown-item" href="admin-dashboard.html"><span>🏠</span> Dashboard</a>

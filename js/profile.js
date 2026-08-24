@@ -15,7 +15,6 @@ const ProfileManager = {
 
     // Form inputs
     const nameInput = document.getElementById("profile-name");
-    const fatherInput = document.getElementById("profile-father");
     const emailInput = document.getElementById("profile-email");
     const classInput = document.getElementById("profile-class");
     const rollNoInput = document.getElementById("profile-rollno");
@@ -30,7 +29,6 @@ const ProfileManager = {
     const removeBtn = document.getElementById("btn-remove-photo");
 
     if (nameInput) nameInput.value = current.name || "";
-    if (fatherInput) fatherInput.value = current.fatherName || "Mr. SATINDER SINGH";
     if (emailInput) emailInput.value = current.email || "";
     if (classInput) classInput.value = current.classBranch || (current.course ? `2024-BE-${current.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM");
     if (rollNoInput) rollNoInput.value = current.rollNo || "";
@@ -109,7 +107,6 @@ const ProfileManager = {
     if (!current) return;
 
     const name = (document.getElementById("profile-name")?.value || "").trim();
-    const fatherName = (document.getElementById("profile-father")?.value || "").trim();
     const email = (document.getElementById("profile-email")?.value || "").trim();
     const classBranch = (document.getElementById("profile-class")?.value || "").trim();
 
@@ -126,7 +123,6 @@ const ProfileManager = {
     const payload = {
       name,
       email,
-      fatherName: fatherName || "Mr. SATINDER SINGH",
       classBranch: classBranch || "2024-BE-CSE-AI-4 SEM"
     };
 

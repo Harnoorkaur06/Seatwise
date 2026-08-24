@@ -244,19 +244,16 @@ const Auth = {
   currentUser() {
     const user = STORAGE.getCurrentUser();
     if (user && user.role === "student") {
-      // Sync latest data from Students database in case Admin updated it
-      const latest = STORAGE.getStudents().find((s) => s.id === user.id || s.rollNo === user.rollNo);
+      // Sync latest data from Students database in case Admin or Profile updated it
+      const latest = STORAGE.getStudents().find((s) => s.id === user.id || s.rollNo === user.rollNo || s.email === user.email);
       if (latest) {
         return {
-          id: latest.id,
-          name: latest.name,
-          email: latest.email,
-          rollNo: latest.rollNo,
-          mobile: latest.mobile || "",
-          course: latest.course || "CSE",
-          semester: latest.semester || "5th Semester",
-          subject: latest.subject || "CS301",
-          avatar: user.avatar || latest.avatar || "",
+          ...user,
+          ...latest,
+          classBranch: latest.classBranch || user.classBranch || (latest.course ? `2024-BE-${latest.course}-4 SEM` : "2024-BE-CSE-AI-4 SEM"),
+          department: latest.department || user.department || "Department of Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+          coursesList: latest.coursesList || user.coursesList || ["24APS4101", "24CAI0201", "24CAI0202", "24CAI0203", "24CAI0204", "24UNI0124", "25MOC0136", "25MOC0137", "25MOC0138", "25MOC0139", "Curriculum"],
+          avatar: latest.avatar || user.avatar || "",
           role: "student"
         };
       }
