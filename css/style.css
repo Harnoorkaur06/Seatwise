@@ -1878,3 +1878,301 @@ body.dark-theme .dashboard-bg::after {
     animation: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/*LIGHT-RAY SWEEP — slow rotating searchlight behind the aurora       */
+/* ---------------------------------------------------------------------- */
+.auth-visual {
+  isolation: isolate;
+  overflow: hidden;
+  --ray-spin: 40s;
+}
+
+.auth-visual .brand-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-visual-orb {
+  mix-blend-mode: screen;
+  z-index: -1;
+}
+
+.auth-shell {
+  position: relative;
+}
+
+.auth-shell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(60vw, 900px);
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  background: conic-gradient(
+    from 0deg at 30% 40%,
+    transparent 0deg,
+    rgba(216, 165, 232, 0.09) 20deg,
+    transparent 55deg,
+    transparent 300deg,
+    rgba(154, 59, 185, 0.07) 335deg,
+    transparent 360deg
+  );
+  animation: ray-spin var(--ray-spin, 40s) linear infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes ray-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 960px) {
+  .auth-shell::before {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* EXTRA ORB + SATURATED SCREEN-BLEND POOLS                            */
+/* ---------------------------------------------------------------------- */
+.auth-visual-orb {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(216, 165, 232, 0.55) 0%, rgba(122, 34, 157, 0.14) 65%, transparent 78%);
+  filter: blur(46px);
+}
+
+.auth-visual-orb::before {
+  background: radial-gradient(circle, rgba(154, 59, 185, 0.4) 0%, transparent 70%);
+  mix-blend-mode: screen;
+}
+
+.auth-visual-orb::after {
+  background: radial-gradient(circle, rgba(216, 165, 232, 0.32) 0%, transparent 70%);
+  mix-blend-mode: screen;
+}
+
+/* 4th glow pool, deep magenta-purple, opposite corner */
+.auth-visual .brand-tagline,
+.auth-feature-list {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-visual::after {
+  background:
+    radial-gradient(circle 220px at 82% 78%, rgba(122, 34, 157, 0.35), transparent 72%),
+    radial-gradient(ellipse at 30% 40%, transparent 35%, rgba(12, 6, 20, 0.6) 100%);
+  animation: orb-4-drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes orb-4-drift {
+  0%   { background-position: 0% 0%, 0 0; }
+  100% { background-position: -10% 6%, 0 0; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* TWINKLING PARTICLE FIELD                                            */
+/* ---------------------------------------------------------------------- */
+.auth-visual .brand-wrap::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: -20px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow:
+    40px 120px #f0d9f7,
+    140px 60px #e6c2f0,
+    220px 220px #f0d9f7,
+    300px 90px #ddb0ea,
+    60px 300px #f0d9f7,
+    380px 260px #e6c2f0,
+    160px 380px #ddb0ea,
+    340px 420px #f0d9f7,
+    20px 440px #e6c2f0,
+    260px 40px #ddb0ea;
+  animation: particles-drift 14s linear infinite;
+  opacity: 0.55;
+}
+
+@keyframes particles-drift {
+  0%   { transform: translateY(0); opacity: 0.25; }
+  50%  { opacity: 0.65; }
+  100% { transform: translateY(-160px); opacity: 0.15; }
+}
+
+@media (max-width: 960px) {
+  .auth-visual .brand-wrap::after {
+    display: none;
+  }
+}
+
+
+/* ---------------------------------------------------------------------- */
+/*TITLE — blur-in dramatic drop instead of static shimmer-in-place    */
+/* ---------------------------------------------------------------------- */
+.auth-title {
+  filter: blur(6px);
+  opacity: 0;
+  transform: translateY(-10px) scale(1.03);
+  animation:
+    title-blur-in 0.7s var(--ease) 0.25s forwards,
+    title-shimmer 5s ease infinite 1s;
+  text-shadow: 0 2px 24px rgba(154, 59, 185, 0.18);
+}
+
+@keyframes title-blur-in {
+  to { filter: blur(0); opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* GLOWING BORDER SWEEP AROUND THE FORM ITSELF                         */
+/* ---------------------------------------------------------------------- */
+@property --sweep-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.auth-panel-inner {
+  position: relative;
+}
+
+.auth-panel-inner::before {
+  content: "";
+  position: absolute;
+  inset: -18px -22px;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: conic-gradient(
+    from var(--sweep-angle, 0deg),
+    transparent 0%,
+    rgba(154, 59, 185, 0.5) 8%,
+    transparent 20%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+  animation: border-sweep 4.5s linear infinite;
+  z-index: -1;
+}
+
+@keyframes border-sweep {
+  to { --sweep-angle: 360deg; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* PRIMARY BUTTON — expanding sonar rings instead of flat pulse        */
+/* ---------------------------------------------------------------------- */
+.auth-panel .btn-primary {
+  animation: none;
+  position: relative;
+}
+
+.auth-panel .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(154, 59, 185, 0.55);
+  animation: sonar-ping 2.2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sonar-ping {
+  0%   { box-shadow: 0 0 0 0 rgba(154, 59, 185, 0.5); }
+  70%  { box-shadow: 0 0 0 14px rgba(154, 59, 185, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(154, 59, 185, 0); }
+}
+
+/* ---------------------------------------------------------------------- */
+/*ERROR ALERT — flash-strike on first appearance                     */
+/* ---------------------------------------------------------------------- */
+.auth-alert.error.show {
+  animation: alert-shake 0.45s var(--ease), alert-flash-strike 0.6s ease-out;
+}
+
+@keyframes alert-flash-strike {
+  0%   { background: rgba(225, 29, 72, 0.55); }
+  100% { background: var(--color-error-soft); }
+}
+
+/* ---------------------------------------------------------------------- */
+/*FEATURE ICONS — continuous idle glow, not just on hover            */
+/* ---------------------------------------------------------------------- */
+.auth-feature .feature-icon {
+  animation: icon-idle-glow 3s ease-in-out infinite;
+}
+
+.auth-feature:nth-child(2) .feature-icon { animation-delay: 0.6s; }
+.auth-feature:nth-child(3) .feature-icon { animation-delay: 1.2s; }
+
+@keyframes icon-idle-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 165, 232, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(216, 165, 232, 0.12); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* DARK THEME PARITY FOR v2                                          */
+/* ---------------------------------------------------------------------- */
+html[data-theme="dark"] .auth-panel-inner::before,
+body.dark-theme .auth-panel-inner::before {
+  background: conic-gradient(
+    from var(--sweep-angle, 0deg),
+    transparent 0%,
+    rgba(216, 165, 232, 0.55) 8%,
+    transparent 20%
+  ) !important;
+}
+
+html[data-theme="dark"] .auth-alert.error.show,
+body.dark-theme .auth-alert.error.show {
+  animation: alert-shake 0.45s var(--ease), alert-flash-strike-dark 0.6s ease-out !important;
+}
+
+@keyframes alert-flash-strike-dark {
+  0%   { background: rgba(225, 29, 72, 0.4); }
+  100% { background: rgba(225, 29, 72, 0.14); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* MOBILE GUARD — v2 additions                                       */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .auth-panel .btn-primary::after {
+    display: none;
+  }
+  .auth-panel-inner::before {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* REDUCED MOTION — v2 additions                                     */
+/* ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .auth-shell::before,
+  .auth-shell::after,
+  .auth-visual .brand-wrap::after,
+  .auth-title,
+  .auth-panel-inner::before,
+  .auth-panel .btn-primary::after,
+  .auth-alert.error.show,
+  .auth-feature .feature-icon {
+    animation: none !important;
+  }
+  .auth-shell::after {
+    display: none !important;
+  }
+}
+
+
