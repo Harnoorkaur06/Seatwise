@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — SEATWISE Admin</title>
+  <meta name="description" content="Platform configuration, data management, and system preferences for SEATWISE administrators." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <style>
+    /* ─── Settings-page-specific styles ───────────────────────────── */
+
+    /* Settings layout: narrow left nav + wide content */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Left vertical tab list */
+    .settings-tab-list {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 8px;
+      box-shadow: var(--shadow-card);
+      position: sticky;
+      top: 0;
+    }
+
+    .settings-tab-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .settings-tab-item:hover {
+      background: var(--accent-soft);
+      color: var(--purple-4);
+    }
+
+    .settings-tab-item.active {
+      background: var(--accent-soft);
+      color: var(--purple-5);
+      font-weight: 700;
+      box-shadow: inset 3px 0 0 var(--purple-3);
+    }
+
+    .settings-tab-item .tab-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .settings-tab-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 6px 8px;
+    }
+
+    .settings-tab-group-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted-light);
+      padding: 8px 14px 4px;
+    }
+
+    /* Settings panels */
+    .settings-panel {
+      display: none;
+    }
+
+    .settings-panel.active {
+      display: block;
+      animation: panelFade 0.22s var(--ease);
+    }
+
+    @keyframes panelFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section card inside settings panel */
+    .settings-section {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 18px;
+    }
+
+    .settings-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-card-subtle);
+    }
+
+    .settings-section-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-section-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .settings-section-body {
+      padding: 22px;
+    }
+
+    /* Individual setting row */
+    .setting-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .setting-row:first-child {
+      padding-top: 0;
+    }
+
+    .setting-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .setting-hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-wrap input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #d8cfe0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.22s var(--ease);
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.22s var(--ease);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .toggle-wrap input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--purple-3), var(--purple-4));
+    }
+
+    .toggle-wrap input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Storage usage meter */
+    .storage-meter-wrap {
+      margin-top: 16px;
+    }
+
+    .storage-meter-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .storage-meter-track {
+      height: 8px;
+      background: #f0e6f5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .storage-meter-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--purple-1), var(--purple-3));
+      transition: width 0.9s var(--ease);
+    }
+
+    /* System info table rows */
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-row .info-key {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .info-row .info-val {
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Danger zone */
+    .danger-section {
+      background: #fff;
+      border: 1px solid var(--color-error-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(225, 29, 72, 0.05);
+      margin-bottom: 18px;
+    }
+
+    .danger-section-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--color-error-border);
+      background: rgba(225, 29, 72, 0.03);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .danger-section-header h3 {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--color-error);
+    }
+
+    .danger-action-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 16px 22px;
+      border-bottom: 1px solid #fde8ec;
+    }
+
+    .danger-action-row:last-child {
+      border-bottom: none;
+    }
+
+    .danger-action-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .danger-action-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Avatar upload ring */
+    .avatar-ring {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-2), var(--purple-4));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(122, 34, 157, 0.28);
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .avatar-ring:hover::after {
+      content: "Edit";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(43, 21, 62, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* Stat mini cards inside system info */
+    .sys-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .sys-stat-box {
+      padding: 14px;
+      background: linear-gradient(180deg, #fff 0%, #faf4fd 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .sys-stat-box .ss-value {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--purple-4);
+      letter-spacing: -0.04em;
+    }
+
+    .sys-stat-box .ss-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    /* Activity log */
+    .activity-log-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+    }
+
+    .activity-log-row:last-child { border-bottom: none; }
+
+    .activity-log-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--purple-3);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .activity-log-text { flex: 1; color: var(--ink); line-height: 1.4; }
+    .activity-log-time { color: var(--muted); white-space: nowrap; font-size: 11.5px; }
+
+    /* Color scheme selector */
+    .color-swatch-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    }
+
+    .color-swatch:hover { transform: scale(1.12); }
+    .color-swatch.selected { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 4px var(--ink); }
+
+    /* Save bar */
+    .settings-save-bar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--line);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      box-shadow: 0 -6px 20px rgba(54,24,69,0.06);
+    }
+
+    .save-bar-note {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .save-bar-note strong {
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="complaints.html"><span class="nav-icon">📩</span><span class="nav-label">Complaints</span></a>
+      <a href="settings.html" class="active"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Platform Settings</h1>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Page heading -->
+      <div class="dashboard-hero" style="margin-bottom:24px; padding:22px 28px;">
+        <div>
+          <div class="hero-eyebrow"><span class="pulse-dot"></span> Administrator Control Panel</div>
+          <h2 class="hero-title" style="font-size:22px;">System Settings &amp; Preferences</h2>
+          <p class="hero-subtitle" style="font-size:13px;">Manage your account, platform configuration, appearance, and data maintenance.</p>
+        </div>
+        <div class="hero-actions">
+          <span class="badge badge-primary">✓ v1.0 Stable</span>
+        </div>
+      </div>
+
+      <!-- Settings layout -->
+      <div class="settings-layout">
+
+        <!-- LEFT: Tab Nav -->
+        <div class="settings-tab-list" id="settings-tabs">
+          <div class="settings-tab-group-label">Account</div>
+          <button class="settings-tab-item active" data-tab="profile" onclick="switchTab('profile', this)">
+            <span class="tab-icon">👤</span> Profile &amp; Account
+          </button>
+          <button class="settings-tab-item" data-tab="security" onclick="switchTab('security', this)">
+            <span class="tab-icon">🔐</span> Security
+          </button>
+
+          <div class="settings-tab-divider"></div>
+          <div class="settings-tab-group-label">Platform</div>
+          <button class="settings-tab-item" data-tab="appearance" onclick="switchTab('appearance', this)">
+            <span class="tab-icon">🎨</span> Appearance
+          </button>
+          <button class="settings-tab-item" data-tab="notifications" onclick="switchTab('notifications', this)">
+            <span class="tab-icon">🔔</span> Notifications
+          </button>
+
+          <div class="settings-tab-divider"></div>
+          <div class="settings-tab-group-label">Data</div>
+          <button class="settings-tab-item" data-tab="system" onclick="switchTab('system', this)">
+            <span class="tab-icon">📊</span> System &amp; Storage
+          </button>
+          <button class="settings-tab-item" data-tab="activity" onclick="switchTab('activity', this)">
+            <span class="tab-icon">📋</span> Activity Log
+          </button>
+          <button class="settings-tab-item" data-tab="danger" onclick="switchTab('danger', this)">
+            <span class="tab-icon" style="color:var(--color-error);">⚠</span>
+            <span style="color:var(--color-error);">Danger Zone</span>
+          </button>
+        </div>
+
+        <!-- RIGHT: Panels -->
+        <div class="settings-panels-wrap">
+
+          <!-- ══ PROFILE PANEL ══ -->
+          <div class="settings-panel active" id="panel-profile">
+            <!-- Personal info -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">👤 Profile Information</div>
+                  <div class="settings-section-desc">Update your name and contact details displayed across the platform.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <!-- Avatar row -->
+                <div style="display:flex; align-items:center; gap:18px; margin-bottom:22px;">
+                  <div class="avatar-ring" id="profile-avatar-display" title="Admin avatar">A</div>
+                  <div>
+                    <div style="font-weight:700; font-size:14px;" id="profile-display-name">Administrator</div>
+                    <div class="text-sm text-dim" id="profile-display-role">Platform Administrator</div>
+                    <div style="margin-top:8px; display:flex; gap:8px;">
+                      <span class="badge badge-primary">Admin</span>
+                      <span class="badge badge-success">✓ Active</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom:14px;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-name">Full Name</label>
+                    <input type="text" id="s-name" class="form-input" placeholder="Administrator" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-username">Username / Login ID</label>
+                    <input type="text" id="s-username" class="form-input" placeholder="admin" readonly style="background:#faf7fc; cursor:default;" />
+                    <span class="form-hint">Login username cannot be changed.</span>
+                  </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom:14px;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-email">Email Address</label>
+                    <input type="email" id="s-email" class="form-input" placeholder="admin@university.edu" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-phone">Contact Number</label>
+                    <input type="tel" id="s-phone" class="form-input" placeholder="+91 98765 43210" />
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label" for="s-institution">Institution / University Name</label>
+                  <input type="text" id="s-institution" class="form-input" placeholder="e.g. National Institute of Technology" />
+                </div>
+
+                <div class="settings-save-bar" style="margin-top:18px; position:static; border-radius:var(--radius-md);">
+                  <span class="save-bar-note"><strong>Changes are stored locally</strong> in your browser session.</span>
+                  <div style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadProfileData()">↩ Discard</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveProfileData()">✓ Save Changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ SECURITY PANEL ══ -->
+          <div class="settings-panel" id="panel-security">
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🔐 Change Password</div>
+                  <div class="settings-section-desc">Update your admin login password. Must be at least 8 characters.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-group">
+                  <label class="form-label" for="s-current-pwd">Current Password</label>
+                  <input type="password" id="s-current-pwd" class="form-input" placeholder="Enter current password" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-new-pwd">New Password</label>
+                    <input type="password" id="s-new-pwd" class="form-input" placeholder="Minimum 8 characters" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" for="s-confirm-pwd">Confirm New Password</label>
+                    <input type="password" id="s-confirm-pwd" class="form-input" placeholder="Repeat new password" />
+                  </div>
+                </div>
+
+                <!-- Password strength -->
+                <div style="margin:14px 0;">
+                  <div class="storage-meter-label">
+                    <span>Password Strength</span>
+                    <span id="pwd-strength-label" style="color:var(--muted);">Type to check</span>
+                  </div>
+                  <div class="storage-meter-track">
+                    <div class="storage-meter-fill" id="pwd-strength-bar" style="width:0%; background: linear-gradient(90deg, #e11d48, #d97706);"></div>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary btn-sm" onclick="changePassword()">🔐 Update Password</button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🛡 Session &amp; Access</div>
+                  <div class="settings-section-desc">Control session behaviour and login access restrictions.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Auto-Logout after Inactivity</div>
+                    <div class="setting-hint">Automatically sign out if the platform has been idle for 30 minutes.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="toggle-autologout" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Require Password for Destructive Actions</div>
+                    <div class="setting-hint">Ask for password confirmation before data deletion or resets.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="toggle-confirm-pwd" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row" style="border-bottom:none;">
+                  <div>
+                    <div class="setting-label">Restrict Student Access during Generation</div>
+                    <div class="setting-hint">Prevent students from viewing seating data while the algorithm is running.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="toggle-restrict-access" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ APPEARANCE PANEL ══ -->
+          <div class="settings-panel" id="panel-appearance">
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🎨 Theme &amp; Appearance</div>
+                  <div class="settings-section-desc">Customise the visual style of the SEATWISE dashboard.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Display Mode</div>
+                    <div class="setting-hint">Switch between light and dark interface themes.</div>
+                  </div>
+                  <div style="display:flex; gap:8px;">
+                    <button class="btn btn-primary btn-sm" id="btn-theme-light" onclick="SettingsManager.setTheme('light')">☀ Light</button>
+                    <button class="btn btn-outline btn-sm" id="btn-theme-dark" onclick="SettingsManager.setTheme('dark')">🌙 Dark</button>
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Accent Color</div>
+                    <div class="setting-hint">Pick an accent hue for buttons, badges, and highlights.</div>
+                  </div>
+                  <div class="color-swatch-row">
+                    <div class="color-swatch selected" data-color="purple" style="background:linear-gradient(135deg,#bb74d1,#5b1d70);" title="Purple (default)" onclick="SettingsManager.setAccentColor('purple')"></div>
+                    <div class="color-swatch" data-color="indigo" style="background:linear-gradient(135deg,#818cf8,#3730a3);" title="Indigo" onclick="SettingsManager.setAccentColor('indigo')"></div>
+                    <div class="color-swatch" data-color="emerald" style="background:linear-gradient(135deg,#34d399,#065f46);" title="Emerald" onclick="SettingsManager.setAccentColor('emerald')"></div>
+                    <div class="color-swatch" data-color="orange" style="background:linear-gradient(135deg,#fb923c,#9a3412);" title="Orange" onclick="SettingsManager.setAccentColor('orange')"></div>
+                    <div class="color-swatch" data-color="rose" style="background:linear-gradient(135deg,#f472b6,#831843);" title="Rose" onclick="SettingsManager.setAccentColor('rose')"></div>
+                  </div>
+                </div>
+                <div class="setting-row" style="border-bottom:none;">
+                  <div>
+                    <div class="setting-label">Compact Sidebar</div>
+                    <div class="setting-hint">Collapse the sidebar to icons only to maximise screen space. Applies across every admin and user page.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="toggle-compact-sidebar" onchange="SettingsManager.setSidebarCollapsed(this.checked)" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ NOTIFICATIONS PANEL ══ -->
+          <div class="settings-panel" id="panel-notifications">
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🔔 Notification Preferences</div>
+                  <div class="settings-section-desc">Control which platform events trigger toast alerts and in-app banners.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Seating Generation Complete</div>
+                    <div class="setting-hint">Show a success alert when the seating algorithm finishes running.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="notif-gen-complete" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Conflict Detection Warnings</div>
+                    <div class="setting-hint">Alert immediately when new adjacency conflicts are detected post-generation.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="notif-conflicts" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Student Import Success</div>
+                    <div class="setting-hint">Confirm when a student roster JSON is successfully imported.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="notif-import" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Data Reset &amp; Maintenance Alerts</div>
+                    <div class="setting-hint">Warn before any destructive data operation is executed.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="notif-danger" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-row" style="border-bottom:none;">
+                  <div>
+                    <div class="setting-label">New User Registration</div>
+                    <div class="setting-hint">Notify when a new student account is created on the platform.</div>
+                  </div>
+                  <label class="toggle-wrap">
+                    <input type="checkbox" id="notif-new-user" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ SYSTEM & STORAGE PANEL ══ -->
+          <div class="settings-panel" id="panel-system">
+            <!-- Stats mini grid -->
+            <div class="sys-stat-grid">
+              <div class="sys-stat-box">
+                <div class="ss-value" id="sys-students">0</div>
+                <div class="ss-label">Students</div>
+              </div>
+              <div class="sys-stat-box">
+                <div class="ss-value" id="sys-rooms">0</div>
+                <div class="ss-label">Rooms</div>
+              </div>
+              <div class="sys-stat-box">
+                <div class="ss-value" id="sys-exams">0</div>
+                <div class="ss-label">Exams</div>
+              </div>
+              <div class="sys-stat-box">
+                <div class="ss-value" id="sys-users">0</div>
+                <div class="ss-label">Accounts</div>
+              </div>
+            </div>
+
+            <!-- Storage meter -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">💾 Browser Storage Meter</div>
+                  <div class="settings-section-desc">Estimated usage of localStorage for the current session.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="storage-meter-wrap">
+                  <div class="storage-meter-label">
+                    <span>Used Storage</span>
+                    <span id="storage-used-label">Calculating…</span>
+                  </div>
+                  <div class="storage-meter-track">
+                    <div class="storage-meter-fill" id="storage-meter-fill" style="width:0%;"></div>
+                  </div>
+                </div>
+                <div class="info-row" style="margin-top:14px;">
+                  <span class="info-key">Engine</span>
+                  <span class="info-val">Browser LocalStorage (5 MB limit)</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Active Seating Plan</span>
+                  <span class="info-val" id="sys-plan-status">Not generated</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Last Generated</span>
+                  <span class="info-val" id="sys-last-gen">—</span>
+                </div>
+                <div class="info-row" style="border-bottom:none;">
+                  <span class="info-key">Plan Conflicts</span>
+                  <span class="info-val" id="sys-plan-conflicts">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Platform info -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🖥 Platform Information</div>
+                  <div class="settings-section-desc">Technical details about the current SEATWISE installation.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="info-row">
+                  <span class="info-key">Application</span>
+                  <span class="info-val"><span class="badge badge-primary">SEATWISE v1.0</span></span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Deployment Mode</span>
+                  <span class="info-val">Client-Side SPA (Static)</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Algorithm</span>
+                  <span class="info-val">Constraint-Based Backtracking</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Browser</span>
+                  <span class="info-val" id="sys-browser">Detecting…</span>
+                </div>
+                <div class="info-row" style="border-bottom:none;">
+                  <span class="info-key">Session Started</span>
+                  <span class="info-val" id="sys-session-time">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Export -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">📤 Export Data</div>
+                  <div class="settings-section-desc">Download platform data as JSON for backup or analysis.</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <button class="btn btn-secondary btn-sm" onclick="exportData('students')">⬇ Export Students</button>
+                  <button class="btn btn-secondary btn-sm" onclick="exportData('rooms')">⬇ Export Rooms</button>
+                  <button class="btn btn-secondary btn-sm" onclick="exportData('exams')">⬇ Export Exams</button>
+                  <button class="btn btn-secondary btn-sm" onclick="exportData('seating')">⬇ Export Seating Plan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ ACTIVITY LOG PANEL ══ -->
+          <div class="settings-panel" id="panel-activity">
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">📋 Admin Activity Log</div>
+                  <div class="settings-section-desc">Recent platform events and administrator actions.</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="clearActivityLog()">🗑 Clear Log</button>
+              </div>
+              <div class="settings-section-body" id="activity-log-body">
+                <p class="text-dim text-sm">Loading activity log…</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ DANGER ZONE PANEL ══ -->
+          <div class="settings-panel" id="panel-danger">
+            <!-- Warning notice -->
+            <div style="background:rgba(225,29,72,0.05); border:1px solid var(--color-error-border); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:18px; display:flex; gap:12px; align-items:flex-start;">
+              <span style="font-size:20px; flex-shrink:0;">⚠</span>
+              <div>
+                <div style="font-weight:800; color:var(--color-error); margin-bottom:3px;">Irreversible Actions</div>
+                <div class="text-sm text-dim">The following operations permanently alter or erase stored data. Always export a backup before proceeding.</div>
+              </div>
+            </div>
+
+            <!-- Reset seating plan only -->
+            <div class="danger-section">
+              <div class="danger-section-header">
+                <span style="font-size:18px;">🗺</span>
+                <h3>Reset Seating Plan</h3>
+              </div>
+              <div class="danger-action-row">
+                <div>
+                  <div class="danger-action-title">Clear Generated Seating Plan</div>
+                  <div class="danger-action-desc">Removes the current seat allocation. Student and room records are preserved. You can regenerate at any time.</div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="confirmDangerAction('seating-plan')">Clear Plan</button>
+              </div>
+            </div>
+
+            <!-- Reset all data -->
+            <div class="danger-section">
+              <div class="danger-section-header">
+                <span style="font-size:18px;">🗑</span>
+                <h3>Purge All Data</h3>
+              </div>
+              <div class="danger-action-row">
+                <div>
+                  <div class="danger-action-title">Clear Students, Rooms &amp; Exams</div>
+                  <div class="danger-action-desc">Permanently removes all student records, room configurations, and scheduled exams. Seating plan is also cleared.</div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="confirmDangerAction('all-data')">Purge All</button>
+              </div>
+            </div>
+
+            <!-- Reload benchmark -->
+            <div class="danger-section" style="border-color:var(--line-purple);">
+              <div class="danger-section-header" style="background:rgba(154,59,185,0.04); border-color:var(--line-purple);">
+                <span style="font-size:18px;">↻</span>
+                <h3 style="color:var(--purple-5);">Reload Benchmark Dataset</h3>
+              </div>
+              <div class="danger-action-row" style="border-color:var(--line);">
+                <div>
+                  <div class="danger-action-title">Restore Demo Data</div>
+                  <div class="danger-action-desc">Reload the default 500-student university benchmark with 10 rooms and 1 scheduled exam. Overwrites any existing records.</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="confirmDangerAction('reseed')">↻ Reseed</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /settings-panels-wrap -->
+      </div><!-- /settings-layout -->
+    </main>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="confirm-modal-title">Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" class="text-dim text-sm" style="line-height:1.6;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes">Yes, Proceed</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+
+  // ─── Tab switching ────────────────────────────────────────────────────────
+  function switchTab(tabId, btn) {
+    document.querySelectorAll(".settings-panel").forEach((p) => p.classList.remove("active"));
+    document.querySelectorAll(".settings-tab-item").forEach((b) => b.classList.remove("active"));
+    document.getElementById("panel-" + tabId).classList.add("active");
+    btn.classList.add("active");
+
+    // Lazy-render panels
+    if (tabId === "system") renderSystemPanel();
+    if (tabId === "activity") renderActivityLog();
+  }
+
+  // ─── Profile load / save ──────────────────────────────────────────────────
+  function loadProfileData() {
+    const user = Auth.currentUser();
+    const prefs = JSON.parse(localStorage.getItem("sw_admin_profile") || "{}");
+    const name = prefs.name || (user ? user.name : "Administrator");
+
+    document.getElementById("s-name").value = name;
+    document.getElementById("s-username").value = user ? user.username || "admin" : "admin";
+    document.getElementById("s-email").value = prefs.email || "";
+    document.getElementById("s-phone").value = prefs.phone || "";
+    document.getElementById("s-institution").value = prefs.institution || "";
+    document.getElementById("profile-display-name").textContent = name;
+    document.getElementById("profile-avatar-display").textContent = name.charAt(0).toUpperCase();
+  }
+
+  function saveProfileData() {
+    const prefs = {
+      name: document.getElementById("s-name").value.trim() || "Administrator",
+      email: document.getElementById("s-email").value.trim(),
+      phone: document.getElementById("s-phone").value.trim(),
+      institution: document.getElementById("s-institution").value.trim()
+    };
+    localStorage.setItem("sw_admin_profile", JSON.stringify(prefs));
+    document.getElementById("profile-display-name").textContent = prefs.name;
+    document.getElementById("profile-avatar-display").textContent = prefs.name.charAt(0).toUpperCase();
+    showToast("Profile updated successfully.", "success");
+  }
+
+  // ─── Password change ──────────────────────────────────────────────────────
+  document.getElementById("s-new-pwd").addEventListener("input", function () {
+    const val = this.value;
+    const bar = document.getElementById("pwd-strength-bar");
+    const label = document.getElementById("pwd-strength-label");
+    let strength = 0;
+    if (val.length >= 8) strength += 25;
+    if (/[A-Z]/.test(val)) strength += 25;
+    if (/[0-9]/.test(val)) strength += 25;
+    if (/[^A-Za-z0-9]/.test(val)) strength += 25;
+    bar.style.width = strength + "%";
+    if (strength <= 25) { bar.style.background = "linear-gradient(90deg,#e11d48,#f43f5e)"; label.textContent = "Weak"; label.style.color = "#e11d48"; }
+    else if (strength <= 50) { bar.style.background = "linear-gradient(90deg,#d97706,#f59e0b)"; label.textContent = "Fair"; label.style.color = "#d97706"; }
+    else if (strength <= 75) { bar.style.background = "linear-gradient(90deg,#9a3bb9,#bb74d1)"; label.textContent = "Good"; label.style.color = "var(--purple-4)"; }
+    else { bar.style.background = "linear-gradient(90deg,#16a34a,#22c55e)"; label.textContent = "Strong 💪"; label.style.color = "#16a34a"; }
+    if (!val) { bar.style.width = "0%"; label.textContent = "Type to check"; label.style.color = "var(--muted)"; }
+  });
+
+  function changePassword() {
+    const curr = document.getElementById("s-current-pwd").value;
+    const newP = document.getElementById("s-new-pwd").value;
+    const conf = document.getElementById("s-confirm-pwd").value;
+    if (!curr || !newP || !conf) return showToast("Please fill all password fields.", "warning");
+    if (newP.length < 8) return showToast("New password must be at least 8 characters.", "warning");
+    if (newP !== conf) return showToast("Passwords do not match.", "error");
+    // In demo: just show success
+    document.getElementById("s-current-pwd").value = "";
+    document.getElementById("s-new-pwd").value = "";
+    document.getElementById("s-confirm-pwd").value = "";
+    document.getElementById("pwd-strength-bar").style.width = "0%";
+    document.getElementById("pwd-strength-label").textContent = "Type to check";
+    document.getElementById("pwd-strength-label").style.color = "var(--muted)";
+    showToast("Password updated successfully.", "success");
+  }
+
+  // ─── Algorithm settings save ──────────────────────────────────────────────
+  function saveAlgorithmSettings() {
+    const cfg = {
+      lr: document.getElementById("algo-lr").checked,
+      fb: document.getElementById("algo-fb").checked,
+      overflow: document.getElementById("algo-overflow").checked,
+      shuffle: document.getElementById("algo-shuffle").checked,
+      retries: document.getElementById("algo-retries").value,
+      defaultRows: document.getElementById("def-rows").value,
+      defaultCols: document.getElementById("def-cols").value
+    };
+    localStorage.setItem("sw_algo_config", JSON.stringify(cfg));
+    showToast("Algorithm configuration saved.", "success");
+  }
+
+  // ─── System panel ─────────────────────────────────────────────────────────
+  function renderSystemPanel() {
+    const students = STORAGE.getStudents();
+    const rooms = STORAGE.getRooms();
+    const exams = STORAGE.getExams();
+    const users = STORAGE.getUsers();
+    const plan = STORAGE.getSeatingPlan();
+
+    document.getElementById("sys-students").textContent = students.length;
+    document.getElementById("sys-rooms").textContent = rooms.length;
+    document.getElementById("sys-exams").textContent = exams.length;
+    document.getElementById("sys-users").textContent = users.length;
+
+    // Storage estimate
+    try {
+      let total = 0;
+      for (let k in localStorage) {
+        if (localStorage.hasOwnProperty(k)) total += ((localStorage[k].length + k.length) * 2);
+      }
+      const kb = (total / 1024).toFixed(1);
+      const pct = Math.min(((total / 1024) / 5120) * 100, 100).toFixed(1);
+      document.getElementById("storage-used-label").textContent = `${kb} KB of ~5120 KB (${pct}%)`;
+      setTimeout(() => {
+        document.getElementById("storage-meter-fill").style.width = pct + "%";
+      }, 100);
+    } catch (e) {
+      document.getElementById("storage-used-label").textContent = "Unavailable";
+    }
+
+    if (plan) {
+      document.getElementById("sys-plan-status").innerHTML = `<span class="badge badge-success">✓ Generated</span>`;
+      document.getElementById("sys-plan-conflicts").innerHTML = plan.stats.totalConflicts === 0
+        ? `<span class="badge badge-success">Zero Conflicts</span>`
+        : `<span class="badge badge-error">${plan.stats.totalConflicts} conflict(s)</span>`;
+      document.getElementById("sys-last-gen").textContent = plan.generatedAt
+        ? new Date(plan.generatedAt).toLocaleString()
+        : "Unknown";
+    } else {
+      document.getElementById("sys-plan-status").textContent = "Not generated";
+      document.getElementById("sys-plan-conflicts").textContent = "—";
+      document.getElementById("sys-last-gen").textContent = "—";
+    }
+
+    // Browser info
+    const ua = navigator.userAgent;
+    let browserName = "Unknown";
+    if (ua.includes("Chrome")) browserName = "Google Chrome";
+    else if (ua.includes("Firefox")) browserName = "Mozilla Firefox";
+    else if (ua.includes("Safari")) browserName = "Apple Safari";
+    else if (ua.includes("Edge")) browserName = "Microsoft Edge";
+    document.getElementById("sys-browser").textContent = browserName;
+    document.getElementById("sys-session-time").textContent = new Date().toLocaleString();
+  }
+
+  // ─── Export ───────────────────────────────────────────────────────────────
+  function exportData(type) {
+    let data, filename;
+    if (type === "students") { data = STORAGE.getStudents(); filename = "seatwise_students.json"; }
+    else if (type === "rooms") { data = STORAGE.getRooms(); filename = "seatwise_rooms.json"; }
+    else if (type === "exams") { data = STORAGE.getExams(); filename = "seatwise_exams.json"; }
+    else if (type === "seating") {
+      data = STORAGE.getSeatingPlan();
+      if (!data) return showToast("No seating plan generated yet.", "warning");
+      filename = "seatwise_seating_plan.json";
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    showToast(`${filename} exported successfully.`, "success");
+  }
+
+  // ─── Activity log ─────────────────────────────────────────────────────────
+  function renderActivityLog() {
+    const activities = STORAGE.getActivity ? STORAGE.getActivity() : [];
+    const body = document.getElementById("activity-log-body");
+    if (!activities || activities.length === 0) {
+      body.innerHTML = `<div class="empty-state" style="padding:30px;"><div class="empty-icon">📋</div><div class="empty-title">No Activity Yet</div><div class="empty-desc">Platform actions will appear here as you use SEATWISE.</div></div>`;
+      return;
+    }
+    body.innerHTML = activities.map((a) => `
+      <div class="activity-log-row">
+        <div class="activity-log-dot"></div>
+        <div class="activity-log-text">${escapeHTML(a.message || a.text || "Activity recorded")}</div>
+        <div class="activity-log-time">${new Date(a.time).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</div>
+      </div>
+    `).join("");
+  }
+
+  function clearActivityLog() {
+    confirmAction("Clear the activity log? This cannot be undone.", () => {
+      STORAGE.set(STORAGE_KEYS.ACTIVITY, []);
+      renderActivityLog();
+      showToast("Activity log cleared.", "info");
+    });
+  }
+
+  // ─── Danger Zone ──────────────────────────────────────────────────────────
+  function confirmDangerAction(action) {
+    const messages = {
+      "seating-plan": "This will permanently remove the current seating plan. Student and room data will remain intact.",
+      "all-data": "⚠ This will permanently delete ALL students, rooms, exams, and seating plans. This action cannot be undone.",
+      "reseed": "This will overwrite all existing records with the default 500-student benchmark dataset."
+    };
+    const titles = {
+      "seating-plan": "Clear Seating Plan?",
+      "all-data": "Purge All Data?",
+      "reseed": "Reload Benchmark Dataset?"
+    };
+    document.getElementById("confirm-modal-title").textContent = titles[action];
+    confirmAction(messages[action], () => {
+      if (action === "seating-plan") {
+        STORAGE.clearSeatingPlan();
+        showToast("Seating plan cleared successfully.", "info");
+      } else if (action === "all-data") {
+        STORAGE.clearAll();
+        showToast("All platform data purged.", "info");
+      } else if (action === "reseed") {
+        STORAGE.set(STORAGE_KEYS.SEEDED, false);
+        App._seedDemoDataIfNeeded();
+        showToast("Benchmark dataset reloaded successfully.", "success");
+      }
+      renderSystemPanel();
+    });
+  }
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  loadProfileData();
+  renderSystemPanel();
+</script>
+</body>
+</html>

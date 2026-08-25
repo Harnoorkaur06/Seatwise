@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Student Sign In — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-visual">
+    <div class="auth-visual-orb"></div>
+    <div class="brand-wrap">
+      <div class="brand-mark">S</div>
+      <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+    </div>
+    <div class="brand-tagline">Smart Examination Seating & Conflict Resolution Platform</div>
+    
+    <div class="auth-feature-list">
+      <div class="auth-feature">
+        <div class="feature-icon">🎫</div>
+        <div class="feature-text">
+          <strong>Official Examination Pass</strong>
+          Inspect your assigned examination room, row, seat number, subject, and session timings.
+        </div>
+      </div>
+      <div class="auth-feature">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-text">
+          <strong>University-Controlled System</strong>
+          Student accounts are created and verified by the university administrator.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-panel-inner">
+      <div class="auth-brand-name">
+        <div class="brand-mark" style="width:26px; height:26px; font-size:12px; border-radius:6px;">S</div>
+        STUDENT PORTAL
+      </div>
+      <div class="auth-title">Student Sign In</div>
+      <div class="auth-subtitle">Sign in using your Email OR University Roll Number.</div>
+
+      <div id="alert-box" class="auth-alert error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input class="form-input" type="email" id="email" placeholder="e.g. rahul@student.com" />
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; margin: 8px 0; font-size:11.5px; font-weight:800; color:var(--muted);">
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+          <span>OR</span>
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rollNo">University Roll Number</label>
+          <input class="form-input" id="rollNo" placeholder="e.g. 23CSE101" />
+        </div>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:16px;">Sign In</button>
+      </form>
+
+      <div class="auth-footer-link" style="margin-top:18px; text-align:center;">
+        First time here? <a href="#" id="open-setup-modal-btn">Set Up Password</a>
+      </div>
+
+      <div class="auth-footer-link" style="margin-top:12px; text-align:center;">
+        Are you an administrator? <a href="admin-login.html">Admin Login</a>
+      </div>
+      
+      <div class="auth-footer-link" style="margin-top:20px; padding:12px; border-radius:var(--radius-sm); background:rgba(154,59,185,0.06); border:1px solid rgba(154,59,185,0.12); font-size:12px; line-height:1.5; text-align:left;">
+        📌 <strong>Sign In Options:</strong><br />
+        • <strong>Option A (Email):</strong> `harnoor@student.com` or `rahul@student.com`<br />
+        • <strong>Option B (Roll No):</strong> `2410992925` or `23CSE101`<br />
+        • <strong>Password:</strong> `student123`<br />
+        • <strong>First-Time Student:</strong> Click <em>"Set Up Password"</em> using your Email or Roll Number.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SET UP YOUR PASSWORD MODAL -->
+<div id="setup-modal" class="modal-overlay">
+  <div class="modal card" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Set Up Your Password</div>
+      <button class="modal-close" type="button" onclick="closeModal('setup-modal')">✕</button>
+    </div>
+    <div style="font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.4;">
+      Enter your Email OR University Roll Number to create your password. Account must be created by University Admin.
+    </div>
+
+    <div id="setup-alert-box" class="auth-alert error"></div>
+
+    <form id="setup-password-form">
+      <div class="form-group">
+        <label class="form-label" for="setup-identifier">Email OR University Roll Number *</label>
+        <input class="form-input" id="setup-identifier" placeholder="e.g. rahul@student.com or 23CSE101" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="setup-new-password">New Password (min 6 chars) *</label>
+        <input class="form-input" type="password" id="setup-new-password" placeholder="••••••••" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="setup-confirm-password">Confirm Password *</label>
+        <input class="form-input" type="password" id="setup-confirm-password" placeholder="••••••••" required />
+      </div>
+
+      <div class="modal-footer" style="margin-top:20px; display:flex; justify:flex-end; gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('setup-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Set Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+  App.init();
+  Auth.redirectIfLoggedIn();
+
+  // Login Form Submission
+  document.getElementById("login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const rollNo = document.getElementById("rollNo").value.trim();
+    const password = document.getElementById("password").value;
+
+    const alertBox = document.getElementById("alert-box");
+    alertBox.className = "auth-alert error";
+
+    if (!email && !rollNo) {
+      alertBox.textContent = "Please enter your email or roll number.";
+      alertBox.className = "auth-alert error show";
+      return;
+    }
+
+    const result = Auth.login({ email, rollNo, password });
+    if (!result.ok) {
+      alertBox.textContent = result.message;
+      alertBox.className = "auth-alert error show";
+      return;
+    }
+
+    alertBox.textContent = result.message;
+    alertBox.className = "auth-alert success show";
+    setTimeout(() => { window.location.href = "user-dashboard.html"; }, 350);
+  });
+
+  // Modal Triggers
+  document.getElementById("open-setup-modal-btn").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("setup-password-form").reset();
+    const alertBox = document.getElementById("setup-alert-box");
+    alertBox.className = "auth-alert error";
+    openModal("setup-modal");
+  });
+
+  // Password Setup Form Submission
+  document.getElementById("setup-password-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById("setup-identifier").value.trim();
+    const newPassword = document.getElementById("setup-new-password").value;
+    const confirmPassword = document.getElementById("setup-confirm-password").value;
+
+    const alertBox = document.getElementById("setup-alert-box");
+    alertBox.className = "auth-alert error";
+
+    const result = Auth.setupPassword({ identifier, newPassword, confirmPassword });
+    if (!result.ok) {
+      alertBox.textContent = result.message;
+      alertBox.className = "auth-alert error show";
+      return;
+    }
+
+    alertBox.textContent = result.message;
+    alertBox.className = "auth-alert success show";
+
+    setTimeout(() => {
+      closeModal("setup-modal");
+      const mainAlert = document.getElementById("alert-box");
+      mainAlert.textContent = "Password set successfully. You can now sign in.";
+      mainAlert.className = "auth-alert success show";
+      // Pre-fill setup identifier for convenience
+      if (identifier.includes("@")) {
+        document.getElementById("email").value = identifier;
+        document.getElementById("rollNo").value = "";
+      } else {
+        document.getElementById("rollNo").value = identifier;
+        document.getElementById("email").value = "";
+      }
+      document.getElementById("password").focus();
+    }, 900);
+  });
+</script>
+</body>
+</html>

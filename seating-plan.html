@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Seating Plan — SEATWISE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/seating.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+<style>
+  .exam-gen-toolbar {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .toolbar-field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toolbar-field-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--purple-4);
+    letter-spacing: 0.05em;
+  }
+
+  .generation-history-card {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-top: 24px;
+  }
+
+  .gen-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: #faf7fc;
+    margin-bottom: 8px;
+  }
+
+  .gen-history-item.is-active {
+    background: rgba(154, 59, 185, 0.08);
+    border-color: var(--accent-border);
+  }
+
+  /* ── Dark Mode ── */
+  html[data-theme="dark"] .exam-gen-toolbar,
+  body.dark-theme .exam-gen-toolbar {
+    background: #171224 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .generation-history-card,
+  body.dark-theme .generation-history-card {
+    background: #171224 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .generation-history-card h3,
+  html[data-theme="dark"] .generation-history-card span,
+  html[data-theme="dark"] .generation-history-card strong,
+  html[data-theme="dark"] .generation-history-card p,
+  body.dark-theme .generation-history-card h3,
+  body.dark-theme .generation-history-card span,
+  body.dark-theme .generation-history-card strong,
+  body.dark-theme .generation-history-card p {
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .gen-history-item,
+  body.dark-theme .gen-history-item {
+    background: #211b30 !important;
+    border-color: rgba(255,255,255,0.09) !important;
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .gen-history-item strong,
+  html[data-theme="dark"] .gen-history-item span,
+  html[data-theme="dark"] .gen-history-item div,
+  body.dark-theme .gen-history-item strong,
+  body.dark-theme .gen-history-item span,
+  body.dark-theme .gen-history-item div {
+    color: #f5f0fb !important;
+  }
+
+  html[data-theme="dark"] .gen-history-item.is-active,
+  body.dark-theme .gen-history-item.is-active {
+    background: rgba(154,59,185,0.15) !important;
+    border-color: rgba(216,165,232,0.3) !important;
+  }
+</style>
+</head>
+<body>
+<div class="dashboard-bg" aria-hidden="true">
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-copy">
+        <div class="brand-name"><strong>SEAT</strong><span>WISE</span></div>
+        <div class="brand-tagline">Admin Console</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a href="manage-exams.html"><span class="nav-icon">📘</span><span class="nav-label">Exams</span></a>
+      <a href="students.html"><span class="nav-icon">🎓</span><span class="nav-label">Students</span></a>
+      <a href="rooms.html"><span class="nav-icon">🏫</span><span class="nav-label">Rooms</span></a>
+      <a href="generate-seating.html"><span class="nav-icon">⚙</span><span class="nav-label">Generate Seating</span></a>
+      <a href="seating-plan.html"><span class="nav-icon">🗺</span><span class="nav-label">Seating Plan</span></a>
+      <a href="conflicts.html"><span class="nav-icon">⚠</span><span class="nav-label">Conflicts</span></a>
+      <a href="complaints.html"><span class="nav-icon">📩</span><span class="nav-label">Complaints</span></a>
+      <a href="settings.html"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button data-logout><span class="nav-icon">↩</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>Interactive Seating Plan</h1>
+      <div class="topbar-right no-print">
+        <div class="user-chip">
+          <div class="user-avatar" data-current-user-initial>?</div>
+          <span data-current-user-name>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content" id="page-content">
+      
+      <!-- TOP MULTI-EXAM & GENERATION TOOLBAR -->
+      <div class="exam-gen-toolbar no-print">
+        <div class="toolbar-field-wrap" style="min-width:220px;">
+          <span class="toolbar-field-label">Select Examination</span>
+          <select class="form-select" id="exam-select" style="font-weight:700;"></select>
+        </div>
+
+        <div class="toolbar-field-wrap" style="min-width:200px;">
+          <span class="toolbar-field-label">Select Generation</span>
+          <select class="form-select" id="generation-select" style="font-weight:700;"></select>
+        </div>
+
+        <div class="toolbar-field-wrap" style="min-width:180px;">
+          <span class="toolbar-field-label">Select Room</span>
+          <select class="form-select" id="room-select" style="font-weight:700;"></select>
+        </div>
+
+        <div class="toolbar-field-wrap" style="flex:1; min-width:200px;">
+          <span class="toolbar-field-label">Student Search</span>
+          <div class="search-input-wrap" style="width:100%;">
+            <span class="search-icon">🔎</span>
+            <input class="form-input" id="seat-search" placeholder="Search by student roll number..." />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-self:flex-end;">
+          <button class="btn btn-outline btn-sm" id="print-btn">🖨 Print Hall Sheet</button>
+          <button class="btn btn-secondary btn-sm" id="csv-btn">⬇ Export Full CSV</button>
+        </div>
+      </div>
+
+      <!-- EXAM INFORMATION HEADER CARD -->
+      <div class="card mb-20" id="exam-info-header" style="display:none;">
+        <div class="card-title mb-12">Exam Information & Validity Overview</div>
+        <div class="seat-hero-grid" style="grid-template-columns:repeat(6, 1fr); margin-top:0;" id="exam-info-grid"></div>
+      </div>
+
+      <div id="no-plan-state"></div>
+
+      <div id="plan-view" style="display:none;">
+        <div class="content-grid">
+          <div class="card" style="text-align:center;">
+            <div class="front-back-wrap">
+              <span class="front-back-label">FRONT · BLACKBOARD / PODIUM</span>
+            </div>
+
+            <div class="seating-grid-wrap">
+              <div class="seating-grid" id="grid-holder"></div>
+            </div>
+
+            <div class="front-back-wrap">
+              <span class="front-back-label">BACK OF ROOM</span>
+            </div>
+
+            <div class="legend-wrap" id="legend-holder"></div>
+          </div>
+
+          <div class="card no-print">
+            <div class="card-title">Seat Inspector & Override</div>
+            <div id="detail-panel">
+              <div class="empty-state">
+                <div class="empty-icon">🪑</div>
+                <div class="empty-title">No seat selected</div>
+                <div class="empty-desc">Click any seat in the grid to view student details, detect conflicts or reassign positions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GENERATION HISTORY CARD -->
+        <div class="generation-history-card no-print">
+          <div class="card-title" style="margin-bottom:4px;">Generation History</div>
+          <div class="card-subtitle mb-14">History of all generated plan versions for this examination</div>
+          <div id="generation-history-list"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/settingsManager.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/exams.js"></script>
+<script src="js/seatingAlgorithm.js"></script>
+<script src="js/seating.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+<script>
+  Auth.requireAdmin();
+
+  let currentPlan = null;
+  let selectedSeat = null;
+
+  const examSelect = document.getElementById("exam-select");
+  const genSelect = document.getElementById("generation-select");
+  const roomSelect = document.getElementById("room-select");
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedExamId = urlParams.get("examId");
+
+  function init() {
+    const exams = Exams.all();
+    if (exams.length === 0) {
+      document.getElementById("no-plan-state").innerHTML = `
+        <div class="empty-state card">
+          <div class="empty-icon">🗺</div>
+          <div class="empty-title">No examinations found</div>
+          <div class="empty-desc">Please create an examination first in Manage Exams.</div>
+          <a href="manage-exams.html" class="btn btn-primary mt-14" style="display:inline-flex;">Manage Exams</a>
+        </div>`;
+      document.getElementById("no-plan-state").style.display = "block";
+      document.getElementById("plan-view").style.display = "none";
+      return;
+    }
+
+    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
+      examSelect.value = requestedExamId;
+    }
+
+    examSelect.addEventListener("change", () => {
+      onExamChanged();
+    });
+
+    genSelect.addEventListener("change", () => {
+      onGenerationChanged();
+    });
+
+    onExamChanged();
+  }
+
+  function onExamChanged() {
+    const selectedExamId = examSelect.value;
+    const generations = Seating.getGenerationsForExam(selectedExamId);
+
+    if (generations.length === 0) {
+      genSelect.innerHTML = `<option value="">No Plan Generated</option>`;
+      genSelect.disabled = true;
+      document.getElementById("exam-info-header").style.display = "none";
+      document.getElementById("no-plan-state").innerHTML = `
+        <div class="empty-state card">
+          <div class="empty-icon">🗺</div>
+          <div class="empty-title">No seating plan generated for this examination</div>
+          <div class="empty-desc">Head to Generate Seating to create an automated seating plan for this examination.</div>
+          <a href="generate-seating.html?examId=${selectedExamId}" class="btn btn-primary mt-14" style="display:inline-flex;">Generate Seating for Exam →</a>
+        </div>`;
+      document.getElementById("no-plan-state").style.display = "block";
+      document.getElementById("plan-view").style.display = "none";
+      currentPlan = null;
+      return;
+    }
+
+    genSelect.disabled = false;
+    genSelect.innerHTML = generations.map((g) => `<option value="${g.generation}">Generation #${g.generation} ${g.isActive ? '(Current Active)' : '(Archived)'}</option>`).join("");
+
+    onGenerationChanged();
+  }
+
+  function onGenerationChanged() {
+    const selectedExamId = examSelect.value;
+    const selectedGen = genSelect.value;
+
+    currentPlan = Seating.getCurrentPlan(selectedExamId, selectedGen);
+
+    if (!currentPlan) {
+      document.getElementById("plan-view").style.display = "none";
+      return;
+    }
+
+    document.getElementById("no-plan-state").style.display = "none";
+    document.getElementById("plan-view").style.display = "block";
+
+    renderExamInfoHeader(currentPlan);
+    renderGenerationHistory(selectedExamId);
+
+    roomSelect.innerHTML = currentPlan.rooms.map((r) => `<option value="${r.roomNumber}">${r.roomNumber} (${r.rows}×${r.cols} — ${r.occupied}/${r.capacity} seats)</option>`).join("");
+    roomSelect.onchange = () => renderGrid(roomSelect.value);
+
+    renderGrid(roomSelect.value);
+    renderLegend(currentPlan);
+  }
+
+  function renderExamInfoHeader(plan) {
+    const headerEl = document.getElementById("exam-info-header");
+    const gridEl = document.getElementById("exam-info-grid");
+    headerEl.style.display = "block";
+
+    gridEl.innerHTML = `
+      <div class="seat-hero-field"><div class="field-label">Exam Name</div><div class="field-value" style="color:var(--purple-4);">${escapeHTML(plan.examName || "Exam")}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Active Generation</div><div class="field-value">Gen #${plan.generation} ${plan.isActive ? '✓' : '(Archived)'}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Students Assigned</div><div class="field-value">${plan.stats.totalAssigned} / ${plan.stats.totalStudents}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Rooms Used</div><div class="field-value">${plan.stats.roomsUsed} rooms</div></div>
+      <div class="seat-hero-field"><div class="field-label">Conflicts</div><div class="field-value" style="color:${plan.stats.totalConflicts === 0 ? '#10b981' : '#ef4444'};">${plan.stats.totalConflicts}</div></div>
+      <div class="seat-hero-field"><div class="field-label">Plan Validity</div><div class="field-value">${plan.stats.validityPercentage}%</div></div>
+    `;
+  }
+
+  function renderGenerationHistory(examId) {
+    const listEl = document.getElementById("generation-history-list");
+    const generations = Seating.getGenerationsForExam(examId);
+
+    if (generations.length === 0) {
+      listEl.innerHTML = `<div class="text-dim text-sm">No history available.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = generations.map((g) => `
+      <div class="gen-history-item ${g.isActive ? 'is-active' : ''}">
+        <div>
+          <strong style="color:var(--ink); font-size:14px;">Generation #${g.generation}</strong>
+          <span class="badge ${g.isActive ? 'badge-success' : 'badge-neutral'}" style="margin-left:6px; font-size:11px;">${g.isActive ? 'Current Active' : 'Archived'}</span>
+          <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">
+            Generated: ${formatDate(g.generatedAt)} · Assigned: ${g.stats?.totalAssigned || 0} students · Conflicts: <strong style="color:${g.stats?.totalConflicts === 0 ? '#10b981' : '#ef4444'};">${g.stats?.totalConflicts || 0}</strong>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="switchGeneration(${g.generation})">View Plan</button>
+      </div>
+    `).join("");
+  }
+
+  function switchGeneration(genNum) {
+    genSelect.value = genNum;
+    onGenerationChanged();
+  }
+
+  function renderLegend(plan) {
+    const subjects = [...new Set(plan.rooms.flatMap((r) => r.grid.flat().filter(Boolean).map((s) => s.subject)))];
+    document.getElementById("legend-holder").innerHTML = subjects.map((s) => `
+      <div class="legend-chip"><span class="legend-swatch" style="background:${subjectColor(s)};"></span>${escapeHTML(s)}</div>
+    `).join("");
+  }
+
+  function renderGrid(roomNumber) {
+    if (!currentPlan) return;
+    const room = currentPlan.rooms.find((r) => r.roomNumber === roomNumber);
+    if (!room) return;
+
+    const holder = document.getElementById("grid-holder");
+    holder.style.gridTemplateColumns = `repeat(${room.cols}, auto)`;
+
+    const conflictSeatKeys = new Set();
+    currentPlan.conflicts.filter((c) => c.roomNumber === roomNumber).forEach((c) => {
+      conflictSeatKeys.add(c.seatA);
+      conflictSeatKeys.add(c.seatB);
+    });
+
+    let html = "";
+    for (let r = 0; r < room.rows; r++) {
+      for (let c = 0; c < room.cols; c++) {
+        const seat = room.grid[r][c];
+        const isConflict = seat && conflictSeatKeys.has(seat.seat);
+        const isSelected = selectedSeat && selectedSeat.roomNumber === roomNumber && selectedSeat.row === r && selectedSeat.col === c;
+        const color = seat ? subjectColor(seat.subject) : "";
+
+        html += `
+          <div class="seat-tile ${seat ? "" : "empty"} ${isConflict ? "conflict-seat" : ""} ${isSelected ? "selected-seat" : ""}"
+               data-row="${r}" data-col="${c}" data-room="${roomNumber}">
+            <div class="seat-num">${seatLabel(r, c)}</div>
+            ${seat ? `<div class="seat-subject" style="background:${color};">${escapeHTML(seat.subject)}</div>` : `<div class="seat-subject" style="color:var(--muted-light);">Empty</div>`}
+            ${seat ? `<div class="seat-roll">${escapeHTML(seat.rollNo)}</div>` : ""}
+          </div>
+        `;
+      }
+    }
+    holder.innerHTML = html;
+
+    holder.querySelectorAll(".seat-tile").forEach((tile) => {
+      tile.addEventListener("click", () => {
+        selectedSeat = { roomNumber: tile.dataset.room, row: Number(tile.dataset.row), col: Number(tile.dataset.col) };
+        renderGrid(roomNumber);
+        renderDetailPanel();
+      });
+    });
+  }
+
+  function renderDetailPanel() {
+    if (!currentPlan || !selectedSeat) return;
+    const room = currentPlan.rooms.find((r) => r.roomNumber === selectedSeat.roomNumber);
+    const seat = room ? room.grid[selectedSeat.row][selectedSeat.col] : null;
+    const panel = document.getElementById("detail-panel");
+
+    if (!seat) {
+      panel.innerHTML = `
+        <div class="seat-detail-panel">
+          <div class="seat-detail-row"><span class="label">Seat Number</span><span class="value">${seatLabel(selectedSeat.row, selectedSeat.col)}</span></div>
+          <div class="seat-detail-row"><span class="label">Room</span><span class="value">${escapeHTML(selectedSeat.roomNumber)}</span></div>
+          <div class="seat-detail-row"><span class="label">Examination</span><span class="value" style="color:var(--purple-4);">${escapeHTML(currentPlan.examName || "Exam")}</span></div>
+          <div class="seat-detail-row"><span class="label">Current Status</span><span class="badge badge-neutral">Empty Seat</span></div>
+        </div>
+        <div class="form-group mt-20">
+          <label class="form-label">Assign student here (Roll No.)</label>
+          <input class="form-input" id="override-rollno" placeholder="e.g. 23CSE101" />
+        </div>
+        <button class="btn btn-primary btn-block" id="override-btn">Assign Student</button>
+        <div id="override-warning" class="mt-14"></div>
+      `;
+    } else {
+      panel.innerHTML = `
+        <div class="seat-detail-panel">
+          <div class="seat-detail-row"><span class="label">Seat Position</span><span class="value">${escapeHTML(seat.seat)}</span></div>
+          <div class="seat-detail-row"><span class="label">Room</span><span class="value">${escapeHTML(selectedSeat.roomNumber)}</span></div>
+          <div class="seat-detail-row"><span class="label">Examination</span><span class="value" style="color:var(--purple-4);">${escapeHTML(currentPlan.examName || "Exam")}</span></div>
+          <div class="seat-detail-row"><span class="label">Roll Number</span><span class="value">${escapeHTML(seat.rollNo)}</span></div>
+          <div class="seat-detail-row"><span class="label">Student Name</span><span class="value">${escapeHTML(seat.name)}</span></div>
+          <div class="seat-detail-row"><span class="label">Subject Code</span><span class="value">${escapeHTML(seat.subject)}</span></div>
+        </div>
+        <div class="form-group mt-20">
+          <label class="form-label">Move or Swap Student (Roll No.)</label>
+          <input class="form-input" id="override-rollno" placeholder="Enter roll number to swap/seat here" />
+        </div>
+        <button class="btn btn-primary btn-block" id="override-btn">Apply Reassignment</button>
+        <div id="override-warning" class="mt-14"></div>
+      `;
+    }
+
+    document.getElementById("override-btn").addEventListener("click", applyOverride);
+  }
+
+  function applyOverride(force = false) {
+    const rollNo = document.getElementById("override-rollno").value.trim();
+    if (!rollNo) {
+      showToast("Please enter a student roll number.", "warning");
+      return;
+    }
+
+    const selectedExamId = examSelect.value;
+    const selectedGen = genSelect.value;
+
+    const result = force
+      ? Seating.forceOverrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen)
+      : Seating.overrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen);
+
+    const warningBox = document.getElementById("override-warning");
+
+    if (!result.ok && result.conflict) {
+      warningBox.innerHTML = `
+        <div class="conflict-card">
+          <div class="conflict-title">⚠ Adjacency Conflict Detected</div>
+          <p class="text-sm text-dim mb-8">${escapeHTML(result.message)}</p>
+          <div class="text-sm text-dim" style="font-weight:700;">Suggested alternative seats:</div>
+          <div class="suggestion-row">
+            ${result.suggestions.map((s) => `<span class="suggestion-chip" data-room="${s.roomNumber}" data-row="${s.row}" data-col="${s.col}">${s.roomNumber} · ${s.seat}</span>`).join("") || '<span class="text-faint text-sm">No alternative seats available.</span>'}
+          </div>
+          <button class="btn btn-danger btn-sm mt-14" id="force-override-btn">Override Anyway (Force)</button>
+        </div>
+      `;
+      warningBox.querySelectorAll(".suggestion-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          Seating.applySuggestion(rollNo, { roomNumber: chip.dataset.room, row: Number(chip.dataset.row), col: Number(chip.dataset.col) }, selectedExamId, selectedGen);
+          showToast("Student assigned to recommended seat.", "success");
+          onGenerationChanged();
+        });
+      });
+      document.getElementById("force-override-btn").addEventListener("click", () => applyOverride(true));
+      return;
+    }
+
+    if (!result.ok) {
+      showToast(result.message, "error");
+      return;
+    }
+
+    showToast(result.message, "success");
+    onGenerationChanged();
+  }
+
+  // Roll Number Search
+  document.getElementById("seat-search").addEventListener("input", debounce((e) => {
+    const rollNo = e.target.value.trim();
+    if (!rollNo) return;
+    const selectedExamId = examSelect.value;
+    const found = Seating.findByRollNo(rollNo, selectedExamId);
+    if (!found) return;
+    roomSelect.value = found.roomNumber;
+    selectedSeat = { roomNumber: found.roomNumber, row: found.row, col: found.col };
+    renderGrid(found.roomNumber);
+    renderDetailPanel();
+  }, 300));
+
+  document.getElementById("print-btn").addEventListener("click", () => ExportUtil.printSeatingPlan(roomSelect.value));
+  document.getElementById("csv-btn").addEventListener("click", () => ExportUtil.exportSeatingCSV());
+
+  init();
+</script>
+</body>
+</html>
