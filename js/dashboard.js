@@ -103,22 +103,29 @@ const Dashboard = {
     });
   },
 
+  _countdownTimerId: null,
+
   /** Live Exam Countdown Timer */
   startCountdown(targetDateStr, targetTimeStr, containerEl) {
     if (!containerEl) return;
-    const target = new Date(`${targetDateStr}T${targetTimeStr || "10:00:00"}`).getTime();
 
-    function tick() {
+    // Clear any existing active timer to prevent multiple intervals running simultaneously
+    if (this._countdownTimerId) {
+      clearInterval(this._countdownTimerId);
+      this._countdownTimerId = null;
+    }
+
+    let timeStr = targetTimeStr || "10:00:00";
+    if (timeStr.length === 5) {
+      timeStr += ":00";
+    }
+    const target = new Date(`${targetDateStr}T${timeStr}`).getTime();
+
+    const tick = () => {
       const now = new Date().getTime();
       let diff = target - now;
-
-      if (diff <= 0) {
-        containerEl.innerHTML = `
-          <div class="countdown-box" style="width:100%; text-align:center;">
-            <div class="countdown-digit" style="color:#42d392; font-size:18px;">EXAMINATION IN SESSION</div>
-          </div>
-        `;
-        return;
+      if (isNaN(target) || diff < 0) {
+        diff = 0;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -147,10 +154,15 @@ const Dashboard = {
           <div class="countdown-unit">Secs</div>
         </div>
       `;
-    }
+
+      if (diff === 0 && this._countdownTimerId) {
+        clearInterval(this._countdownTimerId);
+        this._countdownTimerId = null;
+      }
+    };
 
     tick();
-    setInterval(tick, 1000);
+    this._countdownTimerId = setInterval(tick, 1000);
   },
 
   /** Renders the interactive classroom seating radar for students */

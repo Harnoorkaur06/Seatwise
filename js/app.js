@@ -281,8 +281,8 @@ const App = {
       {
         id: "exam_cndc",
         name: "CNDC",
-        date: "2026-08-26",
-        time: "15:03",
+        date: "2026-08-28",
+        time: "10:30",
         semester: "5th Semester",
         duration: "2 Hours"
       },

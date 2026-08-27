@@ -67,7 +67,21 @@ const STORAGE = {
   setAdminSession(val) { return this.set(STORAGE_KEYS.ADMIN_SESSION, val); },
   clearAdminSession() { this.remove(STORAGE_KEYS.ADMIN_SESSION); },
 
-  getExams() { return this.get(STORAGE_KEYS.EXAMS, []); },
+  getExams() {
+    let exams = this.get(STORAGE_KEYS.EXAMS, []);
+    let updated = false;
+    exams = exams.map((e) => {
+      if (e.id === "exam_cndc" && e.date === "2026-08-26" && e.time === "15:03") {
+        updated = true;
+        return { ...e, date: "2026-08-28", time: "10:30" };
+      }
+      return e;
+    });
+    if (updated) {
+      this.set(STORAGE_KEYS.EXAMS, exams);
+    }
+    return exams;
+  },
   setExams(exams) { return this.set(STORAGE_KEYS.EXAMS, exams); },
 
   _getFatherName(student, idx = 0) {
