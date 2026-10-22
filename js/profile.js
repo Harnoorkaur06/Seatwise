@@ -3,9 +3,18 @@
    ========================================================================== */
 
 const ProfileManager = {
-  init() {
+  async init() {
     this.loadProfile();
     this.wireEvents();
+    if (typeof API !== "undefined" && API.auth && typeof API.auth.me === "function") {
+      try {
+        const meRes = await API.auth.me();
+        if (meRes.ok && meRes.user) {
+          STORAGE.setCurrentUser(meRes.user);
+          this.loadProfile();
+        }
+      } catch (err) {}
+    }
   },
 
   /** Load logged-in user details and avatar */
@@ -65,11 +74,11 @@ const ProfileManager = {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const dataUrl = e.target.result;
-      const result = Students.update(current.id, { avatar: dataUrl });
+      const result = await Students.update(current.id, { avatar: dataUrl });
       if (result.ok) {
-        const updatedUser = { ...current, avatar: dataUrl };
+        const updatedUser = { ...current, avatar: dataUrl, ...(result.student || {}) };
         STORAGE.setCurrentUser(updatedUser);
         if (typeof showToast === "function") showToast("✓ Profile photo updated!", "success");
         this.loadProfile();
@@ -77,31 +86,33 @@ const ProfileManager = {
           App._renderCurrentUserBadge();
         }
       } else {
-        if (typeof showToast === "function") showToast("Failed to save profile photo.", "error");
+        if (typeof showToast === "function") showToast(result.message || "Failed to save profile photo.", "error");
       }
     };
     reader.readAsDataURL(file);
   },
 
   /** Remove Profile Photo */
-  removePhoto() {
+  async removePhoto() {
     const current = Auth.currentUser();
     if (!current) return;
 
-    const result = Students.update(current.id, { avatar: "" });
+    const result = await Students.update(current.id, { avatar: "" });
     if (result.ok) {
-      const updatedUser = { ...current, avatar: "" };
+      const updatedUser = { ...current, avatar: "", ...(result.student || {}) };
       STORAGE.setCurrentUser(updatedUser);
       if (typeof showToast === "function") showToast("Profile photo removed.", "info");
       this.loadProfile();
       if (window.App && typeof App._renderCurrentUserBadge === "function") {
         App._renderCurrentUserBadge();
       }
+    } else {
+      if (typeof showToast === "function") showToast(result.message || "Failed to remove photo.", "error");
     }
   },
 
   /** Save Personal Information */
-  savePersonal(e) {
+  async savePersonal(e) {
     if (e) e.preventDefault();
     const current = Auth.currentUser();
     if (!current) return;
@@ -122,13 +133,12 @@ const ProfileManager = {
 
     const payload = {
       name,
-      email,
       classBranch: classBranch || "2024-BE-CSE-AI-4 SEM"
     };
 
-    const result = Students.update(current.id, payload);
+    const result = await Students.update(current.id, payload);
     if (result.ok) {
-      const updatedUser = { ...current, ...payload };
+      const updatedUser = { ...current, ...payload, ...(result.student || {}) };
       STORAGE.setCurrentUser(updatedUser);
       if (typeof showToast === "function") showToast("✓ Personal info saved successfully.", "success");
       this.loadProfile();

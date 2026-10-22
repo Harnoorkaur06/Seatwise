@@ -3,9 +3,13 @@
    ========================================================================== */
 
 const ComplaintsManager = {
-  init() {
+  async init() {
     this.renderComplaints();
     this.wireSearchAndFilter();
+    if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+      await STORAGE.sync();
+      this.renderComplaints();
+    }
   },
 
   renderComplaints() {
@@ -131,7 +135,7 @@ const ComplaintsManager = {
     }
   },
 
-  saveReply(complaintId) {
+  async saveReply(complaintId) {
     const replyInput = document.getElementById(`reply-input-${complaintId}`);
     const replyText = replyInput ? replyInput.value.trim() : "";
 
@@ -141,15 +145,15 @@ const ComplaintsManager = {
     }
 
     // Sending reply automatically marks the complaint as Resolved
-    const ok = STORAGE.updateComplaintStatus(complaintId, "Resolved", replyText);
-    if (ok) {
+    const res = await STORAGE.updateComplaintStatusAsync(complaintId, "Resolved", replyText);
+    if (res && res.ok) {
       if (typeof showToast === "function") {
         showToast("✓ Reply sent to student & complaint marked as Resolved!", "success");
       }
       this.renderComplaints();
     } else {
       if (typeof showToast === "function") {
-        showToast("Failed to send reply.", "error");
+        showToast((res && res.message) || "Failed to send reply.", "error");
       }
     }
   },

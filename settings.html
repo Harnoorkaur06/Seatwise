@@ -906,6 +906,34 @@
                   <button class="btn btn-secondary btn-sm" onclick="exportData('seating')">⬇ Export Seating Plan</button>
                 </div>
               </div>
+            <!-- MongoDB Migration & Cloud Persistence -->
+            <div class="settings-section" style="border:1.5px solid var(--primary-glow); background:rgba(99,102,241,0.02);">
+              <div class="settings-section-header">
+                <div>
+                  <div class="settings-section-title">🍃 MongoDB Storage Migration &amp; Sync</div>
+                  <div class="settings-section-desc">Migrate browser localStorage records (students, rooms, exams, seating, complaints) into the persistent MongoDB database.</div>
+                </div>
+                <span class="badge badge-success" id="mongo-status-badge">MongoDB Connected</span>
+              </div>
+              <div class="settings-section-body">
+                <div class="info-row">
+                  <span class="info-key">Storage Backend</span>
+                  <span class="info-val"><strong>Node.js + Express REST API (MERN)</strong></span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Migration Endpoint</span>
+                  <span class="info-val"><code>POST /api/migrate/import-browser-data</code></span>
+                </div>
+                <div class="info-row" style="border-bottom:none; margin-bottom:14px;">
+                  <span class="info-key">Idempotency Guarantee</span>
+                  <span class="info-val" style="color:var(--ink);">Existing records will be safely retained; duplicates are skipped.</span>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                  <button class="btn btn-primary btn-sm" id="btn-migrate-mongodb" onclick="triggerMongoMigration()">⬆ Migrate Local Data to MongoDB</button>
+                  <button class="btn btn-secondary btn-sm" onclick="triggerStorageSync()">↻ Sync In-Memory Cache</button>
+                  <span id="migration-status-msg" style="font-size:12.5px; font-weight:600; color:var(--muted);"></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1006,6 +1034,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -1231,9 +1260,66 @@
     });
   }
 
+  // ─── MongoDB Migration ───────────────────────────────────────────────────
+  async function triggerMongoMigration() {
+    const btn = document.getElementById("btn-migrate-mongodb");
+    const statusMsg = document.getElementById("migration-status-msg");
+    if (!btn) return;
+    btn.disabled = true;
+    btn.innerHTML = "⏳ Migrating...";
+    if (statusMsg) statusMsg.textContent = "Uploading datasets to MongoDB...";
+
+    try {
+      if (typeof API === "undefined" || !API.migrate) {
+        throw new Error("REST API client not initialized.");
+      }
+
+      const payload = {
+        students: STORAGE.getStudents(),
+        rooms: STORAGE.getRooms(),
+        exams: STORAGE.getExams(),
+        seatingPlans: STORAGE.getSeatingPlans ? STORAGE.getSeatingPlans() : (STORAGE.getSeatingPlan() ? [STORAGE.getSeatingPlan()] : []),
+        complaints: STORAGE.getComplaints(),
+        activity: STORAGE.getActivity ? STORAGE.getActivity() : [],
+      };
+
+      const res = await API.migrate.importBrowserData(payload);
+      if (res && res.ok) {
+        await STORAGE.sync();
+        const totalImported = Object.values(res.imported || {}).reduce((a, b) => a + b, 0);
+        const totalSkipped = Object.values(res.skipped || {}).reduce((a, b) => a + b, 0);
+        showToast(`✓ Migration complete! ${totalImported} imported, ${totalSkipped} existing skipped.`, "success");
+        if (statusMsg) statusMsg.textContent = `✓ Success: ${totalImported} imported, ${totalSkipped} duplicates skipped.`;
+        renderSystemPanel();
+      } else {
+        showToast((res && res.message) || "Migration failed.", "error");
+        if (statusMsg) statusMsg.textContent = `⚠ ${(res && res.message) || "Failed."}`;
+      }
+    } catch (err) {
+      console.error("Migration error:", err);
+      showToast(`Error: ${err.message}`, "error");
+      if (statusMsg) statusMsg.textContent = `⚠ Error: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "⬆ Migrate Local Data to MongoDB";
+    }
+  }
+
+  async function triggerStorageSync() {
+    showToast("Synchronizing in-memory cache with MongoDB...", "info");
+    if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+      await STORAGE.sync();
+      renderSystemPanel();
+      showToast("✓ In-memory cache synchronized with MongoDB.", "success");
+    }
+  }
+
   // ─── Boot ─────────────────────────────────────────────────────────────────
   loadProfileData();
   renderSystemPanel();
+  if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+    STORAGE.sync().then(() => renderSystemPanel()).catch(() => {});
+  }
 </script>
 </body>
 </html>

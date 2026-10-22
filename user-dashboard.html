@@ -220,6 +220,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -266,8 +267,20 @@
       return;
     }
 
-    dashExamSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
-    dashExamSelect.onchange = () => updateSelectedExamDisplay();
+    // Determine current / upcoming exam
+    const activeExam = Exams.activeExam ? Exams.activeExam(user ? user.rollNo : null) : exams[0];
+    const initialExamId = (dashExamSelect.value && exams.some((e) => e.id === dashExamSelect.value))
+      ? dashExamSelect.value
+      : (activeExam ? activeExam.id : exams[0].id);
+
+    dashExamSelect.innerHTML = exams.map((e) => `<option value="${e.id}" ${e.id === initialExamId ? "selected" : ""}>${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    dashExamSelect.value = initialExamId;
+    dashExamSelect.onchange = () => {
+      if (typeof STORAGE !== "undefined" && typeof STORAGE.setActiveExamId === "function") {
+        STORAGE.setActiveExamId(dashExamSelect.value);
+      }
+      updateSelectedExamDisplay();
+    };
 
     updateSelectedExamDisplay();
     Dashboard.init3DTilt();
@@ -337,6 +350,9 @@
   }
 
   renderStudentDashboard();
+  if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+    STORAGE.sync().then(() => renderStudentDashboard()).catch(() => {});
+  }
 </script>
 </body>
 </html>

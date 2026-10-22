@@ -9,7 +9,7 @@ const UpdatePasswordManager = {
   },
 
   /** Handle Password Change */
-  changePassword(e) {
+  async changePassword(e) {
     if (e) e.preventDefault();
     const current = Auth.currentUser();
     if (!current) return;
@@ -22,14 +22,8 @@ const UpdatePasswordManager = {
     const newPwd = newPwdInput?.value || "";
     const confirmPwd = confirmPwdInput?.value || "";
 
-    const student = Students.findById(current.id || current.rollNo);
-    if (!student) {
-      if (typeof showToast === "function") showToast("Student record not found.", "error");
-      return;
-    }
-
-    if (student.password !== currentPwd) {
-      if (typeof showToast === "function") showToast("⚠ Current password is incorrect.", "error");
+    if (!currentPwd) {
+      if (typeof showToast === "function") showToast("⚠ Please enter your current password.", "error");
       return;
     }
 
@@ -43,7 +37,26 @@ const UpdatePasswordManager = {
       return;
     }
 
-    const result = Students.update(student.id || student.rollNo, { password: newPwd, passwordSet: true });
+    let result;
+    if (typeof API !== "undefined" && API.auth) {
+      result = await API.auth.updatePassword({
+        currentPassword: currentPwd,
+        newPassword: newPwd,
+        confirmPassword: confirmPwd
+      });
+    } else {
+      const student = Students.findById(current.id || current.rollNo);
+      if (!student) {
+        if (typeof showToast === "function") showToast("Student record not found.", "error");
+        return;
+      }
+      if (student.password && student.password !== currentPwd) {
+        if (typeof showToast === "function") showToast("⚠ Current password is incorrect.", "error");
+        return;
+      }
+      result = await Students.update(student.id || student.rollNo, { password: newPwd, passwordSet: true });
+    }
+
     if (result.ok) {
       if (typeof showToast === "function") showToast("✓ Password updated successfully.", "success");
       if (currentPwdInput) currentPwdInput.value = "";

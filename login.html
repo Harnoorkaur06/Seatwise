@@ -128,6 +128,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -137,7 +138,7 @@
   Auth.redirectIfLoggedIn();
 
   // Login Form Submission
-  document.getElementById("login-form").addEventListener("submit", (e) => {
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     const rollNo = document.getElementById("rollNo").value.trim();
@@ -152,7 +153,12 @@
       return;
     }
 
-    const result = Auth.login({ email, rollNo, password });
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.disabled = true;
+
+    const result = await Auth.login({ email, rollNo, password });
+    if (submitBtn) submitBtn.disabled = false;
+
     if (!result.ok) {
       alertBox.textContent = result.message;
       alertBox.className = "auth-alert error show";
@@ -174,7 +180,7 @@
   });
 
   // Password Setup Form Submission
-  document.getElementById("setup-password-form").addEventListener("submit", (e) => {
+  document.getElementById("setup-password-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const identifier = document.getElementById("setup-identifier").value.trim();
     const newPassword = document.getElementById("setup-new-password").value;
@@ -183,7 +189,12 @@
     const alertBox = document.getElementById("setup-alert-box");
     alertBox.className = "auth-alert error";
 
-    const result = Auth.setupPassword({ identifier, newPassword, confirmPassword });
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.disabled = true;
+
+    const result = await Auth.setupPassword({ identifier, newPassword, confirmPassword });
+    if (submitBtn) submitBtn.disabled = false;
+
     if (!result.ok) {
       alertBox.textContent = result.message;
       alertBox.className = "auth-alert error show";

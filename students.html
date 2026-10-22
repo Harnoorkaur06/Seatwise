@@ -194,6 +194,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -205,7 +206,8 @@
   Auth.requireAdmin();
   let currentFilter = "";
 
-  function render() {
+  async function render() {
+    await STORAGE.sync();
     const students = Students.all();
     const filtered = currentFilter ? Students.search(currentFilter) : students;
 
@@ -286,11 +288,11 @@
     if (!student) return;
 
     const actionName = disableState ? "disable" : "enable";
-    confirmAction(`Are you sure you want to ${actionName} this student account (${student.name} - ${student.rollNo})?`, () => {
-      const res = Students.setDisabled(id, disableState);
+    confirmAction(`Are you sure you want to ${actionName} this student account (${student.name} - ${student.rollNo})?`, async () => {
+      const res = await Students.setDisabled(id, disableState);
       if (res.ok) {
         showToast(res.message, "success");
-        render();
+        await render();
       } else {
         showToast(res.message, "error");
       }
@@ -298,18 +300,18 @@
   }
 
   function deleteStudent(id, name) {
-    confirmAction(`Delete student "${name}" permanently?`, () => {
-      const res = Students.remove(id);
+    confirmAction(`Delete student "${name}" permanently?`, async () => {
+      const res = await Students.remove(id);
       if (res.ok) {
         showToast(res.message, "success");
-        render();
+        await render();
       } else {
         showToast(res.message, "error");
       }
     });
   }
 
-  document.getElementById("save-student-btn").addEventListener("click", () => {
+  document.getElementById("save-student-btn").addEventListener("click", async () => {
     const id = document.getElementById("student-id").value;
     const name = document.getElementById("student-name").value.trim();
     const email = document.getElementById("student-email").value.trim();
@@ -325,15 +327,20 @@
       return;
     }
 
+    const btn = document.getElementById("save-student-btn");
+    btn.disabled = true;
+
     if (id) {
-      const result = Students.update(id, { name, email, rollNo, password, mobile, course, semester, disabled });
+      const result = await Students.update(id, { name, email, rollNo, password, mobile, course, semester, disabled });
+      btn.disabled = false;
       if (!result.ok) {
         showToast(result.message, "error");
         return;
       }
       showToast(result.message, "success");
     } else {
-      const result = Students.add({ name, email, rollNo, password, mobile, course, semester, disabled });
+      const result = await Students.add({ name, email, rollNo, password, mobile, course, semester, disabled });
+      btn.disabled = false;
       if (!result.ok) {
         showToast(result.message, "error");
         return;
@@ -342,7 +349,7 @@
     }
 
     closeModal("student-modal");
-    render();
+    await render();
   });
 
   // Search Filter
@@ -362,14 +369,18 @@
     reader.readAsText(file);
   });
 
-  document.getElementById("upload-confirm-btn").addEventListener("click", () => {
+  document.getElementById("upload-confirm-btn").addEventListener("click", async () => {
     const raw = document.getElementById("json-text-input").value.trim();
     const errBox = document.getElementById("upload-errors");
     const errList = document.getElementById("upload-error-list");
     errBox.style.display = "none";
     errList.innerHTML = "";
 
-    const result = Students.importJSON(raw);
+    const btn = document.getElementById("upload-confirm-btn");
+    btn.disabled = true;
+    const result = await Students.importJSON(raw);
+    btn.disabled = false;
+
     if (!result.ok) {
       errBox.style.display = "block";
       errList.innerHTML = result.errors ? result.errors.map((e) => `<li>${escapeHTML(e)}</li>`).join("") : `<li>${escapeHTML(result.message)}</li>`;
@@ -380,7 +391,7 @@
     closeModal("upload-modal");
     document.getElementById("json-text-input").value = "";
     document.getElementById("json-file-input").value = "";
-    render();
+    await render();
   });
 
   render();

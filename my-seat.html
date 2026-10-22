@@ -67,6 +67,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -98,13 +99,21 @@
       return;
     }
 
-    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
-    
-    if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
-      examSelect.value = requestedExamId;
-    }
+    const user = Auth.currentUser();
+    const activeExam = Exams.activeExam ? Exams.activeExam(user ? user.rollNo : null) : exams[0];
+    const initialExamId = (requestedExamId && exams.some((e) => e.id === requestedExamId))
+      ? requestedExamId
+      : (activeExam ? activeExam.id : exams[0].id);
 
-    examSelect.addEventListener("change", () => renderAdmitCard());
+    examSelect.innerHTML = exams.map((e) => `<option value="${e.id}" ${e.id === initialExamId ? "selected" : ""}>${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
+    examSelect.value = initialExamId;
+
+    examSelect.addEventListener("change", () => {
+      if (typeof STORAGE !== "undefined" && typeof STORAGE.setActiveExamId === "function") {
+        STORAGE.setActiveExamId(examSelect.value);
+      }
+      renderAdmitCard();
+    });
     renderAdmitCard();
   }
 
@@ -299,6 +308,9 @@
   }
 
   init();
+  if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+    STORAGE.sync().then(() => init()).catch(() => {});
+  }
 </script>
 </body>
 </html>

@@ -122,6 +122,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -150,11 +151,14 @@
 
     examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
     
-    if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
-      examSelect.value = requestedExamId;
+    const activeExamId = requestedExamId || STORAGE.getActiveExamId();
+    if (activeExamId && exams.some((e) => e.id === activeExamId)) {
+      examSelect.value = activeExamId;
+      STORAGE.setActiveExamId(activeExamId);
     }
 
     examSelect.addEventListener("change", () => {
+      STORAGE.setActiveExamId(examSelect.value);
       renderExamState();
     });
 
@@ -283,22 +287,28 @@
       { text: "Validating seating plan integrity & zero-conflict checks...", step: 5 }
     ];
 
-    typeConsoleLines(lines, () => {
-      const plan = isRegenerate ? Seating.regenerate(selectedExamId) : Seating.generateNew(selectedExamId);
-      setStep(5, "completed");
+    typeConsoleLines(lines, async () => {
+      try {
+        const plan = await (isRegenerate ? Seating.regenerate(selectedExamId) : Seating.generateNew(selectedExamId));
+        setStep(5, "completed");
 
-      const resultLine = document.createElement("div");
-      resultLine.className = "console-line result-line";
-      resultLine.textContent = plan.stats.totalConflicts === 0
-        ? `✓ Seating for ${exam.name} (Generation #${plan.generation}) successfully generated with zero conflicts.`
-        : `✓ Seating generated for ${exam.name} — ${plan.stats.totalConflicts} conflict(s) detected.`;
-      document.getElementById("console").appendChild(resultLine);
+        const resultLine = document.createElement("div");
+        resultLine.className = "console-line result-line";
+        resultLine.textContent = plan.stats.totalConflicts === 0
+          ? `✓ Seating for ${exam.name} (Generation #${plan.generation}) successfully generated with zero conflicts.`
+          : `✓ Seating generated for ${exam.name} — ${plan.stats.totalConflicts} conflict(s) detected.`;
+        document.getElementById("console").appendChild(resultLine);
 
-      renderResult(plan);
-      renderExamState();
-      document.getElementById("generate-btn").disabled = false;
-      document.getElementById("regenerate-btn").disabled = false;
-      showToast(`Seating generation complete for ${exam.name}.`, "success");
+        renderResult(plan);
+        renderExamState();
+        document.getElementById("generate-btn").disabled = false;
+        document.getElementById("regenerate-btn").disabled = false;
+        showToast(`Seating generation complete for ${exam.name}.`, "success");
+      } catch (err) {
+        showToast(err.message || "Failed to generate seating.", "error");
+        document.getElementById("generate-btn").disabled = false;
+        document.getElementById("regenerate-btn").disabled = false;
+      }
     });
   }
 
@@ -339,7 +349,14 @@
   document.getElementById("generate-btn").addEventListener("click", () => runGeneration(false));
   document.getElementById("regenerate-btn").addEventListener("click", () => runGeneration(true));
 
-  initExamDropdown();
+  async function setupPage() {
+    if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+      await STORAGE.sync();
+    }
+    initExamDropdown();
+  }
+
+  setupPage();
 </script>
 </body>
 </html>

@@ -79,6 +79,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -92,14 +93,27 @@
 
   function render() {
     const user = Auth.currentUser();
-    const exams = Exams.all();
+    const rawExams = Exams.all();
     const tbody = document.getElementById("exam-rows");
-    if (exams.length === 0) {
+    if (rawExams.length === 0) {
       document.getElementById("empty-state").style.display = "block";
       tbody.innerHTML = "";
       return;
     }
     document.getElementById("empty-state").style.display = "none";
+
+    const now = Date.now();
+    // Sort upcoming first (by date ascending), then past (by date descending)
+    const exams = [...rawExams].sort((a, b) => {
+      const timeA = new Date(`${a.date}T${(a.time || "23:59").trim()}`).getTime() || 0;
+      const timeB = new Date(`${b.date}T${(b.time || "23:59").trim()}`).getTime() || 0;
+      const aUpcoming = timeA >= (now - 3 * 3600 * 1000);
+      const bUpcoming = timeB >= (now - 3 * 3600 * 1000);
+      if (aUpcoming && !bUpcoming) return -1;
+      if (!aUpcoming && bUpcoming) return 1;
+      return aUpcoming ? timeA - timeB : timeB - timeA;
+    });
+
     tbody.innerHTML = exams.map((e) => {
       const seat = user && user.rollNo ? Seating.findByRollNo(user.rollNo, e.id) : null;
       const plan = Seating.getCurrentPlan(e.id);
@@ -142,6 +156,9 @@
   }
 
   render();
+  if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+    STORAGE.sync().then(() => render()).catch(() => {});
+  }
 </script>
 </body>
 </html>

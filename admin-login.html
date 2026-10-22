@@ -69,6 +69,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -76,11 +77,16 @@
   // Clean form on open
   document.getElementById("admin-login-form").reset();
 
-  document.getElementById("admin-login-form").addEventListener("submit", (e) => {
+  document.getElementById("admin-login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
-    const result = Auth.adminLogin({ username, password });
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.disabled = true;
+
+    const result = await Auth.adminLogin({ username, password });
+    if (submitBtn) submitBtn.disabled = false;
+
     const alertBox = document.getElementById("alert-box");
     if (!result.ok) {
       alertBox.textContent = result.message;

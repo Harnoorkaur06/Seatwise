@@ -143,6 +143,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -154,7 +155,8 @@
   Auth.requireAdmin();
   let editingId = null;
 
-  function render() {
+  async function render() {
+    await STORAGE.sync();
     const exams = Exams.all();
     document.getElementById("empty-state").style.display = exams.length ? "none" : "block";
     document.getElementById("exam-rows").innerHTML = exams.map((e) => `
@@ -196,14 +198,14 @@
   }
 
   function deleteExam(id, name) {
-    confirmAction(`Deleting examination "${name}" will also remove its associated seating plans and student seat assignments. Are you sure you want to delete this examination?`, () => {
-      Exams.remove(id);
-      render();
+    confirmAction(`Deleting examination "${name}" will also remove its associated seating plans and student seat assignments. Are you sure you want to delete this examination?`, async () => {
+      await Exams.remove(id);
+      await render();
       showToast("Examination and associated seating plans deleted successfully.", "success");
     });
   }
 
-  document.getElementById("save-exam-btn").addEventListener("click", () => {
+  document.getElementById("save-exam-btn").addEventListener("click", async () => {
     const payload = {
       name: document.getElementById("exam-name").value.trim(),
       date: document.getElementById("exam-date").value,
@@ -216,15 +218,20 @@
       return;
     }
 
+    const btn = document.getElementById("save-exam-btn");
+    btn.disabled = true;
+
     if (editingId) {
-      Exams.update(editingId, payload);
+      await Exams.update(editingId, payload);
+      btn.disabled = false;
       showToast("Examination updated successfully.", "success");
     } else {
-      Exams.add(payload);
+      await Exams.add(payload);
+      btn.disabled = false;
       showToast("Examination created successfully.", "success");
     }
     closeModal("exam-modal");
-    render();
+    await render();
   });
 
   render();

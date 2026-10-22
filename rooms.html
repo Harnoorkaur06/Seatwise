@@ -136,6 +136,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -145,7 +146,8 @@
 <script>
   Auth.requireAdmin();
 
-  function render() {
+  async function render() {
+    await STORAGE.sync();
     const rooms = Rooms.all();
     document.getElementById("empty-state").style.display = rooms.length ? "none" : "block";
     document.getElementById("capacity-summary").textContent = `Total Capacity: ${Rooms.totalCapacity()} seats across ${rooms.length} configured room(s)`;
@@ -184,9 +186,9 @@
   }
 
   function deleteRoom(roomNumber) {
-    confirmAction(`Delete room ${roomNumber}? Any existing seating plan will need to be regenerated.`, () => {
-      Rooms.remove(roomNumber);
-      render();
+    confirmAction(`Delete room ${roomNumber}? Any existing seating plan will need to be regenerated.`, async () => {
+      await Rooms.remove(roomNumber);
+      await render();
       showToast("Room deleted successfully.", "success");
     });
   }
@@ -199,7 +201,7 @@
     });
   });
 
-  document.getElementById("save-room-btn").addEventListener("click", () => {
+  document.getElementById("save-room-btn").addEventListener("click", async () => {
     const roomNumber = document.getElementById("room-number").value.trim();
     const rows = Number(document.getElementById("room-rows").value);
     const cols = Number(document.getElementById("room-cols").value);
@@ -210,11 +212,20 @@
       return;
     }
 
+    const btn = document.getElementById("save-room-btn");
+    btn.disabled = true;
+
     if (original) {
-      Rooms.update(original, { rows, cols });
+      const result = await Rooms.update(original, { rows, cols });
+      btn.disabled = false;
+      if (!result.ok) {
+        showToast(result.message || "Failed to update room.", "error");
+        return;
+      }
       showToast("Room updated successfully.", "success");
     } else {
-      const result = Rooms.add({ roomNumber, rows, cols });
+      const result = await Rooms.add({ roomNumber, rows, cols });
+      btn.disabled = false;
       if (!result.ok) {
         showToast(result.message, "error");
         return;
@@ -222,7 +233,7 @@
       showToast("Room added successfully.", "success");
     }
     closeModal("room-modal");
-    render();
+    await render();
   });
 
   render();

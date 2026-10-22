@@ -39,6 +39,16 @@ const Dashboard = {
     };
   },
 
+  async adminStatsAsync() {
+    if (typeof API !== "undefined" && API.system) {
+      const res = await API.system.stats();
+      if (res.ok && res.stats) {
+        return res.stats;
+      }
+    }
+    return this.adminStats();
+  },
+
   getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -103,29 +113,55 @@ const Dashboard = {
     });
   },
 
-  _countdownTimerId: null,
+  _countdownInterval: null,
 
   /** Live Exam Countdown Timer */
   startCountdown(targetDateStr, targetTimeStr, containerEl) {
     if (!containerEl) return;
 
-    // Clear any existing active timer to prevent multiple intervals running simultaneously
-    if (this._countdownTimerId) {
-      clearInterval(this._countdownTimerId);
-      this._countdownTimerId = null;
+    if (this._countdownInterval) {
+      clearInterval(this._countdownInterval);
+      this._countdownInterval = null;
     }
 
-    let timeStr = targetTimeStr || "10:00:00";
-    if (timeStr.length === 5) {
-      timeStr += ":00";
+    if (!targetDateStr) {
+      containerEl.innerHTML = `
+        <div class="countdown-box" style="width:100%; text-align:center;">
+          <div class="countdown-digit" style="color:var(--muted); font-size:16px;">Schedule Pending</div>
+        </div>
+      `;
+      return;
     }
-    const target = new Date(`${targetDateStr}T${timeStr}`).getTime();
 
-    const tick = () => {
-      const now = new Date().getTime();
-      let diff = target - now;
-      if (isNaN(target) || diff < 0) {
-        diff = 0;
+    const cleanTime = targetTimeStr && targetTimeStr.trim() ? targetTimeStr.trim() : "10:00:00";
+    const isoTime = cleanTime.length === 5 ? `${cleanTime}:00` : cleanTime;
+    const target = new Date(`${targetDateStr}T${isoTime}`).getTime();
+
+    if (isNaN(target)) {
+      containerEl.innerHTML = `
+        <div class="countdown-box" style="width:100%; text-align:center;">
+          <div class="countdown-digit" style="color:var(--muted); font-size:16px;">Time TBD</div>
+        </div>
+      `;
+      return;
+    }
+
+    const self = this;
+    function tick() {
+      const now = Date.now();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        if (self._countdownInterval) {
+          clearInterval(self._countdownInterval);
+          self._countdownInterval = null;
+        }
+        containerEl.innerHTML = `
+          <div class="countdown-box" style="width:100%; text-align:center; padding:10px 16px;">
+            <div class="countdown-digit" style="color:#10b981; font-size:16px; font-weight:800; letter-spacing:0.5px;">✓ EXAMINATION IN PROGRESS</div>
+          </div>
+        `;
+        return;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -154,15 +190,10 @@ const Dashboard = {
           <div class="countdown-unit">Secs</div>
         </div>
       `;
-
-      if (diff === 0 && this._countdownTimerId) {
-        clearInterval(this._countdownTimerId);
-        this._countdownTimerId = null;
-      }
-    };
+    }
 
     tick();
-    this._countdownTimerId = setInterval(tick, 1000);
+    this._countdownInterval = setInterval(tick, 1000);
   },
 
   /** Renders the interactive classroom seating radar for students */

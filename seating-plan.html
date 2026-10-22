@@ -235,6 +235,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/settingsManager.js"></script>
 <script src="js/utils.js"></script>
@@ -273,8 +274,16 @@
     }
 
     examSelect.innerHTML = exams.map((e) => `<option value="${e.id}">${escapeHTML(e.name)} (${formatDate(e.date)})</option>`).join("");
-    if (requestedExamId && exams.some((e) => e.id === requestedExamId)) {
-      examSelect.value = requestedExamId;
+
+    const activeExamId =
+      requestedExamId ||
+      STORAGE.getActiveExamId() ||
+      (STORAGE.getSeatingPlans().find((p) => (p.conflicts && p.conflicts.length > 0) || p.isActive)?.examId) ||
+      exams[0]?.id;
+
+    if (activeExamId && exams.some((e) => e.id === activeExamId)) {
+      examSelect.value = activeExamId;
+      STORAGE.setActiveExamId(activeExamId);
     }
 
     examSelect.addEventListener("change", () => {
@@ -290,6 +299,16 @@
 
   function onExamChanged() {
     const selectedExamId = examSelect.value;
+    if (selectedExamId) {
+      STORAGE.setActiveExamId(selectedExamId);
+    }
+
+    // Keep navigation link in sync with the selected exam
+    const conflictNav = document.querySelector('a[href^="conflicts.html"]');
+    if (conflictNav) {
+      conflictNav.href = `conflicts.html?examId=${encodeURIComponent(selectedExamId)}`;
+    }
+
     const generations = Seating.getGenerationsForExam(selectedExamId);
 
     if (generations.length === 0) {
@@ -320,6 +339,9 @@
     const selectedGen = genSelect.value;
 
     currentPlan = Seating.getCurrentPlan(selectedExamId, selectedGen);
+    if (!currentPlan && selectedExamId) {
+      currentPlan = Seating.getCurrentPlan(selectedExamId);
+    }
 
     if (!currentPlan) {
       document.getElementById("plan-view").style.display = "none";
@@ -472,10 +494,10 @@
       `;
     }
 
-    document.getElementById("override-btn").addEventListener("click", applyOverride);
+    document.getElementById("override-btn").addEventListener("click", () => applyOverride(false));
   }
 
-  function applyOverride(force = false) {
+  async function applyOverride(force = false) {
     const rollNo = document.getElementById("override-rollno").value.trim();
     if (!rollNo) {
       showToast("Please enter a student roll number.", "warning");
@@ -485,10 +507,14 @@
     const selectedExamId = examSelect.value;
     const selectedGen = genSelect.value;
 
-    const result = force
-      ? Seating.forceOverrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen)
-      : Seating.overrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen);
+    const btn = document.getElementById("override-btn");
+    if (btn) btn.disabled = true;
 
+    const result = force
+      ? await Seating.forceOverrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen)
+      : await Seating.overrideSeat(selectedSeat.roomNumber, selectedSeat.row, selectedSeat.col, rollNo, selectedExamId, selectedGen);
+
+    if (btn) btn.disabled = false;
     const warningBox = document.getElementById("override-warning");
 
     if (!result.ok && result.conflict) {
@@ -504,8 +530,8 @@
         </div>
       `;
       warningBox.querySelectorAll(".suggestion-chip").forEach((chip) => {
-        chip.addEventListener("click", () => {
-          Seating.applySuggestion(rollNo, { roomNumber: chip.dataset.room, row: Number(chip.dataset.row), col: Number(chip.dataset.col) }, selectedExamId, selectedGen);
+        chip.addEventListener("click", async () => {
+          await Seating.applySuggestion(rollNo, { roomNumber: chip.dataset.room, row: Number(chip.dataset.row), col: Number(chip.dataset.col) }, selectedExamId, selectedGen);
           showToast("Student assigned to recommended seat.", "success");
           onGenerationChanged();
         });
@@ -515,11 +541,16 @@
     }
 
     if (!result.ok) {
-      showToast(result.message, "error");
+      showToast(result.message || "Failed to update seat.", "error");
       return;
     }
 
-    showToast(result.message, "success");
+    if (warningBox) warningBox.innerHTML = "";
+    if (result.plan && result.plan.conflicts && result.plan.conflicts.length > 0) {
+      showToast(`Override applied! ${result.plan.conflicts.length} conflict(s) retained & visible in Conflicts Radar.`, "warning");
+    } else {
+      showToast(result.message || "Seat updated successfully.", "success");
+    }
     onGenerationChanged();
   }
 
@@ -539,7 +570,14 @@
   document.getElementById("print-btn").addEventListener("click", () => ExportUtil.printSeatingPlan(roomSelect.value));
   document.getElementById("csv-btn").addEventListener("click", () => ExportUtil.exportSeatingCSV());
 
-  init();
+  async function setupPage() {
+    if (typeof STORAGE !== "undefined" && typeof STORAGE.sync === "function") {
+      await STORAGE.sync();
+    }
+    init();
+  }
+
+  setupPage();
 </script>
 </body>
 </html>

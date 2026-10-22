@@ -3,13 +3,13 @@
    ========================================================================== */
 
 const ComplaintManager = {
-  init() {
-    this.loadComplaints();
+  async init() {
+    await this.loadComplaints();
     this.wireEvents();
   },
 
   /** Submit a student complaint to admin */
-  submitComplaint(e) {
+  async submitComplaint(e) {
     if (e) e.preventDefault();
     const current = Auth.currentUser();
     if (!current) return;
@@ -27,43 +27,52 @@ const ComplaintManager = {
       return;
     }
 
-    const complaint = {
-      id: typeof generateId === "function" ? generateId("cmpl") : "cmpl_" + Date.now(),
-      userId: current.id,
-      userName: current.name,
-      userEmail: current.email,
-      rollNo: current.rollNo || "",
-      category,
-      subject,
-      message,
-      status: "Pending",
-      adminReply: "",
-      createdAt: new Date().toISOString()
-    };
+    // Submit via API (identity comes from JWT on the server side)
+    const result = await STORAGE.addComplaintAsync({ category, subject, message });
 
-    STORAGE.addComplaint(complaint);
+    if (!result.ok) {
+      if (typeof showToast === "function") showToast(result.message || "Failed to submit complaint.", "error");
+      return;
+    }
+
     if (typeof showToast === "function") showToast("✓ Complaint submitted successfully.", "success");
 
     if (subjectInput) subjectInput.value = "";
     if (messageInput) messageInput.value = "";
     if (categorySelect) categorySelect.value = "Seating Issue";
 
-    this.loadComplaints();
+    await this.loadComplaints();
   },
 
   /** Render list of complaints submitted by the logged-in student */
-  loadComplaints() {
+  async loadComplaints() {
     const current = Auth.currentUser();
     if (!current) return;
 
     const container = document.getElementById("my-complaints-list");
     if (!container) return;
 
-    const allComplaints = STORAGE.getComplaints();
-    // Filter for current student and sort newest first
-    const myComplaints = allComplaints
-      .filter((c) => c.userId === current.id || (c.userEmail && c.userEmail.toLowerCase() === current.email.toLowerCase()) || (c.rollNo && c.rollNo === current.rollNo))
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    // Try to fetch from API, fall back to local cache
+    let myComplaints = [];
+    if (typeof API !== "undefined" && API.complaints) {
+      try {
+        const res = await API.complaints.all();
+        if (res.ok && Array.isArray(res.complaints)) {
+          myComplaints = res.complaints;
+          // Update local cache with fresh data
+          STORAGE._cache.complaints = res.complaints;
+        } else {
+          myComplaints = _filterMyComplaints(STORAGE.getComplaints(), current);
+        }
+      } catch (_) {
+        myComplaints = _filterMyComplaints(STORAGE.getComplaints(), current);
+      }
+    } else {
+      myComplaints = _filterMyComplaints(STORAGE.getComplaints(), current);
+    }
+
+    // Sort newest first
+    myComplaints = myComplaints.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     if (myComplaints.length === 0) {
       container.innerHTML = `
@@ -80,10 +89,10 @@ const ComplaintManager = {
         <table style="width:100%;">
           <thead>
             <tr>
-              <th>Subject & Message</th>
+              <th>Subject &amp; Message</th>
               <th>Category</th>
               <th>Date</th>
-              <th>Status & Admin Response</th>
+              <th>Status &amp; Admin Response</th>
             </tr>
           </thead>
           <tbody>
@@ -127,6 +136,16 @@ const ComplaintManager = {
     }
   }
 };
+
+/** Helper: filter complaints belonging to current user from local cache */
+function _filterMyComplaints(allComplaints, current) {
+  return allComplaints.filter(
+    (c) =>
+      c.userId === current.id ||
+      (c.userEmail && c.userEmail.toLowerCase() === current.email.toLowerCase()) ||
+      (c.rollNo && c.rollNo === current.rollNo)
+  );
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   if (window.Auth && typeof Auth.requireUser === "function") {
