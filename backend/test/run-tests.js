@@ -7,7 +7,8 @@
  * Uses MongoMemoryServer for 100% isolated, non-destructive execution.
  */
 
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const assert = require("assert");
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
