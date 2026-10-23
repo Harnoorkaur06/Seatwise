@@ -24,9 +24,13 @@ async function connectDB() {
       return mongoose.connection;
     } catch (err) {
       console.error(`❌ Could not connect to configured MongoDB URI (${err.message}).`);
-      throw new Error(
-        `MongoDB connection failed: Could not connect to configured MongoDB URI (${err.message}). Please ensure your local MongoDB service is running (e.g., 'net start MongoDB' or 'mongod') and that MONGODB_URI in .env is accessible.`
-      );
+      if (optInMemory) {
+        console.warn("⚠ Atlas unreachable — falling back to embedded in-memory MongoDB (USE_IN_MEMORY_DB=true).");
+      } else {
+        throw new Error(
+          `MongoDB connection failed: Could not connect to configured MongoDB URI (${err.message}). Please ensure your local MongoDB service is running (e.g., 'net start MongoDB' or 'mongod') and that MONGODB_URI in .env is accessible.`
+        );
+      }
     }
   }
 
