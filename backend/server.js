@@ -79,7 +79,7 @@ async function startServer() {
       await seedBaselineData();
     }
 
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`=======================================================`);
       console.log(`🎓 SEATWISE Examination Platform Active`);
       console.log(`📡 URL: http://localhost:${PORT}`);
