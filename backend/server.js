@@ -1,6 +1,6 @@
-require("dotenv").config();
-const express = require("express");
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+const express = require("express");
 const cors = require("cors");
 const { connectDB } = require("./utils/db");
 const User = require("./models/User");
@@ -28,11 +28,12 @@ app.use("/api/system", require("./routes/system"));
 app.use("/api/migrate", require("./routes/migrate"));
 
 // Serve static frontend files
-app.use(express.static(path.join(__dirname)));
+const frontendDir = path.join(__dirname, "../frontend");
+app.use(express.static(frontendDir));
 
 // Root fallback for SPA / HTML navigation
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(frontendDir, "index.html"));
 });
 
 // Central error handler

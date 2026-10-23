@@ -6,7 +6,8 @@
  * - Refuses to run if NODE_ENV=production
  */
 
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const { connectDB, closeDB } = require("../utils/db");
 const User = require("../models/User");
 const Room = require("../models/Room");
