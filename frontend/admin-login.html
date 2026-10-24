@@ -82,10 +82,16 @@
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
     const submitBtn = e.target.querySelector("button[type='submit']");
-    if (submitBtn) submitBtn.disabled = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Authenticating...";
+    }
 
     const result = await Auth.adminLogin({ username, password });
-    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Login as Administrator";
+    }
 
     const alertBox = document.getElementById("alert-box");
     if (!result.ok) {
