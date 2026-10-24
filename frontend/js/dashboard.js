@@ -169,28 +169,24 @@ const Dashboard = {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      const isUrgent = diff < 60 * 60 * 1000;
-      const digitClass = isUrgent ? "countdown-digit urgent" : "countdown-digit";
-      const digitStyle = isUrgent ? ' style="color: red;"' : '';
-
       containerEl.innerHTML = `
         <div class="countdown-box">
-          <div class="${digitClass}"${digitStyle}>${String(days).padStart(2, "0")}</div>
+          <div class="countdown-digit">${String(days).padStart(2, "0")}</div>
           <div class="countdown-unit">Days</div>
         </div>
         <div class="countdown-sep">:</div>
         <div class="countdown-box">
-          <div class="${digitClass}"${digitStyle}>${String(hours).padStart(2, "0")}</div>
+          <div class="countdown-digit">${String(hours).padStart(2, "0")}</div>
           <div class="countdown-unit">Hours</div>
         </div>
         <div class="countdown-sep">:</div>
         <div class="countdown-box">
-          <div class="${digitClass}"${digitStyle}>${String(minutes).padStart(2, "0")}</div>
+          <div class="countdown-digit">${String(minutes).padStart(2, "0")}</div>
           <div class="countdown-unit">Mins</div>
         </div>
         <div class="countdown-sep">:</div>
         <div class="countdown-box">
-          <div class="${digitClass}"${digitStyle}>${String(seconds).padStart(2, "0")}</div>
+          <div class="countdown-digit">${String(seconds).padStart(2, "0")}</div>
           <div class="countdown-unit">Secs</div>
         </div>
       `;

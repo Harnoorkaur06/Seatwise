@@ -70,8 +70,6 @@ async function ensureAdminExists() {
 
 const { seedBaselineData } = require("./scripts/seed");
 
-const { startReminderScheduler, stopReminderScheduler } = require("./services/reminderScheduler");
-
 // Start server function
 async function startServer() {
   try {
@@ -89,9 +87,6 @@ async function startServer() {
       console.log(`=======================================================`);
     });
 
-    // Start background reminder scheduler (runs only when persistent DB & SMTP configured)
-    startReminderScheduler();
-
     return server;
   } catch (err) {
     console.error("FATAL: Failed to start server:", err);
@@ -99,17 +94,8 @@ async function startServer() {
   }
 }
 
-// Graceful process shutdown handling
-process.on("SIGINT", () => {
-  stopReminderScheduler();
-});
-
-process.on("SIGTERM", () => {
-  stopReminderScheduler();
-});
-
 if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, startServer, startReminderScheduler, stopReminderScheduler };
+module.exports = { app, startServer };
