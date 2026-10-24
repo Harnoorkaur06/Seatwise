@@ -1,0 +1,134 @@
+/* ==========================================================================
+   responsive.css — SEATWISE Responsive Layouts
+   ========================================================================== */
+
+@media (max-width: 1400px) {
+  .stat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .quick-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 26px;
+  }
+  .dashboard-hero .hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .quick-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .generation-steps-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 74px;
+  }
+  .sidebar-brand .brand-copy,
+  .sidebar-nav .nav-label,
+  .sidebar-footer .nav-label {
+    display: none;
+  }
+  .sidebar-brand {
+    justify-content: center;
+    padding: 16px 8px;
+  }
+  .sidebar-nav a {
+    justify-content: center;
+    padding: 12px;
+  }
+  .sidebar-footer button {
+    justify-content: center;
+    padding: 12px;
+  }
+  .topbar {
+    padding: 0 18px;
+  }
+  .page-content {
+    padding: 18px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  .seating-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .generation-steps-container {
+    grid-template-columns: 1fr;
+  }
+  .topbar h1 {
+    font-size: 16px;
+  }
+  .search-input-wrap {
+    width: 100%;
+  }
+  .dashboard-hero .hero-title {
+    font-size: 22px;
+  }
+  .modal-box {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg);
+  }
+}
+
+
+@media (max-width: 900px) {
+  .stat-card:hover {
+    transform: translateY(-4px); /* drop the rotateX/rotateY tilt on tablets */
+  }
+  .admin-sim-card::before {
+    display: none; /* ambient glow blob off on small screens to avoid overflow scroll */
+  }
+  .dashboard-bg::after {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .quick-action-card:hover::before {
+    animation: none; /* skip sweep animation on touch devices, hover state is transient anyway */
+  }
+  .dashboard-hero::after {
+    animation: none;
+  }
+}
+
+@media (hover: none) {
+  /* Touch devices: hover glows can get "stuck" after tap — keep effects static/off */
+  .stat-card:hover,
+  .quick-action-card:hover,
+  .admin-sim-card:hover,
+  .seating-status-card:hover,
+  .content-grid .card:hover {
+    transform: none;
+  }
+}

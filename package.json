@@ -1,0 +1,21 @@
+{
+  "name": "seatwise",
+  "version": "2.0.0",
+  "description": "Intelligent Examination Seating & Conflict Resolution System",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon --watch backend backend/server.js",
+    "test": "node backend/test/run-tests.js",
+    "seed": "node backend/scripts/seed.js"
+  },
+  "keywords": [
+    "seating-plan",
+    "exam-management",
+    "mongodb",
+    "express",
+    "nodejs",
+    "conflict-resolution"
+  ],
+  "author": "",
+  "license": "ISC"
+}
