@@ -7,6 +7,7 @@ const Room = require("../models/Room");
 const User = require("../models/User");
 const Student = require("../models/Student");
 const Activity = require("../models/Activity");
+const ExamReminder = require("../models/ExamReminder");
 const { SeatingEngine, seatLabel } = require("../utils/seatingEngine");
 const { requireAdmin, requireAuth } = require("../middleware/auth");
 
@@ -234,6 +235,50 @@ router.post("/:id/generate-seating", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("Generate seating error in exams router:", err);
     return res.status(500).json({ ok: false, message: "Error generating seating arrangement." });
+  }
+});
+
+/**
+ * GET /api/exams/:id/reminders
+ * Admin only: Inspect reminder delivery logs, failure reasons, and review flagged issues.
+ * Student email addresses are masked for privacy and no sensitive error traces are leaked.
+ */
+router.get("/:id/reminders", requireAdmin, async (req, res) => {
+  try {
+    const target = req.params.id.trim();
+    const exam = await Exam.findOne({
+      $or: [
+        { id: target },
+        { _id: mongoose.isValidObjectId(target) ? target : null },
+      ],
+    });
+
+    if (!exam) {
+      return res.status(404).json({ ok: false, message: "Exam not found." });
+    }
+
+    const reminders = await ExamReminder.find({ examId: exam.id }).sort({ studentRoll: 1 });
+
+    const stats = {
+      total: reminders.length,
+      sent: reminders.filter((r) => r.status === "sent").length,
+      failed: reminders.filter((r) => r.status === "failed").length,
+      processing: reminders.filter((r) => r.status === "processing").length,
+      skippedMissingAssignment: reminders.filter((r) => r.status === "skipped_missing_assignment").length,
+      skippedAmbiguousAssignment: reminders.filter((r) => r.status === "skipped_ambiguous_assignment").length,
+      skippedInvalidEmail: reminders.filter((r) => r.status === "skipped_invalid_email").length,
+    };
+
+    return res.json({
+      ok: true,
+      examId: exam.id,
+      examName: exam.name,
+      stats,
+      reminders: reminders.map((r) => r.toSafeObject()),
+    });
+  } catch (err) {
+    console.error("Get exam reminders error:", err.message);
+    return res.status(500).json({ ok: false, message: "Error fetching exam reminder logs." });
   }
 });
 

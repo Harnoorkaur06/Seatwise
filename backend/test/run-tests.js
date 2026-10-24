@@ -8,6 +8,7 @@
  */
 
 const path = require("path");
+process.env.NODE_ENV = "test";
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const assert = require("assert");
 const mongoose = require("mongoose");
@@ -21,8 +22,11 @@ const Exam = require("../models/Exam");
 const SeatingPlan = require("../models/SeatingPlan");
 const Complaint = require("../models/Complaint");
 const Activity = require("../models/Activity");
+const OtpChallenge = require("../models/OtpChallenge");
 const { generateToken, verifyToken } = require("../middleware/auth");
 const { SeatingEngine, seatLabel } = require("../utils/seatingEngine");
+const { verifyOtpHash, createChallenge, verifyChallenge, resendChallenge, maskEmail } = require("../utils/otp");
+const { runReminderTests } = require("./reminder-tests");
 
 let mongoServer;
 let testsPassed = 0;
@@ -400,7 +404,17 @@ async function runAll() {
     assert.ok(baseUrl);
   });
 
-  await test("POST /api/auth/admin-login authenticates valid admin", async () => {
+  function findOtpForChallenge(challenge) {
+    for (let i = 0; i < 10000; i++) {
+      const code = String(i).padStart(4, "0");
+      if (verifyOtpHash(code, challenge.otpHash, challenge.otpSalt)) {
+        return code;
+      }
+    }
+    return null;
+  }
+
+  await test("POST /api/auth/admin-login authenticates valid admin directly with JWT token (no OTP required)", async () => {
     const res = await fetch(`${baseUrl}/auth/admin-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -409,7 +423,8 @@ async function runAll() {
     const data = await res.json();
     assert.strictEqual(res.status, 200);
     assert.strictEqual(data.ok, true);
-    assert.ok(data.token);
+    assert.ok(data.token, "JWT token must be returned directly for valid admin credentials");
+    assert.strictEqual(data.otpRequired, undefined, "Admin login must not require OTP");
     assert.strictEqual(data.user.role, "admin");
     adminToken = data.token;
   });
@@ -425,7 +440,8 @@ async function runAll() {
     assert.strictEqual(data.ok, false);
   });
 
-  await test("POST /api/auth/login authenticates student by email", async () => {
+  let studentChallengeId;
+  await test("POST /api/auth/login validates student credentials and creates OTP challenge (NO token returned yet)", async () => {
     const res = await fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -434,9 +450,92 @@ async function runAll() {
     const data = await res.json();
     assert.strictEqual(res.status, 200);
     assert.strictEqual(data.ok, true);
+    assert.strictEqual(data.otpRequired, true);
+    assert.strictEqual(data.token, undefined, "Student token MUST NOT be issued before OTP verification");
+    assert.ok(data.challengeId);
+    assert.ok(data.maskedEmail);
+    studentChallengeId = data.challengeId;
+  });
+
+  await test("POST /api/auth/verify-otp rejects wrong student OTP code with remaining attempt count", async () => {
+    const res = await fetch(`${baseUrl}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        challengeId: studentChallengeId,
+        otp: "9999",
+        role: "student",
+      }),
+    });
+    const data = await res.json();
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(data.ok, false);
+    assert.ok(data.message.includes("Incorrect") || data.message.includes("remaining"));
+  });
+
+  await test("POST /api/auth/verify-otp authenticates valid student OTP and issues student JWT token", async () => {
+    const challenge = await OtpChallenge.findOne({ challengeId: studentChallengeId });
+    const correctCode = findOtpForChallenge(challenge);
+    assert.ok(correctCode, "Generated OTP code could not be resolved");
+
+    const res = await fetch(`${baseUrl}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        challengeId: studentChallengeId,
+        otp: correctCode,
+        role: "student",
+      }),
+    });
+    const data = await res.json();
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(data.ok, true);
     assert.ok(data.token);
     assert.strictEqual(data.user.rollNo, "2410992925");
     studentToken = data.token;
+  });
+
+  await test("POST /api/auth/verify-otp prevents double-consumption / replay attack for students", async () => {
+    const challenge = await OtpChallenge.findOne({ challengeId: studentChallengeId });
+    const correctCode = findOtpForChallenge(challenge);
+    const res = await fetch(`${baseUrl}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        challengeId: studentChallengeId,
+        otp: correctCode,
+        role: "student",
+      }),
+    });
+    const data = await res.json();
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(data.ok, false);
+    assert.ok(data.message.includes("already been used") || data.message.includes("Invalid"));
+  });
+
+  await test("OTP security: max failed attempts lockout invalidates challenge", async () => {
+    const { challengeId } = await createChallenge("student_lockout", "student", "lockout@student.com");
+    for (let i = 0; i < 5; i++) {
+      await verifyChallenge(challengeId, "0000", "student");
+    }
+    const sixth = await verifyChallenge(challengeId, "0000", "student");
+    assert.strictEqual(sixth.valid, false);
+    assert.ok(sixth.error.includes("Too many") || sixth.error.includes("invalidated") || sixth.error.includes("longer valid"));
+  });
+
+  await test("OTP security: expired challenge is explicitly rejected", async () => {
+    const { challengeId } = await createChallenge("student_expired", "student", "expired@student.com");
+    await OtpChallenge.updateOne({ challengeId }, { $set: { expiresAt: new Date(Date.now() - 1000) } });
+    const result = await verifyChallenge(challengeId, "1234", "student");
+    assert.strictEqual(result.valid, false);
+    assert.ok(result.error.includes("expired") || result.error.includes("longer active"));
+  });
+
+  await test("OTP security: resend cooldown enforces wait period", async () => {
+    const { challengeId } = await createChallenge("student_cooldown", "student", "cooldown@student.com");
+    const immediateResend = await resendChallenge(challengeId, "student");
+    assert.strictEqual(immediateResend.ok, false);
+    assert.ok(immediateResend.error.includes("wait") || immediateResend.error.includes("seconds"));
   });
 
   await test("GET /api/students enforces requireAuth barrier (401 without token)", async () => {
@@ -629,6 +728,9 @@ async function runAll() {
       assert.ok(plan.rooms[0].seats[0].student.name);
     }
   });
+
+  // Automated 24-hour examination reminder email tests
+  await runReminderTests(test, baseUrl, adminToken, studentToken);
 
   if (server) {
     server.close();

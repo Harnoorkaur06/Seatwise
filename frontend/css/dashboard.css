@@ -368,6 +368,9 @@
   text-shadow: 0 0 16px rgba(216, 165, 232, 0.5);
 }
 
+.countdown-digit.urgent {
+  color: red;
+}
 .countdown-unit {
   font-size: 8.5px;
   font-weight: 800;
