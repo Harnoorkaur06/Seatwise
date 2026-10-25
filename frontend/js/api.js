@@ -79,8 +79,6 @@ const API = {
   auth: {
     login: (creds) => API.request("/auth/login", { method: "POST", body: creds }),
     adminLogin: (creds) => API.request("/auth/admin-login", { method: "POST", body: creds }),
-    verifyOtp: (data) => API.request("/auth/verify-otp", { method: "POST", body: data }),
-    resendOtp: (data) => API.request("/auth/resend-otp", { method: "POST", body: data }),
     setupPassword: (data) => API.request("/auth/setup-password", { method: "POST", body: data }),
     updatePassword: (data) => API.request("/auth/update-password", { method: "POST", body: data }),
     me: () => API.request("/auth/me", { method: "GET" }),

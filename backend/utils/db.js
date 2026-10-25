@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 let isConnected = false;
 let memoryServer = null;
-let isPersistent = false;
 
 async function connectDB() {
   if (isConnected && mongoose.connection.readyState === 1) {
@@ -21,12 +20,9 @@ async function connectDB() {
         serverSelectionTimeoutMS: 5000,
       });
       isConnected = true;
-      isPersistent = true;
       console.log("✓ Connected to persistent MongoDB successfully.");
       return mongoose.connection;
     } catch (err) {
-      isConnected = false;
-      isPersistent = false;
       console.error(`❌ Could not connect to configured MongoDB URI (${err.message}).`);
       if (optInMemory) {
         console.warn("⚠ Atlas unreachable — falling back to embedded in-memory MongoDB (USE_IN_MEMORY_DB=true).");
@@ -51,12 +47,9 @@ async function connectDB() {
       const uri = memoryServer.getUri();
       await mongoose.connect(uri);
       isConnected = true;
-      isPersistent = false;
       console.log(`✓ Embedded in-memory MongoDB connected at: ${uri}`);
       return mongoose.connection;
     } catch (memErr) {
-      isConnected = false;
-      isPersistent = false;
       console.error("Failed to start embedded in-memory MongoDB server:", memErr.message);
       throw new Error(
         `Failed to start embedded in-memory MongoDB server: ${memErr.message}`
@@ -79,7 +72,6 @@ async function closeDB() {
     await memoryServer.stop();
     memoryServer = null;
   }
-  isPersistent = false;
 }
 
 // Graceful process shutdown handling
@@ -93,17 +85,8 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-function isPersistentDB() {
-  if (mongoose.connection.readyState !== 1) return false;
-  if (memoryServer !== null) return false;
-  if (!isPersistent) return false;
-  if (process.env.NODE_ENV === "test") return false;
-  return true;
-}
-
 module.exports = {
   connectDB,
   closeDB,
-  isPersistentDB,
   getConnection: () => mongoose.connection,
 };
