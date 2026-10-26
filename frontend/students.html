@@ -247,12 +247,12 @@
           </td>
           <td style="text-align:right;">
             <div class="flex-gap" style="justify-content:flex-end; flex-wrap:wrap;">
-              <button class="btn btn-outline btn-sm" onclick="editStudent('${escapeHTML(s.rollNo)}')">Edit</button>
+              <button class="btn btn-outline btn-sm" onclick="editStudent('${escapeHTML(s._id || s.rollNo || s.id)}')">Edit</button>
               ${isDisabled
-                ? `<button class="btn btn-secondary btn-sm" onclick="toggleDisable('${escapeHTML(s.rollNo)}', false)">Enable</button>`
-                : `<button class="btn btn-outline btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="toggleDisable('${escapeHTML(s.rollNo)}', true)">Disable</button>`
+                ? `<button class="btn btn-secondary btn-sm" onclick="toggleDisable('${escapeHTML(s._id || s.rollNo || s.id)}', false)">Enable</button>`
+                : `<button class="btn btn-outline btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="toggleDisable('${escapeHTML(s._id || s.rollNo || s.id)}', true)">Disable</button>`
               }
-              <button class="btn btn-danger btn-sm" onclick="deleteStudent('${escapeHTML(s.rollNo)}', '${escapeHTML(s.name)}')">Delete</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteStudent('${escapeHTML(s._id || s.rollNo || s.id)}', '${escapeHTML(s.name)}')">Delete</button>
             </div>
           </td>
         </tr>
@@ -265,17 +265,27 @@
     document.getElementById("student-form").reset();
     document.getElementById("student-id").value = "";
     document.getElementById("student-disabled").value = "false";
+    const pwInput = document.getElementById("student-password");
+    if (pwInput) {
+      pwInput.required = false;
+      pwInput.placeholder = "e.g. student123 (defaults to student123)";
+    }
   }
 
   function editStudent(id) {
     const student = Students.findById(id);
     if (!student) return;
     document.getElementById("student-modal-title").textContent = "Edit Student";
-    document.getElementById("student-id").value = student.id;
+    document.getElementById("student-id").value = student.id || student._id || student.rollNo;
     document.getElementById("student-name").value = student.name;
     document.getElementById("student-email").value = student.email;
     document.getElementById("student-rollno").value = student.rollNo;
-    document.getElementById("student-password").value = student.password || "";
+    document.getElementById("student-password").value = "";
+    const pwInput = document.getElementById("student-password");
+    if (pwInput) {
+      pwInput.required = false;
+      pwInput.placeholder = "Leave blank to keep existing password";
+    }
     document.getElementById("student-mobile").value = student.mobile || "";
     document.getElementById("student-course").value = student.course || "";
     document.getElementById("student-semester").value = student.semester || "";

@@ -1,8 +1,26 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Activity = require("../models/Activity");
 const { requireAdmin, requireAuth, optionalAuth } = require("../middleware/auth");
+
+/**
+ * Universal query builder to match a student by _id (ObjectId), custom id, rollNo, or email
+ */
+function buildStudentQuery(target) {
+  const clean = String(target || "").trim();
+  const or = [
+    { id: clean },
+    { rollNo: clean },
+    { rollNo: clean.toUpperCase() },
+    { email: clean.toLowerCase() },
+  ];
+  if (mongoose.Types.ObjectId.isValid(clean)) {
+    or.push({ _id: clean });
+  }
+  return { role: "student", $or: or };
+}
 
 /**
  * Helper to generate ID
@@ -77,14 +95,7 @@ router.get("/:idOrRoll", requireAuth, async (req, res) => {
       }
     }
 
-    const student = await User.findOne({
-      role: "student",
-      $or: [
-        { id: target },
-        { rollNo: target.toUpperCase() },
-        { email: target.toLowerCase() },
-      ],
-    });
+    const student = await User.findOne(buildStudentQuery(target));
 
     if (!student) {
       return res.status(404).json({ ok: false, message: "Student record not found." });
@@ -160,10 +171,7 @@ router.post("/", requireAdmin, async (req, res) => {
 router.put("/:idOrRoll", requireAuth, async (req, res) => {
   try {
     const target = req.params.idOrRoll.trim();
-    let student = await User.findOne({
-      role: "student",
-      $or: [{ id: target }, { rollNo: target.toUpperCase() }, { email: target.toLowerCase() }],
-    });
+    let student = await User.findOne(buildStudentQuery(target));
 
     if (!student) {
       if (req.user.role === "admin" && (req.body.name || req.body.email || req.body.rollNo)) {
@@ -288,10 +296,7 @@ router.put("/:idOrRoll", requireAuth, async (req, res) => {
 router.delete("/:idOrRoll", requireAdmin, async (req, res) => {
   try {
     const target = req.params.idOrRoll.trim();
-    const student = await User.findOneAndDelete({
-      role: "student",
-      $or: [{ id: target }, { rollNo: target.toUpperCase() }, { email: target.toLowerCase() }],
-    });
+    const student = await User.findOneAndDelete(buildStudentQuery(target));
 
     if (!student) {
       return res.status(404).json({ ok: false, message: "Student record not found." });

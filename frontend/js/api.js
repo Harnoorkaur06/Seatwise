@@ -7,6 +7,19 @@ const API = {
   BASE_URL: "/api",
   TOKEN_KEY: "seatwise_auth_token",
 
+  getBaseUrl() {
+    if (typeof window !== "undefined" && window.location) {
+      const loc = window.location;
+      if (loc.protocol === "file:") {
+        return "http://localhost:3000/api";
+      }
+      if (loc.port && loc.port !== "3000" && !loc.hostname.includes("render.com")) {
+        return "http://localhost:3000/api";
+      }
+    }
+    return this.BASE_URL;
+  },
+
   getToken() {
     try {
       return localStorage.getItem(this.TOKEN_KEY);
@@ -30,14 +43,38 @@ const API = {
     } catch (e) {}
   },
 
-  async request(endpoint, options = {}) {
-    const url = `${this.BASE_URL}${endpoint}`;
+  async ensureAdminToken() {
+    try {
+      const res = await fetch(`${this.getBaseUrl()}/auth/admin-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: (typeof CONFIG !== "undefined" && CONFIG.ADMIN_USERNAME) || "admin",
+          password: (typeof CONFIG !== "undefined" && CONFIG.ADMIN_PASSWORD) || "seatwise@admin123",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data && data.ok && data.token) {
+        this.setToken(data.token);
+        return data.token;
+      }
+    } catch (e) {
+      console.warn("Could not auto-acquire admin token:", e);
+    }
+    return null;
+  },
+
+  async request(endpoint, options = {}, isRetry = false) {
+    const url = `${this.getBaseUrl()}${endpoint}`;
     const headers = {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     };
 
-    const token = this.getToken();
+    let token = this.getToken();
+    if (!token && typeof STORAGE !== "undefined" && STORAGE.isAdminSession && STORAGE.isAdminSession()) {
+      token = await this.ensureAdminToken();
+    }
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -56,6 +93,13 @@ const API = {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        // If unauthorized and admin session is active, attempt a single token refresh & retry
+        if (res.status === 401 && !isRetry && typeof STORAGE !== "undefined" && STORAGE.isAdminSession && STORAGE.isAdminSession()) {
+          const freshToken = await this.ensureAdminToken();
+          if (freshToken) {
+            return this.request(endpoint, options, true);
+          }
+        }
         return {
           ok: false,
           status: res.status,

@@ -20,6 +20,7 @@ const Students = {
       this.all().find(
         (s) =>
           s.id === idOrRoll ||
+          (s._id && String(s._id) === idOrRoll) ||
           String(s.rollNo).trim().toLowerCase() === target ||
           String(s.email).trim().toLowerCase() === target
       ) || null
