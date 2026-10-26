@@ -33,7 +33,10 @@ async function requireAuth(req, res, next) {
   try {
     const token = extractToken(req);
     if (!token) {
-      return res.status(401).json({ ok: false, message: "Authentication required. Please sign in." });
+      return res.status(401).json({
+        ok: false,
+        message: "Authentication required. Please include 'Authorization: Bearer <token>' in your request headers. You can generate a token via POST /api/auth/admin-login or POST /api/auth/login.",
+      });
     }
 
     const decoded = await verifyToken(token);

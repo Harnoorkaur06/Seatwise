@@ -12,12 +12,18 @@ async function connectDB() {
   const optInMemory = process.env.USE_IN_MEMORY_DB === "true" || process.env.NODE_ENV === "test";
 
   if (mongoUri) {
+    if (mongoUri.startsWith("mongodb+srv://")) {
+      try {
+        const dns = require("dns");
+        dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+      } catch (dnsErr) {}
+    }
     try {
       // Safe sanitized URI logging without credentials
       const sanitizedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@");
       console.log(`Connecting to MongoDB at: ${sanitizedUri}`);
       await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 8000,
       });
       isConnected = true;
       console.log("✓ Connected to persistent MongoDB successfully.");

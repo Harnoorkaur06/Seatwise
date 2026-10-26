@@ -8,6 +8,8 @@ const Room = require("./models/Room");
 const Exam = require("./models/Exam");
 const Activity = require("./models/Activity");
 
+const mongoose = require("mongoose");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -15,6 +17,50 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
+
+// Public Health Check & Status Endpoints
+app.get(["/health", "/api/health"], (req, res) => {
+  const isDbReady = mongoose.connection.readyState === 1;
+  res.status(isDbReady ? 200 : 503).json({
+    ok: isDbReady,
+    status: isDbReady ? "healthy" : "unhealthy",
+    database: isDbReady ? "connected" : "disconnected",
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()),
+  });
+});
+
+app.get("/api", (req, res) => {
+  const isDbReady = mongoose.connection.readyState === 1;
+  res.json({
+    ok: true,
+    name: "SEATWISE API Platform",
+    status: "online",
+    database: isDbReady ? "connected" : "disconnected",
+    documentation: "SEATWISE Smart Seating & Examination Management REST API",
+    authentication: {
+      instructions: "Protected endpoints require header: 'Authorization: Bearer <token>'",
+      adminLogin: "POST /api/auth/admin-login (body: { username, password })",
+      studentLogin: "POST /api/auth/login (body: { email or rollNo, password })"
+    },
+    endpoints: {
+      health: "GET /api/health",
+      auth: {
+        adminLogin: "POST /api/auth/admin-login",
+        studentLogin: "POST /api/auth/login",
+        setupPassword: "POST /api/auth/setup-password",
+        currentUser: "GET /api/auth/me"
+      },
+      students: "GET /api/students, POST /api/students, PUT /api/students/:idOrRoll, DELETE /api/students/:idOrRoll",
+      rooms: "GET /api/rooms, POST /api/rooms, PUT /api/rooms/:roomNumber, DELETE /api/rooms/:roomNumber",
+      exams: "GET /api/exams, GET /api/exams/active, POST /api/exams, PUT /api/exams/:id, DELETE /api/exams/:id",
+      seating: "GET /api/seating, POST /api/seating/generate, POST /api/seating/regenerate, POST /api/seating/override",
+      complaints: "GET /api/complaints, POST /api/complaints, PUT /api/complaints/:id",
+      system: "GET /api/system/stats, POST /api/system/seed, POST /api/system/purge",
+      migrate: "POST /api/migrate/import-browser-data"
+    }
+  });
+});
 
 // Mount API Routes
 app.use("/api/auth", require("./routes/auth"));
